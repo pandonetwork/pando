@@ -3,7 +3,7 @@
 const BitcoinjsBlock = require('bitcoinjs-lib').Block
 const CID = require('cids')
 const multihashes = require('multihashes')
-const sha256 = require('hash.js/lib/hash/sha/256');
+const sha256 = require('hash.js/lib/hash/sha/256')
 
 const serialize = (dagNode, callback) => {
   const binaryBlob = dagNode.toBuffer()
@@ -25,7 +25,7 @@ const cid = (dagNode, callback) => {
   const multihash = multihashes.encode(Buffer.from(headerHash), 'dbl-sha2-256')
   const cidVersion = 1
   const cid = new CID(cidVersion, 'bitcoin-block', multihash)
-  const err = null;
+  const err = null
   callback(err, cid)
 }
 
