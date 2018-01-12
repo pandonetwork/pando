@@ -90,6 +90,33 @@ describe('IPLD format resolver API resolve()', () => {
   })
 })
 
+describe('IPLD format resolver API tree()', () => {
+  it('should return only paths by default', (done) => {
+    IpldBitcoin.resolver.tree(fixtureBlock, (err, value) => {
+      expect(err).to.not.exist()
+      expect(value).to.deep.equal(['/version', '/timestamp', '/difficulty',
+        '/nonce', '/parent', '/tx'])
+      done()
+    })
+  })
+
+  it('should be able to return paths and values', (done) => {
+    IpldBitcoin.resolver.tree(fixtureBlock, {value: true}, (err, value) => {
+      expect(err).to.not.exist()
+      expect(value).to.deep.equal({
+        '/version': 2,
+        '/timestamp': 1386981279,
+        '/difficulty': 419740270,
+        '/nonce': 3159344128,
+        '/parent': {
+          '/': new CID('z4HFzdHLxSgJvCMJrsDtV7MgqiGALZdbbxgcTLVUUXQGBkGYjLb')},
+        '/tx': {
+          '/': new CID('z4HFzdHD15kVvtmVzeD7z9sisZ7acSC88wXS3KJGwGrnr2DwcVQ')}})
+      done()
+    })
+  })
+})
+
 const verifyPath = (block, path, expected, done) => {
   IpldBitcoin.resolver.resolve(block, path, (err, value) => {
     expect(err).to.not.exist()
