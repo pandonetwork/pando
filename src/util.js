@@ -22,14 +22,22 @@ const cid = (dagNode, callback) => {
   const firstHash = sha256().update(dagNode.toBuffer(true)).digest()
   const headerHash = sha256().update(Buffer.from(firstHash)).digest()
 
-  const multihash = multihashes.encode(Buffer.from(headerHash), 'dbl-sha2-256')
-  const cidVersion = 1
-  const cid = new CID(cidVersion, 'bitcoin-block', multihash)
+  const cid = hashToCid(Buffer.from(headerHash))
   const err = null
   callback(err, cid)
 }
 
+const hashToCid = (hash) => {
+  const multihash = multihashes.encode(hash, 'dbl-sha2-256')
+  const cidVersion = 1
+  const cid = new CID(cidVersion, 'bitcoin-block', multihash)
+  return cid
+}
+
 module.exports = {
+  hashToCid: hashToCid,
+
+  // Public API
   cid: cid,
   deserialize: deserialize,
   serialize: serialize
