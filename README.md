@@ -12,7 +12,7 @@
 ![](https://img.shields.io/badge/npm-%3E%3D3.0.0-orange.svg?style=flat-square)
 ![](https://img.shields.io/badge/Node.js-%3E%3D6.0.0-orange.svg?style=flat-square)
 
-> JavaScript implementation of the [IPLD spec](https://github.com/ipfs/specs/tree/master/ipld).
+> JavaScript implementation of the [IPLD format spec](https://github.com/ipld/interface-ipld-format) for Bitcoin blocks.
 
 ## Table of Contents
 
@@ -59,6 +59,10 @@ Loading this module through a script tag will make the `IpldBitcoint` obj availa
 ```
 
 ## Usage
+
+As this is is an implementation of the [IPLD format spec](https://github.com/ipld/interface-ipld-format), it should be used through the [IPLD resolver](https://github.com/ipld/js-ipld-resolver). See the IPLD format spec for details about the API.
+
+Though it can also be used as a standalone module:
 
 ```JavaScript
 const IpldBitcoin = require('ipld-bitcoin')
