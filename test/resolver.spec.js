@@ -101,7 +101,7 @@ describe('IPLD format resolver API tree()', () => {
   })
 
   it('should be able to return paths and values', (done) => {
-    IpldBitcoin.resolver.tree(fixtureBlock, {value: true}, (err, value) => {
+    IpldBitcoin.resolver.tree(fixtureBlock, {values: true}, (err, value) => {
       expect(err).to.not.exist()
       expect(value).to.deep.equal({
         '/version': 2,

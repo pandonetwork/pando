@@ -64,7 +64,7 @@ const tree = (binaryBlob, options, callback) => {
     const paths = ['/version', '/timestamp', '/difficulty', '/nonce',
       '/parent', '/tx']
 
-    if (options.value === true) {
+    if (options.values === true) {
       const pathValues = {}
       for (let path of paths) {
         pathValues[path] = resolveField(dagNode, path.substr(1))
