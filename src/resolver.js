@@ -2,6 +2,26 @@
 
 const util = require('./util')
 
+/**
+ * @callback ResolveCallback
+ * @param {?Error} error - Error if path can't be resolved
+ * @param {Object} result - Result of the path it it was resolved successfully
+ * @param {*} result.value - Value the path resolves to
+ * @param {string} result.remainderPath - If the path resolves half-way to a
+ *   link, then the `remainderPath` is the part after the link that can be used
+ *   for further resolving.
+ */
+/**
+ * Resolves a path in a Bitcoin block.
+ *
+ * Returns the value or a link and the partial mising path. This way the
+ * IPLD Resolver can fetch the link and continue to resolve.
+ *
+ * @param {Buffer} binaryBlob - Binary representation of a Bitcoin block
+ * @param {string} [path='/'] - Path that should be resolved
+ * @param {ResolveCallback} callback - Callback that handles the return value
+ * @returns {void}
+ */
 const resolve = (binaryBlob, path, callback) => {
   if (typeof path === 'function') {
     callback = path
@@ -49,6 +69,23 @@ const resolve = (binaryBlob, path, callback) => {
   })
 }
 
+/**
+ * @callback TreeCallback
+ * @param {?Error} error - Error if paths can't be retreived
+ * @param {string[] | Object.<string, *>[]} result - The result depends on
+ *   `options.values`, whether it returns only the paths, or the paths with
+ *   the corresponding values
+ */
+/**
+ * Return all available paths of a block.
+ *
+ * @param {Buffer} binaryBlob - Binary representation of a Bitcoin block
+ * @param {Object} [options] - Possible options
+ * @param {boolean} [options.values=false] - Retun only the paths by default.
+ *   If it is `true` also return the values
+ * @param {TreeCallback} callback - Callback that handles the return value
+ * @returns {void}
+ */
 const tree = (binaryBlob, options, callback) => {
   if (typeof options === 'function') {
     callback = options
