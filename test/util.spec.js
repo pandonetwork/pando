@@ -11,6 +11,7 @@ const IpldBitcoin = require('../src/index')
 describe('IPLD format util API', () => {
   const fixtureBlockHex = loadFixture(__dirname, 'fixtures/block.hex')
   const fixtureBlock = Buffer.from(fixtureBlockHex.toString(), 'hex')
+  const invalidDagNode = {invalid: 'dagNode'}
 
   it('should deserialize correctly', (done) => {
     IpldBitcoin.util.deserialize(fixtureBlock, (err, dagNode) => {
@@ -120,6 +121,33 @@ describe('IPLD format util API', () => {
         done)
     })
   })
+
+  it('should error on deserialzing an invalid block', (done) => {
+    const invalidBlock = Buffer.from('abcdef', 'hex')
+    IpldBitcoin.util.deserialize(invalidBlock, (err, dagNode) => {
+      expect(dagNode).to.not.exist()
+      expect(err).to.be.an('error')
+      done()
+    })
+  })
+
+  it('should error on serialzing an invalid internal representation',
+    (done) => {
+      IpldBitcoin.util.serialize(invalidDagNode, (err, binaryBlob) => {
+        expect(binaryBlob).to.not.exist()
+        expect(err).to.be.an('error')
+        done()
+      })
+    })
+
+  it('should error on getting a CID from invalid internal representation',
+    (done) => {
+      IpldBitcoin.util.cid(invalidDagNode, (err, cid) => {
+        expect(cid).to.not.exist()
+        expect(err).to.be.an('error')
+        done()
+      })
+    })
 })
 
 const verifyBlock = (dagNode, expected) => {

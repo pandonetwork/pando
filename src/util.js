@@ -20,9 +20,15 @@ const sha256 = require('hash.js/lib/hash/sha/256')
  * @returns {void}
  */
 const serialize = (dagNode, callback) => {
-  const binaryBlob = dagNode.toBuffer()
-  const err = null
-  callback(err, binaryBlob)
+  let err = null
+  let binaryBlob
+  try {
+    binaryBlob = dagNode.toBuffer()
+  } catch (serializeError) {
+    err = serializeError
+  } finally {
+    callback(err, binaryBlob)
+  }
 }
 
 /**
@@ -40,9 +46,15 @@ const serialize = (dagNode, callback) => {
  * @returns {void}
  */
 const deserialize = (binaryBlob, callback) => {
-  const dagNode = BitcoinjsBlock.fromBuffer(binaryBlob)
-  const err = null
-  callback(err, dagNode)
+  let err = null
+  let dagNode
+  try {
+    dagNode = BitcoinjsBlock.fromBuffer(binaryBlob)
+  } catch (deserializeError) {
+    err = deserializeError
+  } finally {
+    callback(err, dagNode)
+  }
 }
 
 /**
@@ -58,13 +70,19 @@ const deserialize = (binaryBlob, callback) => {
  * @returns {void}
  */
 const cid = (dagNode, callback) => {
-  // Bitcoin double hashes
-  const firstHash = sha256().update(dagNode.toBuffer(true)).digest()
-  const headerHash = sha256().update(Buffer.from(firstHash)).digest()
+  let err = null
+  let cid
+  try {
+    // Bitcoin double hashes
+    const firstHash = sha256().update(dagNode.toBuffer(true)).digest()
+    const headerHash = sha256().update(Buffer.from(firstHash)).digest()
 
-  const cid = hashToCid(Buffer.from(headerHash))
-  const err = null
-  callback(err, cid)
+    cid = hashToCid(Buffer.from(headerHash))
+  } catch (cidError) {
+    err = cidError
+  } finally {
+    callback(err, cid)
+  }
 }
 
 // Convert a Bitcoin hash (as Buffer) to a CID
