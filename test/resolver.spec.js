@@ -11,6 +11,7 @@ const IpldBitcoin = require('../src/index')
 
 const fixtureBlockHex = loadFixture(__dirname, 'fixtures/block.hex')
 const fixtureBlock = Buffer.from(fixtureBlockHex.toString(), 'hex')
+const invalidBlock = Buffer.from('abcdef', 'hex')
 
 describe('IPLD format resolver API resolve()', () => {
   it('should return the deserialized node if no path is given', (done) => {
@@ -88,6 +89,10 @@ describe('IPLD format resolver API resolve()', () => {
         done()
       })
   })
+
+  it('should return an error if block is invalid', (done) => {
+    verifyError(invalidBlock, '/version', done)
+  })
 })
 
 describe('IPLD format resolver API tree()', () => {
@@ -112,6 +117,14 @@ describe('IPLD format resolver API tree()', () => {
           '/': new CID('z4HFzdHLxSgJvCMJrsDtV7MgqiGALZdbbxgcTLVUUXQGBkGYjLb')},
         '/tx': {
           '/': new CID('z4HFzdHD15kVvtmVzeD7z9sisZ7acSC88wXS3KJGwGrnr2DwcVQ')}})
+      done()
+    })
+  })
+
+  it('should return an error if block is invalid', (done) => {
+    IpldBitcoin.resolver.tree(invalidBlock, (err, value) => {
+      expect(value).to.not.exist()
+      expect(err).to.be.an('error')
       done()
     })
   })
