@@ -117,7 +117,7 @@ describe('IPLD format util API serialize()', () => {
       expect(err).to.not.exist()
       IpldBitcoin.util.serialize(dagNode, (err, binaryBlob) => {
         expect(err).to.not.exist()
-        expect(binaryBlob.equals(fixtureBlock)).to.be.true()
+        expect(binaryBlob).to.deep.equal(fixtureBlock)
         done()
       })
     })
