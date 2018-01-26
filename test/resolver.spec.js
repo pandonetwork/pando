@@ -130,6 +130,13 @@ describe('IPLD format resolver API tree()', () => {
   })
 })
 
+describe('IPLD format resolver API properties', () => {
+  it('should have `multicodec` defined correctly', (done) => {
+    expect(IpldBitcoin.resolver.multicodec).to.equal('bitcoin-block')
+    done()
+  })
+})
+
 const verifyPath = (block, path, expected, done) => {
   IpldBitcoin.resolver.resolve(block, path, (err, value) => {
     expect(err).to.not.exist()
