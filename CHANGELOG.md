@@ -1,3 +1,13 @@
+<a name="0.1.4"></a>
+## [0.1.4](https://github.com/ipld/js-ipld-bitcoin/compare/v0.1.3...v0.1.4) (2018-02-01)
+
+
+### Bug Fixes
+
+* export `multicodec` property ([8e6ec75](https://github.com/ipld/js-ipld-bitcoin/commit/8e6ec75))
+
+
+
 <a name="0.1.3"></a>
 ## [0.1.3](https://github.com/ipld/js-ipld-bitcoin/compare/v0.1.2...v0.1.3) (2018-01-22)
 
