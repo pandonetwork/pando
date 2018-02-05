@@ -33,8 +33,8 @@ const resolve = (binaryBlob, path, callback) => {
       return callback(err)
     }
 
-    // Requesting the root node returns the deserialized block
-    if (!path || path === '/') {
+    // Return the deserialized block if no path is given
+    if (!path) {
       return callback(null, {
         value: dagNode,
         remainderPath: ''
@@ -42,8 +42,6 @@ const resolve = (binaryBlob, path, callback) => {
     }
 
     const pathArray = path.split('/')
-    // `/` is the first element
-    pathArray.shift()
     const value = resolveField(dagNode, pathArray[0])
     if (value === null) {
       return callback(new Error('No such path'), null)
@@ -98,13 +96,13 @@ const tree = (binaryBlob, options, callback) => {
       return callback(err)
     }
 
-    const paths = ['/version', '/timestamp', '/difficulty', '/nonce',
-      '/parent', '/tx']
+    const paths = ['version', 'timestamp', 'difficulty', 'nonce',
+      'parent', 'tx']
 
     if (options.values === true) {
       const pathValues = {}
       for (let path of paths) {
-        pathValues[path] = resolveField(dagNode, path.substr(1))
+        pathValues[path] = resolveField(dagNode, path)
       }
       return callback(null, pathValues)
     } else {
