@@ -8,7 +8,7 @@ const expect = chai.expect
 chai.use(dirtyChai)
 const IpldBitcoin = require('../src/index')
 
-const fixtureBlockHex = loadFixture(__dirname, 'fixtures/block.hex')
+const fixtureBlockHex = loadFixture('test/fixtures/block.hex')
 const fixtureBlock = Buffer.from(fixtureBlockHex.toString(), 'hex')
 const invalidDagNode = {invalid: 'dagNode'}
 
@@ -29,7 +29,7 @@ describe('IPLD format util API deserialize()', () => {
   })
 
   it('should deserialize Segwit correctly (a)', (done) => {
-    const segwitBlockHex = loadFixture(__dirname, 'fixtures/segwit.hex')
+    const segwitBlockHex = loadFixture('test/fixtures/segwit.hex')
     const segwitBlock = Buffer.from(segwitBlockHex.toString(), 'hex')
     IpldBitcoin.util.deserialize(segwitBlock, (err, dagNode) => {
       expect(err).to.not.exist()
@@ -49,7 +49,7 @@ describe('IPLD format util API deserialize()', () => {
   })
 
   it('should deserialize Segwit correctly (b)', (done) => {
-    const segwitBlockHex = loadFixture(__dirname, 'fixtures/segwit2.hex')
+    const segwitBlockHex = loadFixture('test/fixtures/segwit2.hex')
     const segwitBlock = Buffer.from(segwitBlockHex.toString(), 'hex')
     IpldBitcoin.util.deserialize(segwitBlock, (err, dagNode) => {
       expect(err).to.not.exist()
@@ -69,7 +69,7 @@ describe('IPLD format util API deserialize()', () => {
   })
 
   it('should deserialize Segwit correctly (c)', (done) => {
-    const segwitBlockHex = loadFixture(__dirname, 'fixtures/segwit3.hex')
+    const segwitBlockHex = loadFixture('test/fixtures/segwit3.hex')
     const segwitBlock = Buffer.from(segwitBlockHex.toString(), 'hex')
     IpldBitcoin.util.deserialize(segwitBlock, (err, dagNode) => {
       expect(err).to.not.exist()

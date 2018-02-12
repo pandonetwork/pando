@@ -9,7 +9,7 @@ chai.use(dirtyChai)
 const CID = require('cids')
 const IpldBitcoin = require('../src/index')
 
-const fixtureBlockHex = loadFixture(__dirname, 'fixtures/block.hex')
+const fixtureBlockHex = loadFixture('test/fixtures/block.hex')
 const fixtureBlock = Buffer.from(fixtureBlockHex.toString(), 'hex')
 const invalidBlock = Buffer.from('abcdef', 'hex')
 
