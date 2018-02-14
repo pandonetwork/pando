@@ -1,3 +1,14 @@
+<a name="0.1.5"></a>
+## [0.1.5](https://github.com/ipld/js-ipld-bitcoin/compare/v0.1.4...v0.1.5) (2018-02-14)
+
+
+### Bug Fixes
+
+* path never start with a slash ([d790c9b](https://github.com/ipld/js-ipld-bitcoin/commit/d790c9b))
+* **tests:** Aegir changed fixture API ([c7e6c79](https://github.com/ipld/js-ipld-bitcoin/commit/c7e6c79))
+
+
+
 <a name="0.1.4"></a>
 ## [0.1.4](https://github.com/ipld/js-ipld-bitcoin/compare/v0.1.3...v0.1.4) (2018-02-01)
 
