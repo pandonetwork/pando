@@ -1,87 +1,100 @@
+<h1 align="center">
+  <br>
+  <a href="http://wespr.co">
+    <img src="https://raw.githubusercontent.com/wespr/wespr-core/master/branding/logo.png" alt="wespr" width="200"></a>
+  <br>
+  Pando
+  <br>
+</h1>
+
+A cooperation and versioning system based on [IPFS](https://ipfs.io) and [AragonOS](https://github.com/aragon/aragonOS).
+
+## Notes
+
+This software is in a **very** alpha stage, is likely to evolve quickly and is not meant to be used in production yet.
+
+pando is currently developed by the [wespr](http://www.wespr.cp) team and backed by a grant from the [Aragon Nest](https://github.com/aragon/nest) program. However, pando intends to become a public library and infrastructure developed by the whole web3 / ethereum community: feel free to fork, open PR and open issues :purple_heart:. 
+
+## Why Pando ?
+
+[Pando](https://en.wikipedia.org/wiki/Pando_(tree)) (Latin for "spread out"), also known as the Trembling Giant is a clonal colony of a single male quaking aspen (Populus tremuloides) determined to be a single living organism by identical genetic markers and assumed to have one massive underground root system. The plant occupies 43 hectares (106 acres) and is estimated to weigh collectively 6,000,000 kilograms (6,600 short tons), making it the heaviest known organism. The root system of Pando, at an estimated 80,000 years old, is among the oldest known living organisms.
+
+## Installation
+
+pando.js **will** ship as a CommonJS package. However the library **has not been pushed to npm yet**.
 
 
-let pando0x = new Pando0x(ethereum)
+### Install
+
+```
+npm install @wespr/pando.js --save
+```
+
+### Import
+
+```javascript
+import { Pando } from '@wespr/pando.js';
+```
+
+## Async
+
+pando.js is a promise-based library. This means that whenever an asynchronous call is required, the library method will return a native Javascript promise. You can therefore choose between using promise or async/await syntax when calling our async methods.
 
 
-DAO
-kernel
-acl
+## Constructor
+
+The ```Pando``` class is the entry-point into the pando.js library. It allows you to create new and / or load existing local repositories and remote DAOs.
 
 
-let dao = pando0x.dao.deploy()
-let dao = pando0x.dao.at()
-let dao = pando0x.dao.fork(0xgfgdf)
+```typescript
+new Pando(configuration: IConfiguration): Pando
+```
 
-dao.kernel.upgrade()
-dao.acl.grant()
+### Configuration
 
-let repository = pando0x.repository.create()
-let repository = pando0x.repository.load()
-let repository = pando0x.repository.clone(0xgssgf)
+The configuration parameter passed to the constructor must look like this:
 
-repository.add()
-repository.commit()
-repository.checkout()
-repository.push()
+```typescript
+interface IConfiguration {
+  user: IUser
+  ethereum: IEthereum
+}
+```
 
+```typescript
+interface IUser {
+  account: string
+}
+```
 
+```typescript
+interface IEthereum {
+  gateway?: string
+  networkId?: string
+}
+```
 
+### Example
 
+```typescript
+const opts = {
+  user: {
+    account: '0x2d6ef21eb58f164841b41a7b749d0d957790620a'
+  },
+  ethereum: {
+    gateway: 'http://localhost:8545'
+  }
+}
 
-pando0X.ethereum
-pando0X.provider
-pando0X.account
+let pando = new Pando(opts)
+```
 
-pando0X.network
+## Repositories
 
-pando0X.kernel
+```typescript
+let repo = pando.repository.create(path?: string)
+```
 
-pando0X.remote
-
-pando0x.local
-
-pando0x.local.paths
-
-// Load from remote repository
-pando0x.at('@wespr/truc.pando0X.eth')
-
-// Load from local copy
-pando0x.load('../myrepo')
-
-
-pando0X.repository.add()
-
-pando0X.repository.commit()
-
-pando0X.repository.push()
-
-pando0X.repository.checkout()
-
-pando0X.remote.clone()
-
-pando0X.remote.fork()
-
-
-let remote = Pando0x.Remote.deploy()
-
-let repository = Pando.Repository.create()
-
-
-
-
-
-
-let pando0x = Pando0x.deploy({ contributor: { account: '0x4567'}, ethereum: { gateway: 'http://url', networkId: '2'} })
-initializes kernel and remote
-
-let pando0x = Pando0x.load(path)
-initializes kernel and remote
-
-let pando0x = Pando0.create({ contributor: { address: '0x4567'}, repository: { path: 'path_to_repository'} })
-initializes kernel, remote and repository
-
-let pando0x = Pando0x.clone({ contributor?: { address: '0x4567'}, remote: { address: 0x534653 }, repository: { path: 'path_to_repository'} })
-
-let pando0x = Pando0x.fork({ contributor?: { address: '0x4567'}, remote: { address: 0x534653 } })
-
-pando0x = repository 
+```typescript
+let repository = pando.repository.load(path?: string)
+```
