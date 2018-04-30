@@ -216,7 +216,7 @@ describe('Pando', () => {
       })
     
       after(async () => {
-        await utils.fs.rmdir('test/mocks/.pando')
+        // await utils.fs.rmdir('test/mocks/.pando')
       })
     
       it('should throw if file does not exist', async () => {
@@ -228,9 +228,12 @@ describe('Pando', () => {
       it('should update stage field if file does exists', async () => {
         // await repository.add(['test/mocks/test-directory/test-2.md'])
         await repository.add(['test/mocks/test-directory/test-subdirectory/test.md', 'test/mocks/test-directory/test-2.md'])
-        let node = await repository.commit('First commit')
+        let commitCID = await repository.commit('First commit')
         
-        console.log(node)
+        console.log(commitCID)
+        
+        // await repository.download(commitCID)
+        
         
       })
     })
