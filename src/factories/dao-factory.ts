@@ -1,12 +1,12 @@
-import Pando0x from '@pando0x'
+import Pando from '@pando'
 import DAO from '@components/dao'
 
 export default class DAOFactory {
     
-  public pando0x: Pando0x
+  public pando: Pando
   
-  public constructor (_pando0x: Pando0x) {
-    this.pando0x = _pando0x
+  public constructor (_pando: Pando) {
+    this.pando = _pando
   }
   
   public async at (): Promise < DAO > {
@@ -18,7 +18,7 @@ export default class DAOFactory {
   public async create (): Promise < DAO > {
     return new Promise < DAO > (async (resolve, reject) => {
       try {
-        let dao: DAO = await DAO.deploy(this.pando0x)
+        let dao: DAO = await DAO.deploy(this.pando)
         let receipt1 = await dao.grantAppManagerRole()
         let receipt2 = await dao.deployTree()
         resolve(dao)

@@ -1,5 +1,5 @@
 import IPLD from 'ipld'
-import Pando0x from '@pando0x'
+import Pando from '@pando'
 import CID from 'cids'
 
 

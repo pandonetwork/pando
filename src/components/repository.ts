@@ -22,7 +22,7 @@ DAG.addLink = promisify(DAGNode.addLink)
 
 // const {promisify} = require('util');
 
-import Pando0x from '@pando0x'
+import Pando from '@pando'
 import DAO from '@components/dao'
 import Satellizer from '@components/satellizer'
 import { IPaths } from '@interfaces'
@@ -41,7 +41,7 @@ export default class Repository {
     refs: '.pando/refs'
   }
   
-  public pando0x: Pando0x
+  public pando: Pando
   public paths: IPaths = { ...Repository.paths }
   public dao?: DAO
   
@@ -49,8 +49,8 @@ export default class Repository {
   public ipld: any
   public satellizer: any
   
-  public constructor (_pando0x: Pando0x, _path: string = '.', opts?: any) {
-    this.pando0x = _pando0x
+  public constructor (_pando: Pando, _path: string = '.', opts?: any) {
+    this.pando = _pando
     for (let p in Repository.paths) { this.paths[p] = path.join(_path, Repository.paths[p]) }
   }
   
@@ -64,7 +64,7 @@ export default class Repository {
   
   public async initialize (): Promise < void > {
     return new Promise < void > (async (resolve, reject) => {
-      let configuration = this.pando0x.configuration
+      let configuration = this.pando.configuration
 
       try {
         if(utils.fs.exists(this.paths.conf)) {
@@ -245,7 +245,7 @@ export default class Repository {
       'timestamp': Date.now(),
       'parents': [{ '/': this.head }],
       'tree': {},
-      'author': this.pando0x.configuration.user.account,
+      'author': this.pando.configuration.user.account,
       'message': _message
     }  
     

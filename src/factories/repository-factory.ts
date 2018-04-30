@@ -1,19 +1,19 @@
-import Pando0x from '@pando0x'
+import Pando from '@pando'
 import Repository from '@components/repository'
 
 export default class RepositoryFactory {
   
-  public pando0x: Pando0x
+  public pando: Pando
   
-  public constructor (_pando0x) {
-    this.pando0x = _pando0x
+  public constructor (_pando) {
+    this.pando = _pando
   }
   
   public async load (_path: string = '.'): Promise < Repository > {
     return new Promise < Repository > (async (resolve, reject) => {
       try {
         if(Repository.exists(_path)) {
-          let repository = new Repository(this.pando0x, _path)
+          let repository = new Repository(this.pando, _path)
           await repository.loadIPFS()
           resolve(repository)
         } else {
@@ -28,7 +28,7 @@ export default class RepositoryFactory {
   public async create (_path: string = '.'): Promise < Repository > {
     return new Promise < Repository > (async (resolve, reject) => {
       try {
-        let repository = new Repository(this.pando0x, _path)
+        let repository = new Repository(this.pando, _path)
         await repository.initialize()
         resolve(repository)
       } catch (err) {

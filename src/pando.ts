@@ -7,7 +7,7 @@ import RepositoryFactory from '@factories/repository-factory.ts'
 import { IConfiguration } from '@interfaces'
 
 
-export default class Pando0x {
+export default class Pando {
   
   public static contracts = Pando0xContracts
   public static utils = Pando0xUtils
@@ -22,7 +22,7 @@ export default class Pando0x {
   
   constructor (configuration: IConfiguration) {
     this.configuration = configuration
-    this.web3 = Pando0x.utils.web3.get(configuration.ethereum)
-    this.contracts = Pando0x.contracts.initialize(this.web3, configuration.user.account)
+    this.web3 = Pando.utils.web3.get(configuration.ethereum)
+    this.contracts = Pando.contracts.initialize(this.web3, configuration.user.account)
   }
 }
