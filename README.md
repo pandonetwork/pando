@@ -14,6 +14,10 @@
 
 > JavaScript implementation of the [IPLD format spec](https://github.com/ipld/interface-ipld-format) for Bitcoin blocks.
 
+## Lead Maintainer
+
+[Volker Mische](https://github.com/vmx)
+
 ## Table of Contents
 
 - [Install](#install)
@@ -22,7 +26,6 @@
   - [Use in a browser with browserify, webpack or any other bundler](#use-in-a-browser-with-browserify-webpack-or-any-other-bundler)
   - [Use in a browser Using a script tag](#use-in-a-browser-using-a-script-tag)
 - [Usage](#usage)
-- [Maintainers](#maintainers)
 - [Contribute](#contribute)
 - [License](#license)
 
@@ -75,10 +78,6 @@ IpldBitcoin.util.deserialize(bitcoinBlock, (err, dagNode) => {
   console.log(dagNode)
 })
 ```
-
-## Maintainers
-
-[@vmx](https://github.com/vmx)
 
 ## Contribute
 
