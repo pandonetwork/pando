@@ -1,5 +1,5 @@
-import * as Pando0xContracts from '@contracts'
-import * as Pando0xUtils from '@utils'
+import * as PandoContracts from '@contracts'
+import * as PandoUtils from '@utils'
 
 import DAOFactory from '@factories/dao-factory.ts'
 import RepositoryFactory from '@factories/repository-factory.ts'
@@ -9,8 +9,8 @@ import { IConfiguration } from '@interfaces'
 
 export default class Pando {
   
-  public static contracts = Pando0xContracts
-  public static utils = Pando0xUtils
+  public static contracts = PandoContracts
+  public static utils = PandoUtils
    
   public web3: any
   public configuration: IConfiguration

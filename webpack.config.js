@@ -1,8 +1,6 @@
 var nodeExternals = require('webpack-node-externals')
 const path = require('path')
 
-// Need to add modularity in the future: bundle node.js for production but not for developement
-
 module.exports = {
   entry: './src/pando.ts',
   output: {
