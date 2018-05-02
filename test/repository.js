@@ -236,12 +236,14 @@ describe('Pando', () => {
         commit.message.should.equal('First commit')
         
         
-        // cid.should.equal('zdpuAuq6NZrHBsUqptDJinWUhPdCk398AawFvn3Cy78YSu2wy')
+         await repository.download(commit.tree['/'], 'test/downloads')
+                // cid.should.equal('zdpuAuq6NZrHBsUqptDJinWUhPdCk398AawFvn3Cy78YSu2wy')
         
         // await repository.download(commitCID)
         
         
       })
+      
     })
     
   })

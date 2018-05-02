@@ -192,32 +192,21 @@ export default class Repository {
   
   }
   
-  public async download (cid: any, name?: string, _path?: string) : Promise < any > {
+  public async download (cid: any, _path: string = '.', _name?: string) : Promise < void > {
     
+    _path = path.normalize(_path)
     let value = await this.satellizer.get(cid)
     
-    if (value.data) {
-      // is a file
-      name = name || ''
-      utils.fs.write(name, value.data)
-    } else {
-     // is a tree
-      if (name) {
-        // console.log('NAME: ' + name)
-        // let path = 'test/mocks/download/' + name
-        utils.fs.mkdir(name)
-      }
-      
-      
+    if (value.data) { // value is a file
+      _name = _name || ''
+      utils.fs.write(_name, value.data)
+    } else { // value is a tree
+      if (_name) {
+        utils.fs.mkdir(_name)
+      }      
       for (let entry in value) {
-  
-        
-        const DOWNLOAD = 'test/mocks/download/'
-      
-        
-        let path = name ? name + '/' + entry : DOWNLOAD + entry 
-        
-        await this.download(value[entry].link['/'], path)
+        let name = _name ? path.join(_name, entry) : path.join(_path, entry)  
+        await this.download(value[entry].link['/'], _path, name)
       }
       
     }
