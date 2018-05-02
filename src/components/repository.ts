@@ -156,6 +156,20 @@ export default class Repository {
   
   }
   
+  public async log(opts?: any): Promise < any > {
+    let commits: any[] = []
+    let commit = await this.satellizer.get(this.head)
+    
+    commits.push(commit)
+    
+    while (typeof commit.parents !== 'undefined') {
+      commit = await this.satellizer.get(commit.parents[0]['/'])
+      commits.push(commit)
+    }
+        
+    return commits
+  }
+  
   public async status (): Promise < any > {
     let index: any = {}
     const filter = item => item.path.indexOf('.pando') < 0    

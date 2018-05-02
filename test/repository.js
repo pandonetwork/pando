@@ -236,15 +236,40 @@ describe('Pando', () => {
         commit.message.should.equal('First commit')
         
         
-         await repository.download(commit.tree['/'], 'test/downloads')
-                // cid.should.equal('zdpuAuq6NZrHBsUqptDJinWUhPdCk398AawFvn3Cy78YSu2wy')
-        
-        // await repository.download(commitCID)
+         // await repository.download(commit.tree['/'], 'test/downloads')
         
         
       })
       
     })
+    
+    
+    describe('#log', () => {
+    
+      let pando, repository
+    
+      before(async () => {
+        pando = new Pando(opts)
+        repository = await pando.repository.create('test/mocks')
+      })
+    
+      after(async () => {
+        await utils.fs.rmdir('test/mocks/.pando')
+      })
+    
+      it('should list object properly', async () => {
+        await repository.add(['test/mocks/test-directory/test-subdirectory/test.md', 'test/mocks/test-directory/test-2.md'])
+        let cid1 = await repository.commit('Added test-directory/test-subdirectory/test.md and test-directory/test-2.md')
+        
+        await repository.add(['test/mocks/test.md'])
+        let cid2 = await repository.commit('Added test.md')
+        
+        let commits = await repository.log()
+        console.log(commits)
+      })
+      
+    })
+    
     
   })
 })
