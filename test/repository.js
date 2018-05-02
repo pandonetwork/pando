@@ -1,5 +1,6 @@
 const assert = require('assert')
 const fs = require('fs');
+var should = require('chai').should;
 
 import 'chai/register-should';
 import Pando from '../lib/main.js'
@@ -191,18 +192,17 @@ describe('Pando', () => {
         await utils.fs.rmdir('test/mocks/.pando')
       })
       
-      it('should throw if file does not exist', async () => {
+      it('should build tree from paths properly', async () => {
         
-        let paths = [ 'test/sub/test1.md', 'test/sub/test2.md', 'test/test.md' ]
-        
+        let paths = ['test/sub/test1.md', 'test/sub/test2.md', 'test/test.md']
         let tree = repository.tree(paths)
   
-        tree[0].path.should.equal('test')
-        tree[0].children[0].path.should.equal('test/sub')
-        tree[0].children[1].path.should.equal('test/test.md')
-        tree[0].children[0].children[0].path.should.equal('test/sub/test1.md')
-        tree[0].children[0].children[1].path.should.equal('test/sub/test2.md')     
-        
+        tree[0].path.should.equal('.')
+        tree[0].children[0].path.should.equal('test')
+        tree[0].children[0].children[0].path.should.equal('test/sub')
+        tree[0].children[0].children[1].path.should.equal('test/test.md')
+        tree[0].children[0].children[0].children[0].path.should.equal('test/sub/test1.md')
+        tree[0].children[0].children[0].children[1].path.should.equal('test/sub/test2.md') 
       })
     })
     
@@ -216,7 +216,7 @@ describe('Pando', () => {
       })
     
       after(async () => {
-        // await utils.fs.rmdir('test/mocks/.pando')
+        await utils.fs.rmdir('test/mocks/.pando')
       })
     
       it('should throw if file does not exist', async () => {
@@ -225,12 +225,18 @@ describe('Pando', () => {
     
     
       })
-      it('should update stage field if file does exists', async () => {
-        // await repository.add(['test/mocks/test-directory/test-2.md'])
+      it('should upload commit object properly', async () => {
         await repository.add(['test/mocks/test-directory/test-subdirectory/test.md', 'test/mocks/test-directory/test-2.md'])
-        let commitCID = await repository.commit('First commit')
         
-        console.log(commitCID)
+        let cid = await repository.commit('First commit')
+        let commit = await repository.satellizer.get(cid)
+
+        commit['@type'].should.equal('commit')
+        commit.author.should.equal(opts.user.account)
+        commit.message.should.equal('First commit')
+        
+        
+        // cid.should.equal('zdpuAuq6NZrHBsUqptDJinWUhPdCk398AawFvn3Cy78YSu2wy')
         
         // await repository.download(commitCID)
         

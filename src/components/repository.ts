@@ -3,24 +3,9 @@ import fs from 'fs'
 import IPFS from 'ipfs'
 import IPLD from 'ipld'
 import { promisify } from 'util'
-import Unixfs from 'ipfs-unixfs'
-
 import klaw from 'klaw-sync'
 import _ from 'lodash'
 import cids from 'cids'
-
-import { render } from 'tree-from-paths'
-import dagPB from 'ipld-dag-pb'
-
-const DAGNode = dagPB.DAGNode
-
-let DAG: any = { }
-
-DAG.create = promisify(DAGNode.create)
-DAG.addLink = promisify(DAGNode.addLink)
-
-
-// const {promisify} = require('util');
 
 import Pando from '@pando'
 import DAO from '@components/dao'
@@ -240,36 +225,32 @@ export default class Repository {
   
   public async commit (_message: string): Promise < any > {
     
-    let commit = {
-      '@type': 'commit',
-      'timestamp': Date.now(),
-      'parents': [{ '/': this.head }],
-      'tree': {},
-      'author': this.pando.configuration.user.account,
-      'message': _message
-    }  
-    
-    
     let index: any = this.index
-    let paths: any[] = []
+    let stagedPaths: any[] = []
+    let parents = this.head === "undefined" ? undefined : [{ '/': this.head }]
     
-    for (let path in index) {
-      if (index[path].repo !== index[path].stage) {
-        paths.push(path)
-        
+    for (let _path in index) {
+      if (index[_path].repo !== index[_path].stage) {
+        stagedPaths.push(_path)
       }
     }
     
-    let tree = this.tree(paths)
-    let node = await this.pushTree(tree)
+    let tree = await this.pushTree(this.tree(stagedPaths))
     
-    commit.tree = { '/' : node.cid }
-    
-    let commitCID = await this.satellizer.put(commit)
+    let commit = {
+      '@type': 'commit',
+      'timestamp': Date.now(),
+      'parents': parents,
+      'tree':  { '/' : tree.cid },
+      'author': this.pando.configuration.user.account,
+      'message': _message
+    }  
         
-    this.head = commitCID
+    let cid = await this.satellizer.put(commit)
     
-    return commitCID
+    this.head = cid
+    
+    return cid
     
   }
   
@@ -281,17 +262,13 @@ export default class Repository {
       
       if(index[entry.path]) { // entry is a file
         
-        // let cid = await this.satellizer.put({ data: fs.readFileSync(path.join(this.paths.root, entry.path)) })
-
-        // return { path: entry.path, cid: cid.toBaseEncodedString() }
-        
         index[entry.path].repo = index[entry.path].stage
         
         this.index = index
         
         return { path: entry.path, cid: index[entry.path].stage }
       
-      } else { // entry is a tree
+      } else { // entry is a tree node
         
         let node = {}
 
@@ -310,24 +287,20 @@ export default class Repository {
     
   }
   
-  private tree (paths: string[]): any {
+  private tree (paths: string[]): any[] {
     let tree: any[] = []
 
     for (let _path of paths) {
+      _path = path.normalize(_path)
       let parts = _path.split('/')
-      let level: any = tree
+      let level: any[] = tree
 
       parts.forEach((part, index) => {
         let existing = _.find(level, (entry: any) => { return entry.path === parts.slice(0, index + 1).join('/') })
-        // let existing = _.find(level, (entry: any) => { return entry.path === part })
-
-        
         if (existing) {
           level = existing.children
         } else {
           let newLevel = { path: parts.slice(0, index + 1).join('/'), children: [] }
-
-          // let newLevel = { path: parts.slice(0, index + 1).join('/'), children: [] }
           level.push(newLevel)
           level = newLevel.children
         }

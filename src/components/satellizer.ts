@@ -20,6 +20,8 @@ export default class Satellizer {
       this.ipld.put(object, opts, async (err, cid) => {
         await this.ipfs.stop()
         if(err) {
+          console.log('ERREUR')
+          console.log(object)
           reject(err)
         } else {
           resolve(cid.toBaseEncodedString())
