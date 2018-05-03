@@ -10,19 +10,13 @@ export default class RepositoryFactory {
   }
   
   public async load (_path: string = '.'): Promise < Repository > {
-    return new Promise < Repository > (async (resolve, reject) => {
-      try {
-        if(Repository.exists(_path)) {
-          let repository = new Repository(this.pando, _path)
-          await repository.loadIPFS()
-          resolve(repository)
-        } else {
-          throw new Error('No pando repository exists at: ' + _path)
-        }
-      } catch (err) {
-        reject(err)
-      }
-    })
+    if(Repository.exists(_path)) {
+      let repository = new Repository(this.pando, _path)
+      await repository.loadIPFS()
+      return repository
+    } else {
+      throw new Error('No pando repository exists at: ' + _path)
+    }
   }
   
   public async create (_path: string = '.'): Promise < Repository > {
