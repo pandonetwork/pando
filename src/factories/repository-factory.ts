@@ -19,7 +19,7 @@ export default class RepositoryFactory {
     }
   }
   
-  public async create (_path: string = '.'): Promise < Repository > {
+  public async create (_path: string = '.', opts?: any): Promise < Repository > {
     let repository = new Repository(this.pando, _path)
     await repository.initialize()
     return repository

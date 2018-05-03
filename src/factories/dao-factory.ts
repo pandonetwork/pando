@@ -9,23 +9,15 @@ export default class DAOFactory {
     this.pando = _pando
   }
   
-  public async at (): Promise < DAO > {
-    return new Promise < DAO > ((resolve, reject) => {
-      
-    })
-  }
+  // public async at (): Promise < DAO > {
+  // 
+  // }
   
   public async create (): Promise < DAO > {
-    return new Promise < DAO > (async (resolve, reject) => {
-      try {
-        let dao: DAO = await DAO.deploy(this.pando)
-        let receipt1 = await dao.grantAppManagerRole()
-        let receipt2 = await dao.deployTree()
-        resolve(dao)
-      } catch (err) {
-        reject(err)
-      }
-    })
+    let dao: DAO = await DAO.deploy(this.pando)
+    let receipt1 = await dao.grantAppManagerRole()
+    let receipt2 = await dao.deployTree()
+    return dao 
   }
   
   public async fork (): Promise < DAO > {
