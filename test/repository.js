@@ -260,7 +260,7 @@ describe('Pando', () => {
         await utils.fs.rmdir('test/mocks/.pando')
       })
     
-      it('should list object properly', async () => {
+      it('should list commit objects properly', async () => {
         await repository.add(['test/mocks/test-directory/test-subdirectory/test.md', 'test/mocks/test-directory/test-2.md'])
         let cid1 = await repository.commit('Added test-directory/test-subdirectory/test.md and test-directory/test-2.md')
         
