@@ -89,9 +89,27 @@ let pando = new Pando(opts)
 ## Repositories
 
 ```typescript
-let repo = pando.repository.create(path?: string)
+let repository = pando.repository.create(path?: string)
 ```
 
 ```typescript
 let repository = pando.repository.load(path?: string)
 ```
+
+<!-- repository.stage(files: string[])
+
+repository.history()
+
+repository.status()
+
+repository.stage()
+
+repository.commit()
+
+repository.dao.issues.new(opts)
+
+repository.dao.issues.list(opts)
+
+-->
+
+

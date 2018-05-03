@@ -26,15 +26,9 @@ export default class RepositoryFactory {
   }
   
   public async create (_path: string = '.'): Promise < Repository > {
-    return new Promise < Repository > (async (resolve, reject) => {
-      try {
-        let repository = new Repository(this.pando, _path)
-        await repository.initialize()
-        resolve(repository)
-      } catch (err) {
-        reject(err)
-      }
-    })
+    let repository = new Repository(this.pando, _path)
+    await repository.initialize()
+    return repository
   }
 
   public async clone (address: string) {
