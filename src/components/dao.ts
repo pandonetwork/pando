@@ -73,6 +73,16 @@ export default class DAO {
       }
     })
   }
+  
+  public async push (cid: string): Promise < any > {
+    let tx = await this.tree.setRepository(cid)
+    return tx
+  }
+  
+  public async head (): Promise < string > {
+    let cid = await this.tree.getRepository()
+    return cid
+  }
 
   public grantPushRole (): Promise < any > {
     return new Promise(async (resolve, reject) => {

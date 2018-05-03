@@ -185,6 +185,7 @@ describe('Pando', () => {
       
       before(async () => {
         pando = new Pando(opts)
+        console.log('initialize 1')
         repository = await pando.repository.create('test/mocks')
       })
       
@@ -212,6 +213,7 @@ describe('Pando', () => {
     
       before(async () => {
         pando = new Pando(opts)
+        console.log('initialize 2')
         repository = await pando.repository.create('test/mocks')
       })
     
@@ -250,6 +252,7 @@ describe('Pando', () => {
     
       before(async () => {
         pando = new Pando(opts)
+        console.log('initialize 3')
         repository = await pando.repository.create('test/mocks')
       })
     
@@ -265,7 +268,38 @@ describe('Pando', () => {
         let cid2 = await repository.commit('Added test.md')
         
         let commits = await repository.log()
-        console.log(commits)
+      })
+      
+    })
+    
+    describe('#push', () => {
+    
+      let pando, repository
+    
+      before(async () => {
+        pando = new Pando(opts)
+        console.log('initialize 3')
+        repository = await pando.repository.create('test/mocks')
+      })
+    
+      after(async () => {
+        await utils.fs.rmdir('test/mocks/.pando')
+      })
+    
+      it('should push head cid properly', async () => {
+        await repository.add(['test/mocks/test-directory/test-subdirectory/test.md', 'test/mocks/test-directory/test-2.md'])
+        let cid1 = await repository.commit('Added test-directory/test-subdirectory/test.md and test-directory/test-2.md')
+        
+        await repository.add(['test/mocks/test.md'])
+        let cid2 = await repository.commit('Added test.md')
+        
+        let tx = await repository.push()
+        console.log(tx)
+        
+        let cid3 = await repository.dao.head()
+        
+        cid3.should.equal(cid2)
+        
       })
       
     })
