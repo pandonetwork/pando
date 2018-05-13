@@ -50,63 +50,33 @@ export default class Repository {
   }
   
   public async initialize (_what: string = 'all'): Promise < void > {
-      let configuration = this.pando.configuration
-  
-      if (_what === 'all' || _what === 'directory') {
-        if(utils.fs.exists(this.paths.conf)) {
-          throw new Error('A pando repository already exists in the current working directory')
-        }
-        await utils.fs.mkdir(this.paths.pando)
-        await utils.fs.mkdir(this.paths.tmp)
-        await utils.fs.mkdir(this.paths.refs)
-        await utils.json.write(this.paths.conf, configuration)
-        await utils.json.write(this.paths.index, {})
-        await utils.json.write(this.paths.head, 'undefined')
-        console.log('DIRECTORY BUILD')
+    let configuration = this.pando.configuration
+
+    if (_what === 'all' || _what === 'directory') {
+      if(utils.fs.exists(this.paths.conf)) {
+        throw new Error('A pando repository already exists in the current working directory')
       }
-        
-      if (_what === 'all' || _what === 'ipfs') {  
-        this.ipfs = new IPFS({ repo: this.paths.ipfs })
-        eventify(this.ipfs, 'error').catch(err => { throw err })
-        await eventify(this.ipfs, 'ready')
-        this.satellizer = new Satellizer(this.ipfs)
-        await this.ipfs.stop()
-        console.log('IPFS IS READY')
-      }
-      if (_what === 'all' || _what === 'dao') {
-        console.log('DOING THE DAO STUFF')
-        this.dao = await this.pando.dao.create()
-      }
-      //   resolve()
-      // } catch (err) {
-      //   reject(err)
-      // }
-      //   if(utils.fs.exists(this.paths.conf)) {
-      //     throw new Error('A pando repository already exists in the current working directory')
-      //   }
-      // 
-      //   await utils.fs.mkdir(this.paths.pando)
-      //   await utils.fs.mkdir(this.paths.tmp)
-      //   await utils.fs.mkdir(this.paths.refs)
-      //   await utils.json.write(this.paths.conf, configuration)
-      //   await utils.json.write(this.paths.index, {})
-      //   await utils.json.write(this.paths.head, 'undefined')
-      // 
-      //   this.ipfs = new IPFS({ repo: this.paths.ipfs })
-      // 
-      //   this.ipfs.on('ready', async () => {
-      //     this.satellizer = new Satellizer(this.ipfs)
-      //     await this.ipfs.stop()
-      //     resolve()
-      //   })
-      // 
-      //   this.ipfs.on('error', async (err) => {
-      //     reject(err)
-      //   })
-      // } catch (err) {
-      //   reject(err)
-      // }
-    // })
+      await utils.fs.mkdir(this.paths.pando)
+      await utils.fs.mkdir(this.paths.tmp)
+      await utils.fs.mkdir(this.paths.refs)
+      await utils.json.write(this.paths.conf, configuration)
+      await utils.json.write(this.paths.index, {})
+      await utils.json.write(this.paths.head, 'undefined')
+      console.log('DIRECTORY BUILD')
+    }
+      
+    if (_what === 'all' || _what === 'ipfs') {  
+      this.ipfs = new IPFS({ repo: this.paths.ipfs })
+      eventify(this.ipfs, 'error').catch(err => { throw err })
+      await eventify(this.ipfs, 'ready')
+      this.satellizer = new Satellizer(this.ipfs)
+      await this.ipfs.stop()
+      console.log('IPFS IS READY')
+    }
+    if (_what === 'all' || _what === 'dao') {
+      console.log('DOING THE DAO STUFF')
+      this.dao = await this.pando.dao.create()
+    }
   }
   
   public async loadIPFS (): Promise < void > {

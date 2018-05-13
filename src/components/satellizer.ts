@@ -16,7 +16,7 @@ export default class Satellizer {
   public async put (object: any): Promise < any > {
     return new Promise < any > (async (resolve, reject) => {
       await this.ipfs.start()
-      let opts = { format: 'dag-cbor', hashAlg: 'sha2-256' }
+      let opts = { format: 'dag-cbor', hashAlg: 'keccak-256' }
       this.ipld.put(object, opts, async (err, cid) => {
         await this.ipfs.stop()
         if(err) {
