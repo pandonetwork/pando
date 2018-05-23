@@ -73,6 +73,7 @@ export default class Repository {
       await this.ipfs.stop()
       console.log('IPFS IS READY')
     }
+    
     if (_what === 'all' || _what === 'dao') {
       console.log('DOING THE DAO STUFF')
       this.dao = await this.pando.dao.create()

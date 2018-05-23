@@ -1,10 +1,9 @@
+import DAOFactory          from '@factories/dao-factory.ts'
+import RepositoryFactory   from '@factories/repository-factory.ts'
+import LoomFactory         from '@factories/loom-factory.ts'
 import * as PandoContracts from '@contracts'
-import * as PandoUtils from '@utils'
-
-import DAOFactory from '@factories/dao-factory.ts'
-import RepositoryFactory from '@factories/repository-factory.ts'
-
-import { IConfiguration } from '@interfaces'
+import * as PandoUtils     from '@utils'
+import { IConfiguration }  from '@interfaces'
 
 
 export default class Pando {
@@ -17,6 +16,7 @@ export default class Pando {
   
   public repository = new RepositoryFactory(this)
   public dao = new DAOFactory(this)
+  public loom = new LoomFactory(this)
   
   public contracts: any
   
