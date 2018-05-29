@@ -1,7 +1,7 @@
 /* eslint-env mocha */
 'use strict'
 
-const loadFixture = require('aegir/fixtures')
+// const loadFixture = require('aegir/fixtures')
 const chai = require('chai')
 const dirtyChai = require('dirty-chai')
 const expect = chai.expect
@@ -10,7 +10,7 @@ const IpldBitcoin = require('../src/index')
 
 const snapshot = {
   '@type': 'snapshot',
-  author: { account : '0x' }
+  author: { account: '0x' }
 }
 
 const snapshotNode = Buffer.from(JSON.stringify(snapshot))
@@ -54,19 +54,17 @@ describe('IPLD format util API serialize()', () => {
 
 describe('IPLD format util API cid()', () => {
   it('should encode the CID correctly', (done) => {
-    
     IpldBitcoin.util.cid(snapshot, (err, cid) => {
       // See https://github.com/ipld/js-cid/blob/4d7bcf860214fef04700ebe338908d36182c931e/src/index.js#L123 for the problem
-      // One solution is to present us as raw and reimplment raw 
+      // One solution is to present us as raw and reimplment raw
       expect(err).to.not.exist()
-      console.log(cid.codec)
-      console.log(cid.version)
-      console.log(cid.toBaseEncodedString())
+      // console.log(cid.codec)
+      // console.log(cid.version)
+      // console.log(cid.toBaseEncodedString())
       expect(cid.multihash.toString('hex')).to.equal(expectedCid)
       done()
     })
-    
-    
+
     // IpldBitcoin.util.deserialize(fixtureBlock, (err, dagNode) => {
     //   expect(err).to.not.exist()
     //   verifyCid(
@@ -84,21 +82,21 @@ describe('IPLD format util API cid()', () => {
   //   })
   // })
 })
-
-const verifyBlock = (dagNode, expected) => {
-  expect(dagNode.version).to.equal(expected.version)
-  expect(dagNode.prevHash.toString('hex')).to.equal(expected.prevHash)
-  expect(dagNode.merkleRoot.toString('hex')).to.equal(expected.merkleRoot)
-  expect(dagNode.timestamp).to.equal(expected.timestamp)
-  expect(dagNode.bits).to.equal(expected.bits)
-  expect(dagNode.nonce).to.equal(expected.nonce)
-}
-
-const verifyCid = (dagNode, expectedCid, doneCb) => {
-  IpldBitcoin.util.cid(dagNode, (err, cid) => {
-    expect(err).to.not.exist()
-    console.log(cid.multihash)
-    expect(cid.multihash.toString('hex')).to.equal(expectedCid)
-    doneCb()
-  })
-}
+//
+// const verifyBlock = (dagNode, expected) => {
+//   expect(dagNode.version).to.equal(expected.version)
+//   expect(dagNode.prevHash.toString('hex')).to.equal(expected.prevHash)
+//   expect(dagNode.merkleRoot.toString('hex')).to.equal(expected.merkleRoot)
+//   expect(dagNode.timestamp).to.equal(expected.timestamp)
+//   expect(dagNode.bits).to.equal(expected.bits)
+//   expect(dagNode.nonce).to.equal(expected.nonce)
+// }
+//
+// const verifyCid = (dagNode, expectedCid, doneCb) => {
+//   IpldBitcoin.util.cid(dagNode, (err, cid) => {
+//     expect(err).to.not.exist()
+//     console.log(cid.multihash)
+//     expect(cid.multihash.toString('hex')).to.equal(expectedCid)
+//     doneCb()
+//   })
+// }

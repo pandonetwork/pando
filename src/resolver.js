@@ -21,9 +21,8 @@ const resolve = (binaryBlob, path, callback) => {
         remainderPath: ''
       })
     }
-    
+
     // début pando
-    
     if (Buffer.isBuffer(node)) { // pando blob
       return callback(null, {
         value: node,
@@ -45,7 +44,7 @@ const resolve = (binaryBlob, path, callback) => {
 
     for (let i = 0; i < len; i++) {
       const partialPath = parts.shift()
-    
+
       if (Array.isArray(node)) {
         value = node[Number(partialPath)]
       } if (node[partialPath]) {
@@ -74,7 +73,7 @@ const tree = (binaryBlob, options, callback) => {
   }
   options = options || {}
 
-  util.deserialize(binaryBlob, (err, dagNode) => {
+  util.deserialize(binaryBlob, (err, node) => {
     if (err) {
       return callback(err)
     }
