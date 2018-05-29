@@ -15,7 +15,7 @@ const snapshot = {
 
 const snapshotNode = Buffer.from(JSON.stringify(snapshot))
 
-const expectedCid = '1b2e7b224074797065223a22736e617073686f74222c22617574686f72223a7b226163636f756e74223a223078227d7d'
+const expectedCid = '1b20a2dd62a8ce03a5bd01dfc1c0b9009aa9e74c9383a27e9622e6a7b40c6d4530b3'
 
 // const fixtureBlockHex = loadFixture('test/fixtures/block.hex')
 // const fixtureBlock = Buffer.from(fixtureBlockHex.toString(), 'hex')

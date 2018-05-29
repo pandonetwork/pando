@@ -13,8 +13,8 @@ const snapshot = {
   '@type': 'snapshot',
   timestamp: '',
   author: { account: '0x' },
-  tree: { '/': new CID('') },
-  parents: [{ '/': new CID('') }, { '/': new CID('') }],
+  // tree: { '/': new CID('') },
+  // parents: [{ '/': new CID('') }, { '/': new CID('') }],
   message: 'First snapshot'
 }
 
