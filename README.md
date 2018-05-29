@@ -13,15 +13,13 @@ JavaScript implementation of the [IPLD format spec](https://github.com/ipld/inte
 ### Use in Node.js
 
 ```JavaScript
-const IpldBitcoin = require('ipld-bitcoin')
+const IPLDPando = require('ipld-pando')
 ```
 
-### Use in a browser with browserify, webpack or any other bundler
-
-The code published to npm that gets loaded on require is in fact a ES5 transpiled version with the right shims added. This means that you can require it and use with your favorite bundler without having to adjust asset management process.
+### Use in a browser with webpack or any other bundler
 
 ```JavaScript
-let IPLDPando = require('ipld-pando')
+const IPLDPando = require('ipld-pando')
 ```
 
 ### Use in a browser with a <script> tag 
