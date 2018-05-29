@@ -1,0 +1,168 @@
+// 'use strict'
+const CID = require('cids')
+// const dagPB = require('ipld-dag-pb')
+const traverse = require('traverse')
+const multihashing = require('multihashing-async')
+const multihashes = require('multihashes')
+
+// binary resolver
+module.exports = {
+  resolver: {
+    multicodec: 'raw',
+    resolve: (binaryBlob, path, callback) => {
+      if (typeof path === 'function') {
+        callback = path
+        path = undefined
+      }
+
+      module.exports.util.deserialize(binaryBlob, (err, node) => {
+        if (err) {
+          return callback(err)
+        }
+
+        if (!path || path === '/') {
+          return callback(null, {
+            value: node,
+            remainderPath: ''
+          })
+        }
+
+        if (Buffer.isBuffer(node)) { // pando blob
+          return callback(null, {
+            value: node,
+            remainderPath: path
+          })
+        }
+        const parts = path.split('/')
+        const val = traverse(node).get(parts)
+        
+
+
+        if (val) {
+          return callback(null, {
+            value: val,
+            remainderPath: ''
+          })
+        }
+
+        let value
+        let len = parts.length
+
+        for (let i = 0; i < len; i++) {
+          const partialPath = parts.shift()
+        
+          if (Array.isArray(node)) {
+            value = node[Number(partialPath)]
+          } if (node[partialPath]) {
+            value = node[partialPath]
+          } else {
+            // can't traverse more
+            if (!value) {
+              return callback(new Error('path not available at root'))
+            } else {
+              parts.unshift(partialPath)
+              return callback(null, {
+                value: value,
+                remainderPath: parts.join('/')
+              })
+            }
+          }
+          node = value
+        }
+      })
+    },
+    tree: (binaryBlob, options, callback) => {
+      if (typeof options === 'function') {
+        callback = options
+        options = undefined
+      }
+
+      options = options || {}
+
+      module.exports.util.deserialize(binaryBlob, (err, node) => {
+        if (err) {
+          return callback(err)
+        }
+
+        if (Buffer.isBuffer(node)) { // pando blob
+          return callback(null, [])
+        }
+
+        let paths = []
+        switch (node['@type']) {
+          case 'snapshot':
+            paths = [
+              'message',
+              'tree',
+              'author',
+              'author/account'
+            ]
+            paths = paths.concat(node.parents.map((_, e) => 'parents/' + e))
+            break
+          case 'tree':
+            break
+          // default: // tree
+          //   Object.keys(node).forEach(dir => {
+          //     paths.push(dir)
+          //     paths.push(dir + '/hash')
+          //     paths.push(dir + '/mode')
+          //   })
+        }
+        callback(null, paths)
+      })
+    }
+  },
+  util: {
+    deserialize: (blob, cb) => {
+      cb(null, JSON.parse(blob.toString()))
+    },
+    serialize: (data, cb) => {
+      console.log('On va faire le buffer de : ')
+      console.log(data)
+      let buffer = Buffer.from(JSON.stringify(data))
+      console.log('c passé')
+      console.log(buffer)
+      cb(null, buffer)
+    },
+    cid: (data, cb) => {
+      console.log('CID')
+      module.exports.util.serialize(data, (err, node) => {
+        if (err) {
+          cb(err)
+        } else {
+          console.log('On va faire le multihash')
+          
+          
+          const multihash = multihashes.encode(node, 'keccak-256')
+          const cidVersion = 1
+          cb(null, new CID(1, 'raw', multihash))
+          
+          
+          // multihashing(node, 'sha1', (err, mh) => {
+          //   if (err) {
+          //     cb(err)
+          //   }
+          //   // console.log(new CID(1, 'pando', mh))
+          //   console.log('on renvoie le cb')
+          // 
+          //   console.log(mh)
+          // 
+          //   let buffer = new CID(1, 'pando', mh)
+          // 
+          //   console.log(buffer.buffer)
+          // 
+          //   console.log('Après');
+          // 
+          //   // console.log()
+          // 
+          //   cb(null, new CID(1, 'pando', mh))
+          // })
+          
+          
+          
+          
+        }
+      })
+    }
+  }
+}

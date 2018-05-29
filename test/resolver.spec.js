@@ -9,13 +9,27 @@ chai.use(dirtyChai)
 const CID = require('cids')
 const IpldBitcoin = require('../src/index')
 
+
+const snapshot = {
+  '@type': 'snapshot',
+  'timestamp': '',
+  'author': { account: '0x' },
+  'tree': { '/': new CID('') },
+  'parents': [{ '/': new CID('') }, { '/': new CID('') }],
+  'message': 'First snapshot'
+  
+}
+
+const snapshotNode = Buffer.from(JSON.stringify(snapshot))
+
+
 const fixtureBlockHex = loadFixture('test/fixtures/block.hex')
 const fixtureBlock = Buffer.from(fixtureBlockHex.toString(), 'hex')
 const invalidBlock = Buffer.from('abcdef', 'hex')
 
 describe('IPLD format resolver API resolve()', () => {
   it('should return the deserialized node if no path is given', (done) => {
-    IpldBitcoin.resolver.resolve(fixtureBlock, (err, value) => {
+    IpldBitcoin.resolver.resolve(snapshotNode, (err, value) => {
       expect(err).to.not.exist()
       expect(value.remainderPath).is.empty()
       expect(value.value).is.not.empty()
@@ -24,7 +38,7 @@ describe('IPLD format resolver API resolve()', () => {
   })
 
   it('should return the deserialized node if path is empty', (done) => {
-    IpldBitcoin.resolver.resolve(fixtureBlock, '', (err, value) => {
+    IpldBitcoin.resolver.resolve(snapshotNode, '', (err, value) => {
       expect(err).to.not.exist()
       expect(value.remainderPath).is.empty()
       expect(value.value).is.not.empty()
@@ -32,36 +46,40 @@ describe('IPLD format resolver API resolve()', () => {
     })
   })
 
-  it('should return the version', (done) => {
-    verifyPath(fixtureBlock, 'version', 2, done)
+  it('should return the type', (done) => {
+    verifyPath(snapshotNode, '@type', 'snapshot', done)
   })
 
-  it('should return the timestamp', (done) => {
-    verifyPath(fixtureBlock, 'timestamp', 1386981279, done)
+  it('should return the author', (done) => {
+    verifyPath(snapshotNode, 'author', {account: '0x'}, done)
   })
 
-  it('should return the difficulty', (done) => {
-    verifyPath(fixtureBlock, 'difficulty', 419740270, done)
+  it('should return the author account', (done) => {
+    verifyPath(snapshotNode, 'author/account', '0x', done)
   })
 
-  it('should return the nonce', (done) => {
-    verifyPath(fixtureBlock, 'nonce', 3159344128, done)
-  })
-
-  it('should error on non-existent path', (done) => {
-    verifyError(fixtureBlock, 'something/random', done)
-  })
-
-  it('should error on path starting with a slash', (done) => {
-    verifyError(fixtureBlock, '/version', done)
-  })
+  // it('should return the difficulty', (done) => {
+  //   verifyPath(snapshotNode, 'difficulty', 419740270, done)
+  // })
+  // 
+  // it('should return the nonce', (done) => {
+  //   verifyPath(snapshotNode, 'nonce', 3159344128, done)
+  // })
+  // 
+  // it('should error on non-existent path', (done) => {
+  //   verifyError(snapshotNode, 'something/random', done)
+  // })
+  // 
+  // it('should error on path starting with a slash', (done) => {
+  //   verifyError(fixtureBlock, '/version', done)
+  // })
 
   it('should error on partially matching path that isn\'t a link', (done) => {
     verifyError(fixtureBlock, 'version/but/additional/things', done)
   })
 
   it('should return a link when parent is requested', (done) => {
-    IpldBitcoin.resolver.resolve(fixtureBlock, 'parent', (err, value) => {
+    IpldBitcoin.resolver.resolve(fixtureBlock, 'parents/0', (err, value) => {
       expect(err).to.not.exist()
       expect(value.remainderPath).is.empty()
       expect(value.value).to.deep.equal({
@@ -136,7 +154,7 @@ describe('IPLD format resolver API tree()', () => {
 
 describe('IPLD format resolver API properties', () => {
   it('should have `multicodec` defined correctly', (done) => {
-    expect(IpldBitcoin.resolver.multicodec).to.equal('bitcoin-block')
+    expect(IpldBitcoin.resolver.multicodec).to.equal('pando')
     done()
   })
 })
