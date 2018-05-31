@@ -17,6 +17,7 @@ module.exports = {
       '@pando': path.resolve(__dirname, 'src/pando.ts'),
       '@factories': path.resolve(__dirname, 'src/factories/'),
       '@components': path.resolve(__dirname, 'src/components/'),
+      '@objects': path.resolve(__dirname, 'src/objects/'),
       '@contracts': path.resolve(__dirname, 'src/contracts/'),
       '@utils': path.resolve(__dirname, 'src/utils/'),
       '@locals': path.resolve(__dirname, 'src/locals/'),

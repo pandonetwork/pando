@@ -1,5 +1,5 @@
 import Loom     from '@components/loom'
-import Snapshot from '@components/snapshot'
+import Snapshot from '@objects/snapshot'
 import Specimen from '@components/specimen'
 import path_    from 'path'
 

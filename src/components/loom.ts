@@ -2,13 +2,16 @@ import Pando        from '@pando'
 import Node         from '@components/node'
 import Index        from '@components/index'
 import Fibre        from '@components/fibre'
+import Snapshot     from '@objects/snapshot'
+import Tree         from '@objects/tree'
+import File         from '@objects/file'
 import FibreFactory from '@factories/fibre-factory.ts'
 import * as utils   from '@locals/utils'
 import path         from 'path'
 
 export default class Loom {
   
-  public static         paths = {
+  public static paths = {
     root:     '.',
     pando:    '.pando',
     ipfs:     '.pando/ipfs',
@@ -44,22 +47,20 @@ export default class Loom {
   }
   
   public static async load (_pando: Pando, _path: string = '.', opts?: any) : Promise < Loom > {
-    if (!Loom.exists(_path)) { throw new Error('No pando repository found at ' + _path) }
+    if (!Loom.exists(_path)) { throw new Error('No pando loom found at ' + _path) }
     
     let loom = new Loom(_pando, _path)
-
-    // loom.node  = await Node.load(loom)
-    loom.index = await Index.new(loom)
+    loom.node  = await Node.load(loom)
+    loom.index = await Index.load(loom)
     
-    return new Loom(_pando, _path)
+    return loom
   }
 
-  public static exists (_path) : boolean {
+  public static exists (_path: string = '.'): boolean {
     for (let p in Loom.paths) {
-      let expectedPath = path.join(_path, Loom.paths[p])
-      if(!utils.fs.exists(expectedPath)) { return false }
+      let expected = path.join(_path, Loom.paths[p])
+      if(!utils.fs.exists(expected)) { return false }
     }
-    
     return true
   }
 
@@ -67,26 +68,114 @@ export default class Loom {
     return this.index!.stage(_paths)
   }
 
-  public async snapshot (_message: string): Promise < void > {
-    // let staged   = this.index.staged
-    // let tree     = await this.node.upload(staged, { tree: true })
-    // let snapshot = await this.workingFibre.snapshot()
-    // let cid      = await this.node.put(snapshot.data)
-    // 
-    // this.head = cid
-    // 
-    // return cid
-  }
-  
-  public async checkout (_fibreName: string) {
-    
-  }
-  
-  public async weave (_originFibreName: string, _destinationFibreName: string) {
-    
-  }
+  public async snapshot (_message: string): Promise < Snapshot > {
+    let tree     = await this.tree()
+    let treeCID  = await tree.put(this.node!)
+    let snapshot = new Snapshot({ author: this.pando.configuration.user, tree: tree, parents: undefined, message: _message }) // à terme il faut mettre à jour le parent
+    let cid      = await this.node!.put(await snapshot.toIPLD())
 
-  public async revert (_snapshotCID: string) {
+    return snapshot
+  }
+  
+  public async fromIPLD (object) {
+    let attributes = {}, data = {}, node
+ 
+    switch(object['@type']) {
+      case 'snapshot':
+        attributes = Reflect.getMetadata('ipld', Snapshot.prototype.constructor);
+        break
+      case 'tree':
+        attributes = Reflect.getMetadata('ipld', Tree.prototype.constructor);
+        break
+      case 'file':
+        attributes = Reflect.getMetadata('ipld', File.prototype.constructor);
+        break
+      default:
+        throw new TypeError('Unrecognized IPLD node.')
+    }
     
-  } 
+    for (let attribute in attributes) {
+      if (attributes[attribute].link) {
+        let type = attributes[attribute].type
+        switch (type) {
+          case 'map':
+            data['children'] = {}
+            for (let child in object) {
+              if(child !== '@type' && child !== 'path') {
+                data['children'][child] = await this.fromIPLD(await this.node!.get(object[child]['/']))
+              }
+            }
+            break
+          case 'array':
+            data[attribute] = []
+            for (let child of object[attribute]) {
+              
+              data[attribute].push(await this.fromIPLD(await this.node!.get(object[attribute][child]['/'])))
+              
+            }
+            break
+          case 'direct':
+            data[attribute] = object[attribute]['/']
+            break
+          default:
+            data[attribute] = await this.fromIPLD(await this.node!.get(object[attribute]['/']))
+        }
+      } else {
+        data[attribute] = object[attribute]
+      }
+    }
+    
+    switch(object['@type']) {
+      case 'snapshot':
+        node = new Snapshot(data)
+        break
+      case 'tree':
+        node = new Tree(data)
+        break
+      case 'file':
+        node = new File(data)
+        break
+      default:
+        throw new TypeError('Unrecognized IPLD node.')
+    }
+   
+   return node
+   
+  }
+  
+  // private
+  public tree () {
+    let index  = this.index!.current
+    let staged = this.index!.staged
+    let tree   = new Tree({ path: '.' })
+    
+    for (let file of staged) {
+      file.split('/').reduce((parent, name): any => {
+        let currentPath = path.join(parent.path!, name)
+        if(!parent.children[name]) {
+          if(index[currentPath]) {
+            parent.children[name] = new File({ path: currentPath, link: index[currentPath].stage })
+            index[currentPath].repo = index[currentPath].stage
+          } else {
+            parent.children[name] = new Tree({ path: currentPath })
+          }
+        }
+        return parent.children[name]
+      }, tree)
+    }
+    this.index!.current = index
+    return tree
+  }
+  
+  // public async checkout (_fibreName: string) {
+  // 
+  // }
+  // 
+  // public async weave (_originFibreName: string, _destinationFibreName: string) {
+  // 
+  // }
+  // 
+  // public async revert (_snapshotCID: string) {
+  // 
+  // } 
 }

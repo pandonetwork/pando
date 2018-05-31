@@ -20,10 +20,10 @@ export default class DAOFactory {
     return dao 
   }
   
-  public async fork (): Promise < DAO > {
-    return new Promise < DAO > ((resolve, reject) => {
-      
-    })
-  }
+  // public async fork (): Promise < DAO > {
+  //   return new Promise < DAO > ((resolve, reject) => {
+  // 
+  //   })
+  // }
 
 }

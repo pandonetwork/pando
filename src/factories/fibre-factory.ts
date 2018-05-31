@@ -21,8 +21,8 @@ export default class FibreFactory {
     return fibre
   }
   
-  public async load (_name: string, opts?: any) {
-    
-  }
+  // public async load (_name: string, opts?: any) {
+  // 
+  // }
   
 }

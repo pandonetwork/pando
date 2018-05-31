@@ -5,7 +5,6 @@ import klaw       from 'klaw-sync'
 
 
 export default class Index {
-  
   loom: Loom
 
   public get path () {
@@ -20,7 +19,7 @@ export default class Index {
     utils.yaml.write(this.path, _index)
   }
   
-  public get staged () {
+  public get staged (): string[] {
     let current       = this.current
     let staged: any[] = []
     
@@ -38,6 +37,10 @@ export default class Index {
   }
   
   public static async new (_loom: Loom): Promise < Index > {
+    return new Index(_loom)
+  }
+  
+  public static async load (_loom: Loom): Promise < Index > {
     return new Index(_loom)
   }
   

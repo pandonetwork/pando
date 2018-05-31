@@ -1,39 +1,32 @@
-const assert = require('assert')
-const fs = require('fs');
-var should = require('chai').should;
+import Pando                    from '../lib/main.js'
+import { Snapshot, Tree, Loom } from '../lib/main.js'
+import { opts, cids }           from './data'
+import * as utils               from './utils'
+import chai                     from 'chai'
+import 'chai/register-should'
 
-var expect = require('chai').expect;
+const should = chai.should
+const expect = chai.expect
 
-
-const chai = require('chai');
-chai.use(require('chai-as-promised'));
-
-import 'chai/register-should';
-import Pando from '../lib/main.js'
-import * as utils from './utils'
-
-const opts = {
-  user: {
-    account: '0x2d6ef21eb58f164841b41a7b749d0d957790620a'
-  },
-  ethereum: {
-    gateway: 'http://localhost:8545'
-  }
-}
+chai.use(require('chai-as-promised'))
 
 describe('Loom', () => {
   
   let pando, loom
   
-  before(() => { pando = new Pando(opts) })
+  before(async () => {
+    pando = new Pando(opts)
+  })
+  
+  after(async () => { await utils.fs.rmdir('test/mocks/.pando') })
   
   describe('#new', async () => {
-    
+  
     before(async () => { loom = await pando.loom.new('test/mocks') })
-    
+  
     after(async () => { await utils.fs.rmdir('test/mocks/.pando') })
-    
-    it('should init loom\'s paths properly', () => {
+  
+    it('should initialize loom\'s paths correctly', () => {
       loom.paths.root.should.be.equal('test/mocks')
       loom.paths.pando.should.be.equal('test/mocks/.pando')
       loom.paths.ipfs.should.be.equal('test/mocks/.pando/ipfs')
@@ -41,33 +34,36 @@ describe('Loom', () => {
       loom.paths.current.should.be.equal('test/mocks/.pando/current')
       loom.paths.fibres.should.be.equal('test/mocks/.pando/fibres')
     })
-    
-    it('should init index properly', () => {
+    it('should initialize loom\'s index correctly', () => {
+      loom.index.should.exist
+      loom.index.loom.should.be.deep.equal(loom)
     })
-    
-    it('should init node properly', () => {
+    it('should initialize loom\'s node correctly', () => {
+      loom.node.should.exist
+      loom.node.loom.should.be.deep.equal(loom)
+      loom.node.ipfs.should.exist
+      loom.node.ipld.should.exist
     })
-    
-    it('should init .pando directory structure properly', () => {
+    it('should initialize loom\'s .pando directory correctly', () => {
       utils.fs.exists('test/mocks/.pando').should.be.equal(true)
       utils.fs.exists('test/mocks/.pando/ipfs').should.be.equal(true)
       utils.fs.exists('test/mocks/.pando/index').should.be.equal(true)
       utils.fs.exists('test/mocks/.pando/current').should.be.equal(true)
       utils.fs.exists('test/mocks/.pando/fibres').should.be.equal(true)
     })
-  
-    
   })
   
   describe('#load', async () => {
+    let loaded
     
-    before(async () => { loom = await pando.loom.new('test/mocks') })
-    
+    before(async () => {
+      loom   = await pando.loom.new('test/mocks')
+      loaded = await pando.loom.load('test/mocks')
+    })
+  
     after(async () => { await utils.fs.rmdir('test/mocks/.pando') })
-    
-    it('should init loom\'s paths properly', async () => {
-      let loaded = await pando.loom.load('test/mocks')
-      
+  
+    it('should initialize loom\'s paths correctly', () => {
       loaded.paths.root.should.be.equal('test/mocks')
       loaded.paths.pando.should.be.equal('test/mocks/.pando')
       loaded.paths.ipfs.should.be.equal('test/mocks/.pando/ipfs')
@@ -75,90 +71,99 @@ describe('Loom', () => {
       loaded.paths.current.should.be.equal('test/mocks/.pando/current')
       loaded.paths.fibres.should.be.equal('test/mocks/.pando/fibres')
     })
-    
+    it('should initialize loom\'s index correctly', () => {
+      loaded.index.should.exist
+      loaded.index.loom.should.be.deep.equal(loaded)
+    })
+    it('should initialize loom\'s node correctly', () => {
+      loaded.node.should.exist
+      loaded.node.loom.should.be.deep.equal(loaded)
+      loaded.node.ipfs.should.exist
+      loaded.node.ipld.should.exist
+    })
+    it('should initialize loom\'s .pando directory correctly', () => {
+      utils.fs.exists('test/mocks/.pando').should.be.equal(true)
+      utils.fs.exists('test/mocks/.pando/ipfs').should.be.equal(true)
+      utils.fs.exists('test/mocks/.pando/index').should.be.equal(true)
+      utils.fs.exists('test/mocks/.pando/current').should.be.equal(true)
+      utils.fs.exists('test/mocks/.pando/fibres').should.be.equal(true)
+    })
     it('should reject if loom does not exist', () => {
       pando.loom.load('test').should.be.rejected
     })
-  
   })
   
-  describe('Index', async () => {
-    
+  describe('#exists', async () => {
+  
     before(async () => { loom = await pando.loom.new('test/mocks') })
-    
-    // after(async () => { await utils.fs.rmdir('test/mocks/.pando') })
-    
-    describe('#new', async () => {
-      
-      it('should init index\'s paths properly', async () => {
-        
-      })
-      
+  
+    after(async () => { await utils.fs.rmdir('test/mocks/.pando') })
+  
+    it('should return true if loom exists', () => {
+      Loom.exists('test/mocks').should.be.equal(true)
     })
-    
-    describe('#update', async () => {
-      
-      it('should compute hashes properly', async () => {
-        
-        const cids = {
-          'test-directory/test-1.md': 'QmTC9KZuuF1tJ69ruoA2Cm9quGBZiL663Ahb4wJnUAPSRn',
-          'test-directory/test-2.md': 'QmfAE9AGw3snCsmDqArUCGYGvqNpee3RKM5BcB7e3qyjgS',
-          'test-directory/test-subdirectory/test.md': 'QmaRMPXt4R9mWgkVR8DvBBwxJsAMUZdNV9mvSvtPUe6Ccc',
-          'test.md': 'QmbxGVmc917jMqK1EQy2SzUEA2WahwGW8ztX7NLNX59MzX'
-        }
-        
-        let index = await loom.index.update()
-        
-        for (let path in cids) {
-          index[path].wdir.should.be.equal(cids[path])
-        }
-                
-      })
-      
-      it('should update wdir field when a file is modified', async () => {
-        let content = utils.fs.read('test/mocks/test.md')
-        let cid     = 'QmenBbcSZowrrBqPjpmH6LSXfLe7jtuxrQ8iGWdteTsNE9'
-
-        utils.fs.write('test/mocks/test.md', 'This is a modified test file')
-        let index = await loom.index.update()
-        utils.fs.write('test/mocks/test.md', content)
-    
-        index['test.md'].wdir.should.be.equal(cid)
-      })
-      
-      it('should update wdir field when a file is added', async () => {
-        let cid = 'QmbxGVmc917jMqK1EQy2SzUEA2WahwGW8ztX7NLNX59MzX'
-    
-        utils.fs.write('test/mocks/test-2.md', 'This is a test file')
-        let index = await loom.index.update()
-        utils.fs.rm('test/mocks/test-2.md')
-    
-        index['test-2.md'].wdir.should.be.equal(cid)
-      })
-      
-      it('should update wdir field when a file is deleted', async () => {
-        let content = utils.fs.read('test/mocks/test.md')
-        
-        utils.fs.rm('test/mocks/test.md')
-        let index = await loom.index.update()
-        utils.fs.write('test/mocks/test.md', content)
-
-        index['test.md'].wdir.should.be.equal('null')
-      })
-      
+    it('should return false if loom does not exist', () => {
+      Loom.exists('test/downloads').should.be.equal(false)
     })
-    
-    describe('#stage', () => {
+  })
+  
+  describe('#stage', async () => {
+  
+    before(async () => { loom = await pando.loom.new('test/mocks') })
+  
+    after(async () => { await utils.fs.rmdir('test/mocks/.pando') })
+  
+    it('should update loom\'s index stage fields correctly', async () => {
+      let index = await loom.stage(['test/mocks/test.md', 'test/mocks/test-directory/test-1.md', 'test/mocks/test-directory/test-2.md', 'test/mocks/test-directory/test-subdirectory/test.md'])
       
-      it('should reject if file does not exist', () => {  
-        loom.index.stage(['test/mocks/doesnotexist']).should.be.rejected     
-      })
-      
-      it('should update stage field properly', async () => {
-        let index = await loom.index.stage(['test/mocks/test.md'])
+      for (let path in cids) {
+        index[path].stage.should.be.equal(cids[path])
+      }    
+    })
+  })
+  
+  describe('#snapshot', async () => {
+    let snapshot, index
     
-        index['test.md'].stage.should.be.equal('QmbxGVmc917jMqK1EQy2SzUEA2WahwGW8ztX7NLNX59MzX')
-      })
+    before(async () => {
+      loom     = await pando.loom.new('test/mocks')
+      index    = await loom.stage(['test/mocks/test.md', 'test/mocks/test-directory/test-1.md', 'test/mocks/test-directory/test-2.md', 'test/mocks/test-directory/test-subdirectory/test.md'])
+      snapshot = await loom.snapshot('My first snapshot')
+      index    = await loom.index.current
+    })
+  
+    after(async () => { await utils.fs.rmdir('test/mocks/.pando') })
+    
+    it('should update loom\'s index repo fields correctly', async () => {
+      for (let path in cids) {
+        index[path].repo.should.be.equal(cids[path])
+      }    
+    })
+    it('should build snapshot\'s tree correctly', async () => {
+      snapshot.tree.path.should.be.equal('.')
+      snapshot.tree.children['test.md'].should.exist
+      snapshot.tree.children['test.md'].path.should.equal('test.md')
+      snapshot.tree.children['test.md'].link.should.equal(cids['test.md'])
+      snapshot.tree.children['test-directory'].should.exist
+      snapshot.tree.children['test-directory'].path.should.equal('test-directory')
+      snapshot.tree.children['test-directory'].children['test-1.md'].should.exist
+      snapshot.tree.children['test-directory'].children['test-1.md'].path.should.equal('test-directory/test-1.md')
+      snapshot.tree.children['test-directory'].children['test-1.md'].link.should.equal(cids['test-directory/test-1.md'])
+      snapshot.tree.children['test-directory'].children['test-2.md'].should.exist
+      snapshot.tree.children['test-directory'].children['test-2.md'].path.should.equal('test-directory/test-2.md')
+      snapshot.tree.children['test-directory'].children['test-2.md'].link.should.equal(cids['test-directory/test-2.md'])
+      snapshot.tree.children['test-directory'].children['test-subdirectory'].should.exist
+      snapshot.tree.children['test-directory'].children['test-subdirectory'].path.should.equal('test-directory/test-subdirectory')
+      snapshot.tree.children['test-directory'].children['test-subdirectory'].children['test.md'].should.exist
+      snapshot.tree.children['test-directory'].children['test-subdirectory'].children['test.md'].path.should.equal('test-directory/test-subdirectory/test.md')
+      snapshot.tree.children['test-directory'].children['test-subdirectory'].children['test.md'].link.should.equal(cids['test-directory/test-subdirectory/test.md']) 
+    })
+    it('should push snapshot to ipfs/ipld correctly', async () => {
+      let cid          = await snapshot.cid()
+      let serialized   = await loom.node.get(cid)
+      let deserialized = await loom.fromIPLD(serialized)
+    
+      deserialized.should.be.deep.equal(snapshot)
     })
   })
   

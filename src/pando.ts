@@ -1,10 +1,17 @@
 import DAOFactory          from '@factories/dao-factory.ts'
-import RepositoryFactory   from '@factories/repository-factory.ts'
 import LoomFactory         from '@factories/loom-factory.ts'
 import * as PandoContracts from '@contracts'
 import * as PandoUtils     from '@utils'
 import { IConfiguration }  from '@interfaces'
+import Snapshot            from '@objects/snapshot'
+import Tree                from '@objects/tree'
+import File                from '@objects/file'
+import IPLDNode            from '@objects/ipld-node'
+import Loom                from '@components/loom'
+import Index               from '@components/index'
 
+const LinkMetadataKey = Symbol("link");
+const IPLDMetadataKey = Symbol("ipld");
 
 export default class Pando {
   
@@ -14,7 +21,6 @@ export default class Pando {
   public web3: any
   public configuration: IConfiguration
   
-  public repository = new RepositoryFactory(this)
   public dao = new DAOFactory(this)
   public loom = new LoomFactory(this)
   
@@ -26,3 +32,5 @@ export default class Pando {
     this.contracts = Pando.contracts.initialize(this.web3, configuration.user.account)
   }
 }
+
+export { Snapshot, Tree, File, IPLDNode, Loom, Index }
