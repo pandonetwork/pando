@@ -167,26 +167,29 @@ describe('Loom', () => {
     })
   })
   
-  // describe('FibreFactory', () => {
-  //   let loom
-  //   before(async () => {
-  //     loom = await pando.loom.new('test/mocks')
-  //   })
-  // 
-  //   describe('#new', () => {
-  //     it('should init new fibre object properly', async () => { 
-  //       let aragon = await loom.fibre.new('aragon')
-  // 
-  //       aragon.name.should.be.equal('aragon')
-  //       aragon.path.should.be.equal('test/mocks/.pando/fibres/aragon')
-  //       // check that specimen is undefined
-  //     })
-  //     it('should locally save new fiber object properly', () => {
-  // 
-  //     })
-  //   })
-  // 
-  // })
+  describe('FibreFactory', () => {
+    let loom
+    
+    before(async () => {
+      loom = await pando.loom.new('test/mocks')
+    })
+    
+    after(async () => { await utils.fs.rmdir('test/mocks/.pando') })
+  
+    describe('#new', () => {
+      it('should initialize fibre correctly', async () => { 
+        let aragon = await loom.fibre.new('aragon')
+  
+        aragon.name.should.be.equal('aragon')
+        aragon.path.should.be.equal('test/mocks/.pando/fibres/aragon')
+        // check that specimen is undefined
+      })
+      // it('should locally save new fiber object properly', () => {
+      // 
+      // })
+    })
+  
+  })
   // 
   // describe('#load', () => {
   // 
