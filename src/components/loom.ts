@@ -166,7 +166,10 @@ export default class Loom {
   }
   
   // public async checkout (_fibreName: string) {
-  // 
+  // git checkout restore old files from the branch except for new files which have not been added. Evite de niquer les nodes modules, etc.
+  // si on checkout alors que y'a des modifications non commités dans des fichiers déjà présents dans l'index, ça lève une alerte.
+  // A voir comment on gère dans l'index la question de la suppression des fichiers. Est-ce qu'on supprime pas tout simplement l'entrée ?
+  // https://stackoverflow.com/questions/12087946/git-how-does-git-remember-the-index-for-each-branch
   // }
   // 
   // public async weave (_originFibreName: string, _destinationFibreName: string) {
