@@ -36,6 +36,12 @@ export default class Node {
   }
   
   public static async load (_loom: Loom): Promise < Node > {
+    let ipfs = new IPFS({ repo: _loom.paths.ipfs, init: false })
+    ipfs.on('error', (err) => { throw err })
+    await promisify(ipfs, 'ready')
+    let ipld = new IPLD(ipfs.block)
+    await ipfs.stop()
+    
     // Replace raw-format resolver by pando-format resolver until
     // pando-format is registered in the multiformat table
     ipld.support.rm('raw')
