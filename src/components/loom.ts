@@ -97,6 +97,7 @@ export default class Loom {
     for (let attribute in attributes) {
       if (attributes[attribute].link) {
         let type = attributes[attribute].type
+
         switch (type) {
           case 'map':
             data['children'] = {}
@@ -109,9 +110,7 @@ export default class Loom {
           case 'array':
             data[attribute] = []
             for (let child of object[attribute]) {
-              
               data[attribute].push(await this.fromIPLD(await this.node!.get(object[attribute][child]['/'])))
-              
             }
             break
           case 'direct':
@@ -140,7 +139,6 @@ export default class Loom {
     }
    
    return node
-   
   }
   
   // private

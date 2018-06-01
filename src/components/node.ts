@@ -35,13 +35,7 @@ export default class Node {
     return new Node(_loom, ipfs, ipld)
   }
   
-  public static async load (_loom: Loom): Promise < Node > {    
-    let ipfs = new IPFS({ repo: _loom.paths.ipfs, init: false })
-    ipfs.on('error', (err) => { throw err })
-    await promisify(ipfs, 'ready')
-    let ipld = new IPLD(ipfs.block)
-    await ipfs.stop()
-    
+  public static async load (_loom: Loom): Promise < Node > {
     // Replace raw-format resolver by pando-format resolver until
     // pando-format is registered in the multiformat table
     ipld.support.rm('raw')
@@ -59,6 +53,7 @@ export default class Node {
   // 
   // }
 
+  
   public async put (object: any): Promise < any > {
     return new Promise < any > (async (resolve, reject) => {
       this.ipld.put(object, { format: 'raw', hashAlg: 'keccak-256'}, async (err, cid) => {
@@ -91,7 +86,5 @@ export default class Node {
       return results[0].hash        
     }
   }
-  
-
 }
   
