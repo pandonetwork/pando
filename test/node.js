@@ -1,8 +1,7 @@
-import Pando                              from '../lib/main.js'
-import { Snapshot, Tree, File, Loom, IPLDNode } from '../lib/main.js'
-import { opts, cids }                      from './data'
-import * as utils                         from './utils'
-import chai                               from 'chai'
+import Pando          from '../lib/main.js'
+import { opts, cids } from './data'
+import * as utils     from './utils'
+import chai           from 'chai'
 import 'chai/register-should'
 
 const should = chai.should
@@ -57,4 +56,21 @@ describe('Node', () => {
     
   })
   
+  describe('#upload', async () => {
+    let cid, downloaded
+    
+    it('should compute cid correctly', async () => {
+      cid = await loom.node.upload('test/mocks/test.md')
+
+      cid.should.equal(cids['test.md'])
+    })
+    it('should upload file to IPFS correctly', async () => {
+      downloaded = await loom.node.get(cid)
+      
+      downloaded.toJSON().data.toString().should.equal('\b\u0002\u0012\u0013This is a test file\u0018\u0013')
+    })
+    it('should reject if file does not exist', async () => {
+      loom.node.upload('doesnotexist').should.be.rejected
+    })
+  })  
 })
