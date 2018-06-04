@@ -10,7 +10,7 @@ import * as utils   from '@locals/utils'
 import path         from 'path'
 
 export default class Loom {
-  
+
   public static paths = {
     root:     '.',
     pando:    '.pando',
@@ -25,34 +25,39 @@ export default class Loom {
   public workingFibre?: Fibre
   public fibre =        new FibreFactory(this)
   public paths =        { ...Loom.paths }
-  
+
+  public get head () {
+  console.log(utils.yaml.read(path.join(this.paths.fibres, utils.yaml.read(this.paths.current))));
+  return utils.yaml.read(path.join(this.paths.fibres, utils.yaml.read(this.paths.current)))
+  }
+
   public constructor (_pando: Pando, _path: string = '.', opts?: any) {
     for (let p in this.paths) { this.paths[p] = path.join(_path, this.paths[p]) }
     this.pando = _pando
   }
-  
+
   public static async new (_pando: Pando, _path: string = '.', opts?: any) : Promise < Loom > {
     let loom = new Loom(_pando, _path)
-        
+
     await utils.fs.mkdir(loom.paths.pando)
     await utils.fs.mkdir(loom.paths.ipfs)
     await utils.fs.mkdir(loom.paths.fibres)
     await utils.yaml.write(loom.paths.index, {})
     await utils.yaml.write(loom.paths.current, 'undefined')
-    
+
     loom.node  = await Node.new(loom)
     loom.index = await Index.new(loom)
 
     return loom
   }
-  
+
   public static async load (_pando: Pando, _path: string = '.', opts?: any) : Promise < Loom > {
     if (!Loom.exists(_path)) { throw new Error('No pando loom found at ' + _path) }
-    
+
     let loom = new Loom(_pando, _path)
     loom.node  = await Node.load(loom)
     loom.index = await Index.load(loom)
-    
+
     return loom
   }
 
@@ -77,10 +82,10 @@ export default class Loom {
 
     return snapshot
   }
-  
+
   public async fromIPLD (object) {
     let attributes = {}, data = {}, node
- 
+
     switch(object['@type']) {
       case 'snapshot':
         attributes = Reflect.getMetadata('ipld', Snapshot.prototype.constructor);
@@ -94,7 +99,7 @@ export default class Loom {
       default:
         throw new TypeError('Unrecognized IPLD node.')
     }
-    
+
     for (let attribute in attributes) {
       if (attributes[attribute].link) {
         let type = attributes[attribute].type
@@ -124,7 +129,7 @@ export default class Loom {
         data[attribute] = object[attribute]
       }
     }
-    
+
     switch(object['@type']) {
       case 'snapshot':
         node = new Snapshot(data)
@@ -138,16 +143,16 @@ export default class Loom {
       default:
         throw new TypeError('Unrecognized IPLD node.')
     }
-   
+
    return node
   }
-  
+
   // private
   public tree () {
     let index  = this.index!.current
     let staged = this.index!.staged
     let tree   = new Tree({ path: '.' })
-    
+
     for (let file of staged) {
       file.split(path.sep).reduce((parent, name): any => {
         let currentPath = path.join(parent.path!, name)
@@ -165,25 +170,26 @@ export default class Loom {
     this.index!.current = index
     return tree
   }
-  
-  // public async checkout (_fibreName: string) {
+
+  public async checkout (_fibreName: string) {
+  }
   // check s'il check si tu as des choses qui ont déjà été stagés (stage !== 'null') et qui ne sont pas commités
   // parmi les choses qui n'ont jamais été stagés, tu vérifies s'il y des conflits avec les fichiers de la nouvelle branche, si c le cas tu kick, sinon c'est bon.
   // ensuite tu supprimes les fichiers qui sont stagés dans la branche dont tu pars (pas ceux qui n'ont jamais été stagés)
   // et ensuite tu dl les fichiers du tree de la nouvelle branche
-  
-  
+
+
   // git checkout restore old files from the branch except for new files which have not been added. Evite de niquer les nodes modules, etc.
   // si on checkout alors que y'a des modifications non commités dans des fichiers déjà présents dans l'index, ça lève une alerte.
   // A voir comment on gère dans l'index la question de la suppression des fichiers. Est-ce qu'on supprime pas tout simplement l'entrée ?
   // https://stackoverflow.com/questions/12087946/git-how-does-git-remember-the-index-for-each-branch
   // }
-  // 
+  //
   // public async weave (_originFibreName: string, _destinationFibreName: string) {
-  // 
+  //
   // }
-  // 
+  //
   // public async revert (_snapshotCID: string) {
-  // 
-  // } 
+  //
+  // }
 }
