@@ -1,10 +1,9 @@
 'use strict'
-// const promisify = require('util').promisify
-// const BitcoinjsBlock = require('bitcoinjs-lib').Block
+
+// const snapshot = require('./util/snapshot')
 const CID = require('cids')
-// const multihashes = require('multihashes')
 const multihashing = require('multihashing-async')
-// const sha256 = require('hash.js/lib/hash/sha/256')
+
 
 const serialize = (node, callback) => {
   let binary = Buffer.from(JSON.stringify(node))

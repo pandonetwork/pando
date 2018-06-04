@@ -14,7 +14,6 @@ const resolve = (binaryBlob, path, callback) => {
       return callback(err)
     }
 
-    // Return the deserialized block if no path is given
     if (!path) {
       return callback(null, {
         value: node,
@@ -29,6 +28,8 @@ const resolve = (binaryBlob, path, callback) => {
         remainderPath: path
       })
     }
+    
+    
     const parts = path.split('/')
     const val = traverse(node).get(parts)
 
@@ -44,7 +45,7 @@ const resolve = (binaryBlob, path, callback) => {
 
     for (let i = 0; i < len; i++) {
       const partialPath = parts.shift()
-
+      
       if (Array.isArray(node)) {
         value = node[Number(partialPath)]
       } if (node[partialPath]) {
@@ -95,6 +96,7 @@ const tree = (binaryBlob, options, callback) => {
         break
       case 'tree':
         Object.keys(node).forEach(dir => {
+          console.log('dans le resolver on est dans case tree et on rajoute: ' + dir)
           paths.push(dir)
           // paths.push(dir + '/hash')
           // paths.push(dir + '/mode')
