@@ -148,7 +148,7 @@ export default class Loom {
     let tree   = new Tree({ path: '.' })
     
     for (let file of staged) {
-      file.split('/').reduce((parent, name): any => {
+      file.split(path.sep).reduce((parent, name): any => {
         let currentPath = path.join(parent.path!, name)
         if(!parent.children[name]) {
           if(index[currentPath]) {

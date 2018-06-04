@@ -53,20 +53,20 @@ export default class Index {
     for (let item in listing) {
       let _path = path.relative(this.loom.paths.root, listing[item].path)
       let _mtime = listing[item].stats.mtime
-      files[_path] = { mtime: _mtime }
+      files[_path] = { mtime: new Date(_mtime) }
     }
     
     let newFiles: any = Object.assign(files)
         
     for (let _path in index) {
       if (files[_path]) { // files at _path still exists
-        if (new Date(index[_path].mtime) < new Date(files[_path].mtime)) { // files at _path has been modified
+        if (new Date(index[_path].mtime) < files[_path].mtime) { // files at _path has been modified
           let cid = await this.loom.node!.cid(path.join(this.loom.paths.root, _path), { file: true })
           index[_path].mtime = files[_path].mtime
           index[_path].wdir = cid          
         }
       } else { // files at _path has been deleted
-        index[_path].mtime = Date.now()
+        index[_path].mtime = new Date(Date.now())
         index[_path].wdir = 'null'
       }
       delete newFiles[_path]
