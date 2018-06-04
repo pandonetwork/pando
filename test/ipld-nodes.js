@@ -3,6 +3,8 @@ import { Snapshot, Tree, File, IPLDNode } from '../lib/main.js'
 import { opts }                           from './data'
 import * as utils                         from './utils'
 import chai                               from 'chai'
+import path         from 'path'
+
 import 'chai/register-should'
 
 const should = chai.should
@@ -13,18 +15,18 @@ chai.use(require('chai-as-promised'))
 
 describe('IPLD Nodes', () => {
   let pando, loom, index, snapshot, tree, file
-  
+
   before(async () => {
     pando     = new Pando(opts)
-    loom      = await pando.loom.new('test/mocks')
-    index     = await loom.index.stage(['test/mocks/test.md', 'test/mocks/test-directory/test-1.md'])
+    loom      = await pando.loom.new(path.join('test','mocks'))
+    index     = await loom.index.stage([path.join('test','mocks','test.md'), path.join('test','mocks','test-directory','test-1.md')])
     snapshot  = await loom.snapshot('My first snapshot')
     tree      = await snapshot.tree
     file      = await tree.children['test.md']
   })
-  
-  after(async () => { await utils.fs.rmdir('test/mocks/.pando') })
-  
+
+  after(async () => { await utils.fs.rmdir(path.join('test','mocks','.pando')) })
+
   describe('Snapshot', async () => {
     describe('#constructor', async () => {
       it('should initialize snapshot correctly', async () => {
@@ -40,12 +42,12 @@ describe('IPLD Nodes', () => {
       it('should round-trip (de)serialization correctly', async () => {
         let serialized = await snapshot.toIPLD()
         let deserialized = await loom.fromIPLD(serialized)
-        
+
         deserialized.should.deep.equal(snapshot)
       })
     })
   })
-  
+
   describe('Tree', async () => {
     describe('#constructor', async () => {
       it('should initialize tree correctly', async () => {
@@ -66,7 +68,7 @@ describe('IPLD Nodes', () => {
       })
     })
   })
-  
+
   describe('File', async () => {
     describe('#constructor', async () => {
       it('should initialize file correctly', async () => {
@@ -79,10 +81,10 @@ describe('IPLD Nodes', () => {
       it('should round-trip (de)serialization correctly', async () => {
         let serialized = await file.toIPLD()
         let deserialized = await loom.fromIPLD(serialized)
-        
+
         deserialized.should.deep.equal(file)
       })
     })
   })
-  
+
 })
