@@ -71,6 +71,7 @@ export default class Loom {
   public async snapshot (_message: string): Promise < Snapshot > {
     let tree     = await this.tree()
     let treeCID  = await tree.put(this.node!)
+    // Aller chercher le parent dans loom.head
     let snapshot = new Snapshot({ author: this.pando.configuration.user, tree: tree, parents: undefined, message: _message }) // à terme il faut mettre à jour le parent
     let cid      = await this.node!.put(await snapshot.toIPLD())
 
@@ -166,6 +167,12 @@ export default class Loom {
   }
   
   // public async checkout (_fibreName: string) {
+  // check s'il check si tu as des choses qui ont déjà été stagés (stage !== 'null') et qui ne sont pas commités
+  // parmi les choses qui n'ont jamais été stagés, tu vérifies s'il y des conflits avec les fichiers de la nouvelle branche, si c le cas tu kick, sinon c'est bon.
+  // ensuite tu supprimes les fichiers qui sont stagés dans la branche dont tu pars (pas ceux qui n'ont jamais été stagés)
+  // et ensuite tu dl les fichiers du tree de la nouvelle branche
+  
+  
   // git checkout restore old files from the branch except for new files which have not been added. Evite de niquer les nodes modules, etc.
   // si on checkout alors que y'a des modifications non commités dans des fichiers déjà présents dans l'index, ça lève une alerte.
   // A voir comment on gère dans l'index la question de la suppression des fichiers. Est-ce qu'on supprime pas tout simplement l'entrée ?
