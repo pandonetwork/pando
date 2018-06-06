@@ -80,8 +80,14 @@ export default class Loom {
     let snapshot = new Snapshot({ author: this.pando.configuration.user, tree: tree, parents: undefined, message: _message }) // à terme il faut mettre à jour le parent
     let cid      = await this.node!.put(await snapshot.toIPLD())
 
+    //modify head of the current fibre in fibres
+    if(utils.fs.exists(path.join(this.paths.fibres,this.workingFibre!.name))){
+    utils.yaml.write(path.join(this.paths.fibres,this.workingFibre!.name),cid)
+  }
+
     return snapshot
   }
+
 
   public async fromIPLD (object) {
     let attributes = {}, data = {}, node
@@ -147,7 +153,8 @@ export default class Loom {
    return node
   }
 
-  // private
+  // Build tree from index and update the repo tree
+
   public tree () {
     let index  = this.index!.current
     let staged = this.index!.staged
@@ -171,13 +178,63 @@ export default class Loom {
     return tree
   }
 
+
   public async checkout (_fibreName: string) {
+    //We check if the fibre exists
+    if(!utils.fs.exists(path.join(this.paths.fibres, _fibreName))){
+    throw new Error('Fibre doesn\'t exists')
   }
-  // check s'il check si tu as des choses qui ont déjà été stagés (stage !== 'null') et qui ne sont pas commités
-  // parmi les choses qui n'ont jamais été stagés, tu vérifies s'il y des conflits avec les fichiers de la nouvelle branche, si c le cas tu kick, sinon c'est bon.
-  // ensuite tu supprimes les fichiers qui sont stagés dans la branche dont tu pars (pas ceux qui n'ont jamais été stagés)
+
+    //Check if there are staged files uncommitted
+    if(this.index!.staged !== null){
+      throw new Error('Files must be comitted before checking out')
+    }
+
+    //Check if there are unstaged files in conflict with the files of the new branch.
+    await this.compareNewFiberTreeAndLocal(_fibreName)
+
+    // Change the current working Fibre
+    this.workingFibre = await Fibre.update(this,_fibreName)
+
+    //TODO download files from the new branch
+  }
   // et ensuite tu dl les fichiers du tree de la nouvelle branche
 
+  public async compareNewFiberTreeAndLocal (_fibreName : string){
+
+    //We check if the fibre exists
+    if(!utils.fs.exists(path.join(this.paths.fibres, _fibreName))){
+    throw new Error('Fibre doesn\'t exists')
+  }
+
+  let newFibreCID = utils.yaml.read(path.join(this.paths.fibres, _fibreName))
+
+  let newFibreTree = await this.fromIPLD(await Tree.get(this.node!,newFibreCID))
+
+  //We go through the tree and compare the files.
+  await this.inspectTree(newFibreTree)
+}
+
+public async inspectTree (_tree : any){
+  //if(this.index!.current[_tree.path] !== _tree[]
+  if(_tree instanceof Tree){
+  if(_tree.children instanceof Array){
+    await Promise.all(_tree.children.map(async (child) => {
+      this.inspectTree(child)
+    }));
+  }
+
+}
+else if(_tree instanceof File)
+{
+  if(_tree.link !== this.index!.current[_tree.path!].wdir)
+  throw new Error('A local file (unstaged) conflicts with this fibre files. File path :' + _tree.path)
+}
+else
+{
+  throw new Error('Unknown exception : You\'re not inpecting a tree or a file')
+}
+}
 
   // git checkout restore old files from the branch except for new files which have not been added. Evite de niquer les nodes modules, etc.
   // si on checkout alors que y'a des modifications non commités dans des fichiers déjà présents dans l'index, ça lève une alerte.
