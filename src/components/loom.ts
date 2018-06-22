@@ -266,7 +266,15 @@ public async compareTrees (_oldTree : any, _newTree : any)
       let commonFilesOrTrees_oldTree = _oldTree.children.filter(item => unwantedFilesOrTrees.indexOf(item) < 0)
 
       for (var _i = 0; _i < commonFilesOrTrees_newTree.length; _i++){
-        await this.compareTrees(commonFilesOrTrees_newTree[_i],commonFilesOrTrees_oldTree[_i])
+        if(commonFilesOrTrees_newTree[_i] instanceof File && commonFilesOrTrees_oldTree[_i] instanceof File){
+          if(commonFilesOrTrees_newTree[_i].link !== commonFilesOrTrees_oldTree[_i].link){
+            this.deleteFilesOrTrees(commonFilesOrTrees_newTree[i])
+            this.downloadFiles(commonFilesOrTrees_newTree[_i])
+          }
+        }
+        else{
+          await this.compareTrees(commonFilesOrTrees_newTree[_i],commonFilesOrTrees_oldTree[_i])
+        }
       }
     }
   }
