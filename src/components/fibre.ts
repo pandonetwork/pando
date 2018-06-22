@@ -1,6 +1,8 @@
 import Loom     from '@components/loom'
 import Snapshot from '@objects/snapshot'
 import Specimen from '@components/specimen'
+import Tree         from '@objects/tree'
+
 import path    from 'path'
 import * as utils   from '@locals/utils'
 
@@ -49,12 +51,7 @@ export default class Fibre {
   }
 
   public async pull () {
-      // Get the tree.
-      // Compare the tree with the current data structure.
-      // Get the link of the file in the tree
-      // Check if the file
-      // If a local version of the file doesn't exist, download the file (create its folder if necessary)
-      // TODO compare two trees
+
   }
 
   public async revert () {
