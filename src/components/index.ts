@@ -32,6 +32,10 @@ export default class Index {
     return staged
   }
   
+  public get tracked (): string[] {
+    return []
+  }
+  
   constructor (_loom: Loom) {
     this.loom = _loom
   }
