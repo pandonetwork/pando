@@ -1,9 +1,9 @@
-import Pando                              from '../lib/main.js'
+import Pando           from '../lib/main.js'
 import { Index, Loom } from '../lib/main.js'
-import { opts, cids }                      from './data'
-import * as utils                         from './utils'
-import chai                               from 'chai'
-import path         from 'path'
+import { opts, cids }  from './data'
+import * as utils      from './utils'
+import chai            from 'chai'
+import path            from 'path'
 
 import 'chai/register-should'
 
