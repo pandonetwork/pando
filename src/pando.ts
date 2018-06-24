@@ -9,6 +9,7 @@ import File                from '@objects/file'
 import IPLDNode            from '@objects/ipld-node'
 import Loom                from '@components/loom'
 import Index               from '@components/index'
+import Fibre               from '@components/fibre'
 
 const LinkMetadataKey = Symbol("link");
 const IPLDMetadataKey = Symbol("ipld");
@@ -33,4 +34,4 @@ export default class Pando {
   }
 }
 
-export { Snapshot, Tree, File, IPLDNode, Loom, Index }
+export { Snapshot, Tree, File, IPLDNode, Loom, Index, Fibre }

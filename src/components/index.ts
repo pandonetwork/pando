@@ -19,7 +19,7 @@ export default class Index {
     utils.yaml.write(this.path, _index)
   }
   
-  public get staged (): string[] {
+  public get unsnapshot (): string[] {
     let current       = this.current
     let staged: any[] = []
     
@@ -30,6 +30,36 @@ export default class Index {
     }
     
     return staged
+  }
+  
+  // Returns staged but unsnapshot files
+  public get staged (): string[] {
+    let current       = this.current
+    let staged: any[] = []
+    
+    for (let _path in current) {
+      // if (current[_path].repo !== current[_path].stage) {
+      if (current[_path].stage !== 'null') {
+        staged.push(_path)
+      }
+    }
+    
+    return staged
+  }
+  
+  // Returns once staged files modified but not re-staged
+  public get modified (): string[] {
+    let current         = this.current
+    let modified: any[] = []
+    
+    
+    for (let _path in current) {
+      if (current[_path].repo !== 'null' && current[_path].wdir !== current[_path].stage) {
+        modified.push(_path)
+      }
+    }
+    
+    return modified
   }
   
   public get tracked (): string[] {
@@ -46,6 +76,27 @@ export default class Index {
   
   public static async load (_loom: Loom): Promise < Index > {
     return new Index(_loom)
+  }
+  
+  public async reinitialize (tree: any, _index?: any): Promise < any > {
+    let index = _index || {}
+    
+    delete tree['@type']
+    delete tree['path']
+    
+    for (let entry in tree) {
+      let node = await this.loom.node!.get(tree[entry]['/'])      
+      if (node['@type'] === 'tree') {
+        await this.reinitialize(node, index)
+      } else if (node['@type'] === 'file') {
+        let cid = node.link['/']
+        index[node.path] = { mtime: new Date(Date.now()), wdir: cid, stage: cid, repo: cid }
+      }
+    }
+      
+      
+    this.current = index
+    
   }
   
   public async update (): Promise < any > {

@@ -8,6 +8,7 @@ import File         from '@objects/file'
 import FibreFactory from '@factories/fibre-factory.ts'
 import * as utils   from '@locals/utils'
 import path         from 'path'
+import CID          from 'cids'
 
 export default class Loom {
 
@@ -22,13 +23,24 @@ export default class Loom {
   public pando:         Pando
   public node?:         Node
   public index?:        Index
-  public workingFibre?: Fibre
+  // public workingFibre?: Fibre
   public fibre =        new FibreFactory(this)
   public paths =        { ...Loom.paths }
 
   public get head () {
-  console.log(utils.yaml.read(path.join(this.paths.fibres, utils.yaml.read(this.paths.current))));
-  return utils.yaml.read(path.join(this.paths.fibres, utils.yaml.read(this.paths.current)))
+    return utils.yaml.read(path.join(this.paths.fibres, utils.yaml.read(this.paths.current)))
+  }
+
+  public get currentBranchName (): string {
+    return utils.yaml.read(this.paths.current)
+  }
+  
+  public set currentBranchName (_name: string) {
+    utils.yaml.write(this.paths.current, _name)
+  }
+  
+  public get workingFibre (): Fibre {
+    return Fibre.load(this, this.currentBranchName)
   }
 
   public constructor (_pando: Pando, _path: string = '.', opts?: any) {
@@ -43,7 +55,10 @@ export default class Loom {
     await utils.fs.mkdir(loom.paths.ipfs)
     await utils.fs.mkdir(loom.paths.fibres)
     await utils.yaml.write(loom.paths.index, {})
-    await utils.yaml.write(loom.paths.current, 'undefined')
+    
+    await Fibre.new(loom, 'master')
+    await utils.yaml.write(loom.paths.current, 'master')
+    
 
     loom.node  = await Node.new(loom)
     loom.index = await Index.new(loom)
@@ -81,13 +96,14 @@ export default class Loom {
     let cid      = await this.node!.put(await snapshot.toIPLD())
 
     //modify head of the current fibre in fibres
-    if(utils.fs.exists(path.join(this.paths.fibres,this.workingFibre!.name))){
-    utils.yaml.write(path.join(this.paths.fibres,this.workingFibre!.name),cid)
-  }
+    // if(utils.fs.exists(path.join(this.paths.fibres,this.workingFibre!.name))) {
+    // 
+    //   utils.yaml.write(path.join(this.paths.fibres,this.workingFibre!.name), cid)
+    // }
+    this.workingFibre.head = cid.toBaseEncodedString()
 
     return snapshot
   }
-
 
   public async fromIPLD (object) {
     let attributes = {}, data = {}, node
@@ -178,114 +194,83 @@ export default class Loom {
     return tree
   }
 
-
   public async checkout (_fibreName: string) {
+    let baseTree, newTree
+    
+    await this.index!.update()
+    
     //We check if the fibre exists
-    if(!utils.fs.exists(path.join(this.paths.fibres, _fibreName))){
-    throw new Error('Fibre doesn\'t exists')
-  }
-
-    //Check if there are staged files uncommitted
-    if(this.index!.staged !== null){
-      throw new Error('Files must be comitted before checking out')
+    if (!Fibre.exists(this, _fibreName)) {
+      throw new Error('Fibre ' + _fibreName + ' does not exist')
     }
+    if(this.index!.unsnapshot.length) {
+      throw new Error('You have unsnapshot modifications: ' + this.index!.unsnapshot)
+    }
+    if(this.index!.modified.length) {
+      throw new Error('You have unstaged and unsnaphot modifications: ' + this.index!.modified)
+    }
+        
+    let newHead  = Fibre.head(this, _fibreName)
+    let baseHead = this.head
+    // On ne modifie le tree que s'il y a déjà eu des choses commités dans la branche sur laquelle on part
+    if (newHead !== 'undefined') {
+      newTree = await this.node!.get(newHead, 'tree')
+      
+      if (baseHead !== 'undefined') {
+        baseTree = await this.node!.get(baseHead, 'tree')
+      } else {
+        baseTree = (new Tree({ path: '.', children: [] })).toIPLD()
+      }
 
-    //Check if there are unstaged files in conflict with the files of the new branch.
-    await this.compareNewFiberTreeAndLocal(_fibreName)
-
-    let oldFibre = utils.yaml.read(this.paths.current)
-    // Change the current working Fibre
-    this.workingFibre = await Fibre.update(this,_fibreName)
-
-    // Compare the two branch heads trees. Delete the wrong files, add the new ones.
-    this.downloadFibreContent(utils.yaml.read(path.join(this.paths.fibres, oldFibre)),utils.yaml.read(path.join(this.paths.fibres, _fibreName)))
+      await this.updateWorkingDirectory(baseTree, newTree)
+      await this.index!.reinitialize(newTree)
+    } else {
+      await this.index!.reinitialize(await (new Tree({ path: '.', children: [] })).toIPLD())
+    }
+  
+    this.currentBranchName = _fibreName
   }
 
-  public async compareNewFiberTreeAndLocal (_fibreName : string){
-
-    //We check if the fibre exists
-    if(!utils.fs.exists(path.join(this.paths.fibres, _fibreName))){
-    throw new Error('Fibre doesn\'t exists')
-  }
-
-  let newFibreCID = utils.yaml.read(path.join(this.paths.fibres, _fibreName))
-
-  let newFibreTree = await this.fromIPLD(await Tree.get(this.node!,newFibreCID))
-
-  //We go through the tree and compare the files.
-  await this.compareTreeAndLocal(newFibreTree)
-}
-
-public async compareTreeAndLocal (_tree : any){
-  //if(this.index!.current[_tree.path] !== _tree[]
-  if(_tree instanceof Tree){
-  if(_tree.children instanceof Array){
-    await Promise.all(_tree.children.map(async (child) => {
-      this.compareTreeAndLocal(child)
-    }));
-  }
-
-}
-else if(_tree instanceof File) {
-  if(_tree.link !== this.index!.current[_tree.path!].wdir)
-  throw new Error('A local file (unstaged) conflicts with this fibre files. File path :' + _tree.path)
-}
-else {
-  throw new Error('Unknown exception : You\'re not inpecting a tree or a file')
-}
-}
-
-public async downloadFibreContent (_oldFibreCID : string, _newFibreCID : string)
-{
-
-  // Get the new branch tree
-  let newFibreTree = await this.fromIPLD(await Tree.get(this.node!,_newFibreCID))
-
-  // Get the old branch tree
-  let oldFibreTree = await this.fromIPLD(await Tree.get(this.node!,_oldFibreCID))
-
-  this.compareTrees(oldFibreTree,newFibreTree)
-}
-
-public async compareTrees (_oldTree : any, _newTree : any)
-{
-  if(_oldTree instanceof Tree && _newTree instanceof Tree){
-    if(_oldTree.children instanceof Array && _newTree.children instanceof Array ){
-      // Each file or directory existing only in the new tree must be downloaded
-      let missingFilesOrTrees = _newTree.children.filter(item => (_oldTree.children as Array<any>).indexOf(item) < 0)
-      this.downloadFiles(missingFilesOrTrees)
-
-      //Each file or directory existing only in the old tree must be deleted
-      let unwantedFilesOrTrees = _oldTree.children.filter(item => (_newTree.children as Array<any>).indexOf(item) < 0)
-      this.deleteFilesOrTrees(unwantedFilesOrTrees)
-
-      //Every file with the same name but a different hash must be merged
-
-      //Iteration inside all the trees
-      let commonFilesOrTrees_newTree = _newTree.children.filter(item => missingFilesOrTrees.indexOf(item) < 0)
-      let commonFilesOrTrees_oldTree = _oldTree.children.filter(item => unwantedFilesOrTrees.indexOf(item) < 0)
-
-      for (var _i = 0; _i < commonFilesOrTrees_newTree.length; _i++){
-        await this.compareTrees(commonFilesOrTrees_newTree[_i],commonFilesOrTrees_oldTree[_i])
+  public async updateWorkingDirectory (_baseTree: any, _newTree: any) {    
+    // Delete meta properties to loop over tree's entries only
+    delete _baseTree['@type']
+    delete _baseTree['path']
+    // Delete meta properties to loop over tree's entries only
+    delete _newTree['@type']
+    delete _newTree['path']
+    
+    for (let entry in _newTree) {
+      if (!_baseTree[entry]) {
+        // entry existing in newTree but not in baseTree
+        await this.node!.download(_newTree[entry]['/'])
+        delete _baseTree[entry]
+      } else {
+        // entry existing both in newTree and in baseTree
+        if (_baseTree[entry]['/'] !== _newTree[entry]['/']) {
+          let baseEntryType = await this.node!.get(_baseTree[entry]['/'], '@type')
+          let newEntryType  = await this.node!.get(_newTree[entry]['/'], '@type')
+          if (baseEntryType !== newEntryType) {
+            // entry type differs in baseTree and newTree
+            await this.node!.download(_newTree[entry]['/'])
+          } else if (baseEntryType === 'file') {
+            // entry type is the same in baseTree and newTree
+            // entry is a file
+            await this.node!.download(_newTree[entry]['/'])
+          } else if (baseEntryType === 'tree') {
+            // entry type is the same in baseTree and newTree
+            // entry is a tree
+            let baseEntry = await this.node!.get(_baseTree[entry]['/'])
+            let newEntry  = await this.node!.get(_newTree[entry]['/'])
+            await this.updateWorkingDirectory(baseEntry, newEntry) 
+          }
+        }
+        delete _baseTree[entry]
       }
     }
+    // Delete remaining files
+    for (let entry in _baseTree) {
+      let _path = await this.node!.get(_baseTree[entry]['/'], 'path')
+      utils.fs.rm(path.join(this.paths.root, _path))
+    }
   }
-}
-
-public async downloadFiles(_files : Array<any>)
-{
-  //TODO fill this function : Download a file. Creates the directory it lies in if it doesn't exist.
-}
-
-public async deleteFilesOrTrees (_filesOrTrees : Array<any>)
-{
-  //TODO delete local files
-}
-  // public async weave (_originFibreName: string, _destinationFibreName: string) {
-  //
-  // }
-  //
-  // public async revert (_snapshotCID: string) {
-  //
-  // }
 }
