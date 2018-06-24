@@ -11,7 +11,6 @@ import path         from 'path'
 import CID          from 'cids'
 
 export default class Loom {
-
   public static paths = {
     root:     '.',
     pando:    '.pando',
@@ -27,7 +26,8 @@ export default class Loom {
   public paths =  { ...Loom.paths }
 
   public get head () {
-    return utils.yaml.read(path.join(this.paths.fibres, utils.yaml.read(this.paths.current)))
+    // return utils.yaml.read(path.join(this.paths.fibres, utils.yaml.read(this.paths.current)))
+    return this.currentBranch.head
   }
 
   public get currentBranchName (): string {
@@ -60,7 +60,7 @@ export default class Loom {
     
 
     loom.node  = await Node.new(loom)
-    loom.index = await Index.new(loom)
+    loom.index = Index.new(loom)
 
     return loom
   }
