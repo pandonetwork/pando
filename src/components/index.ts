@@ -11,7 +11,7 @@ export default class Index {
     return this.loom.paths.index
   }
   
-  public get current () {
+  public get current (): any {
     return utils.yaml.read(this.path)
   }
   
@@ -19,62 +19,69 @@ export default class Index {
     utils.yaml.write(this.path, _index)
   }
   
+  /**
+  * Returns staged but unsnaphot files
+  * 
+  * @returns {string[]}
+  */
   public get unsnapshot (): string[] {
-    let current       = this.current
-    let staged: any[] = []
+    let current          = this.current
+    let unsnaphot: any[] = []
     
-    for (let _path in current) {
-      if (current[_path].repo !== current[_path].stage) {
-        staged.push(_path)
+    for (let entry in current) {
+      if (current[entry].repo !== current[entry].stage) {
+        unsnaphot.push(entry)
       }
     }
     
-    return staged
+    return unsnaphot
   }
   
-  // Returns staged but unsnapshot files
+  /**
+  * Returns once staged files
+  * 
+  * @returns {string[]}
+  */
   public get staged (): string[] {
     let current       = this.current
     let staged: any[] = []
     
-    for (let _path in current) {
-      // if (current[_path].repo !== current[_path].stage) {
-      if (current[_path].stage !== 'null') {
-        staged.push(_path)
+    for (let entry in current) {
+      if (current[entry].stage !== 'null') {
+        staged.push(entry)
       }
     }
     
     return staged
   }
   
-  // Returns once staged files modified but not re-staged
+  /**
+  * Returns modified once staged files
+  * 
+  * @returns {string[]}
+  */
   public get modified (): string[] {
     let current         = this.current
     let modified: any[] = []
     
-    
-    for (let _path in current) {
-      if (current[_path].repo !== 'null' && current[_path].wdir !== current[_path].stage) {
-        modified.push(_path)
+    for (let entry in current) {
+      if (current[entry].repo !== 'null' && current[entry].wdir !== current[entry].stage) {
+        modified.push(entry)
       }
     }
     
     return modified
   }
   
-  public get tracked (): string[] {
-    return []
-  }
-  
   constructor (_loom: Loom) {
     this.loom = _loom
   }
   
-  public static new (_loom: Loom): Index {
+  public static async new (_loom: Loom): Promise < Index > {
     return new Index(_loom)
   }
   
-  public static load (_loom: Loom): Index {
+  public static async load (_loom: Loom): Promise < Index > {
     return new Index(_loom)
   }
   
@@ -93,10 +100,8 @@ export default class Index {
         index[node.path] = { mtime: new Date(Date.now()), wdir: cid, stage: cid, repo: cid }
       }
     }
-      
-      
+
     this.current = index
-    
   }
   
   public async update (): Promise < any > {
