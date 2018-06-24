@@ -20,12 +20,11 @@ export default class Loom {
     current:  '.pando/current',
     fibres:   '.pando/fibres'
   }
-  public pando:         Pando
-  public node?:         Node
-  public index?:        Index
-  // public workingFibre?: Fibre
-  public fibre =        new FibreFactory(this)
-  public paths =        { ...Loom.paths }
+  public pando:   Pando
+  public node?:   Node
+  public index?:  Index
+  public fibre =  new FibreFactory(this)
+  public paths =  { ...Loom.paths }
 
   public get head () {
     return utils.yaml.read(path.join(this.paths.fibres, utils.yaml.read(this.paths.current)))
@@ -39,7 +38,7 @@ export default class Loom {
     utils.yaml.write(this.paths.current, _name)
   }
   
-  public get workingFibre (): Fibre {
+  public get currentBranch (): Fibre {
     return Fibre.load(this, this.currentBranchName)
   }
 
@@ -48,7 +47,7 @@ export default class Loom {
     this.pando = _pando
   }
 
-  public static async new (_pando: Pando, _path: string = '.', opts?: any) : Promise < Loom > {
+  public static async new (_pando: Pando, _path: string = '.', opts?: any): Promise < Loom > {
     let loom = new Loom(_pando, _path)
 
     await utils.fs.mkdir(loom.paths.pando)
@@ -66,7 +65,7 @@ export default class Loom {
     return loom
   }
 
-  public static async load (_pando: Pando, _path: string = '.', opts?: any) : Promise < Loom > {
+  public static async load (_pando: Pando, _path: string = '.', opts?: any): Promise < Loom > {
     if (!Loom.exists(_path)) { throw new Error('No pando loom found at ' + _path) }
 
     let loom = new Loom(_pando, _path)
@@ -89,20 +88,53 @@ export default class Loom {
   }
 
   public async snapshot (_message: string): Promise < Snapshot > {
-    let tree     = await this.tree()
-    let treeCID  = await tree.put(this.node!)
-    // Aller chercher le parent dans loom.head
-    let snapshot = new Snapshot({ author: this.pando.configuration.user, tree: tree, parents: undefined, message: _message }) // à terme il faut mettre à jour le parent
+    let tree    = await this.tree()
+    let treeCID = await tree.put(this.node!)
+    let parents = this.head !== 'undefined' ? [await this.fromIPLD(await this.node!.get(this.head))] : undefined
+    
+    let snapshot = new Snapshot({ author: this.pando.configuration.user, tree: tree, parents: parents, message: _message })
     let cid      = await this.node!.put(await snapshot.toIPLD())
 
-    //modify head of the current fibre in fibres
-    // if(utils.fs.exists(path.join(this.paths.fibres,this.workingFibre!.name))) {
-    // 
-    //   utils.yaml.write(path.join(this.paths.fibres,this.workingFibre!.name), cid)
-    // }
-    this.workingFibre.head = cid.toBaseEncodedString()
+    this.currentBranch.head = cid.toBaseEncodedString()
 
     return snapshot
+  }
+
+  public async checkout (_fibreName: string) {
+    let baseTree, newTree
+    
+    await this.index!.update()
+    
+    //We check if the fibre exists
+    if (!Fibre.exists(this, _fibreName)) {
+      throw new Error('Fibre ' + _fibreName + ' does not exist')
+    }
+    if(this.index!.unsnapshot.length) {
+      throw new Error('You have unsnapshot modifications: ' + this.index!.unsnapshot)
+    }
+    if(this.index!.modified.length) {
+      throw new Error('You have unstaged and unsnaphot modifications: ' + this.index!.modified)
+    }
+        
+    let newHead  = Fibre.head(this, _fibreName)
+    let baseHead = this.head
+    // On ne modifie le tree que s'il y a déjà eu des choses commités dans la branche sur laquelle on part
+    if (newHead !== 'undefined') {
+      newTree = await this.node!.get(newHead, 'tree')
+      
+      if (baseHead !== 'undefined') {
+        baseTree = await this.node!.get(baseHead, 'tree')
+      } else {
+        baseTree = (new Tree({ path: '.', children: [] })).toIPLD()
+      }
+
+      await this.updateWorkingDirectory(baseTree, newTree)
+      await this.index!.reinitialize(newTree)
+    } else {
+      await this.index!.reinitialize(await (new Tree({ path: '.', children: [] })).toIPLD())
+    }
+  
+    this.currentBranchName = _fibreName
   }
 
   public async fromIPLD (object) {
@@ -169,9 +201,7 @@ export default class Loom {
    return node
   }
 
-  // Build tree from index and update the repo tree
-
-  public tree () {
+  private tree () {
     let index  = this.index!.current
     let staged = this.index!.staged
     let tree   = new Tree({ path: '.' })
@@ -194,44 +224,7 @@ export default class Loom {
     return tree
   }
 
-  public async checkout (_fibreName: string) {
-    let baseTree, newTree
-    
-    await this.index!.update()
-    
-    //We check if the fibre exists
-    if (!Fibre.exists(this, _fibreName)) {
-      throw new Error('Fibre ' + _fibreName + ' does not exist')
-    }
-    if(this.index!.unsnapshot.length) {
-      throw new Error('You have unsnapshot modifications: ' + this.index!.unsnapshot)
-    }
-    if(this.index!.modified.length) {
-      throw new Error('You have unstaged and unsnaphot modifications: ' + this.index!.modified)
-    }
-        
-    let newHead  = Fibre.head(this, _fibreName)
-    let baseHead = this.head
-    // On ne modifie le tree que s'il y a déjà eu des choses commités dans la branche sur laquelle on part
-    if (newHead !== 'undefined') {
-      newTree = await this.node!.get(newHead, 'tree')
-      
-      if (baseHead !== 'undefined') {
-        baseTree = await this.node!.get(baseHead, 'tree')
-      } else {
-        baseTree = (new Tree({ path: '.', children: [] })).toIPLD()
-      }
-
-      await this.updateWorkingDirectory(baseTree, newTree)
-      await this.index!.reinitialize(newTree)
-    } else {
-      await this.index!.reinitialize(await (new Tree({ path: '.', children: [] })).toIPLD())
-    }
-  
-    this.currentBranchName = _fibreName
-  }
-
-  public async updateWorkingDirectory (_baseTree: any, _newTree: any) {    
+  private async updateWorkingDirectory (_baseTree: any, _newTree: any) {
     // Delete meta properties to loop over tree's entries only
     delete _baseTree['@type']
     delete _baseTree['path']
