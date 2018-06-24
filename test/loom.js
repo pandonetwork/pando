@@ -4,10 +4,6 @@ import { opts, cids }           from './data'
 import * as utils               from './utils'
 import chai                     from 'chai'
 import path         from 'path'
-import empty from 'empty-folder'
-import { ncp } from 'ncp'
-import rimraf from 'rimraf'
-
 import * as fs from 'fs-extra'
 
 
@@ -122,8 +118,7 @@ describe('Loom', () => {
     })
   })
 
-  describe('#stage', async () => {
-  
+  describe('#stage', async () => {  
     before(async () => { loom = await pando.loom.new(path.join('test','mocks')) })
   
     after(async () => { await utils.fs.rmdir(path.join('test','mocks','.pando')) })
@@ -154,6 +149,7 @@ describe('Loom', () => {
         index[path].repo.should.be.equal(cids[path])
       }
     })
+
     it('should build snapshot\'s tree correctly', async () => {
       snapshot.tree.path.should.be.equal('.')
       snapshot.tree.children['test.md'].should.exist
@@ -173,6 +169,7 @@ describe('Loom', () => {
       snapshot.tree.children['test-directory'].children['test-subdirectory'].children['test.md'].path.should.equal('test-directory/test-subdirectory/test.md')
       snapshot.tree.children['test-directory'].children['test-subdirectory'].children['test.md'].link.should.equal(cids['test-directory/test-subdirectory/test.md'])
     })
+
     it('should push snapshot to ipfs/ipld correctly', async () => {
       let cid          = await snapshot.cid()
       let serialized   = await loom.node.get(cid)
@@ -216,19 +213,6 @@ describe('Loom', () => {
       fs.copyFileSync(path.join('test','mocks-backup','test-directory','test-1.md'), path.join('test','mocks','test-directory','test-1.md'))
       fs.copyFileSync(path.join('test','mocks-backup','test-directory','test-2.md'), path.join('test','mocks','test-directory','test-2.md'))
       fs.copyFileSync(path.join('test','mocks-backup','test-directory','test-subdirectory','test.md'), path.join('test','mocks','test-directory','test-subdirectory','test.md'))
-      // ncp(path.join('test','mocks', '.pando'), path.join('test','mocks-backup', '.pando'), (err) => {
-      //  if (err) console.error(err)
-      //  rimraf.sync(path.join('test','mocks'))
-      //  utils.fs.mkdir(path.join('test','mocks'))
-      //  // empty(path.join('test','mocks'), false, (output) => {
-      //  //   if (output.error) console.error(output.error)
-      //    ncp(path.join('test','mocks-backup'), path.join('test','mocks'), (err) => {
-      //     if (err) console.error(err)
-      //     done()
-      //    })
-      //  // })
-      // })
-      
     })
     
     it('should update current branch correctly', async () => {

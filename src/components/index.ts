@@ -65,7 +65,7 @@ export default class Index {
     let modified: any[] = []
     
     for (let entry in current) {
-      if (current[entry].repo !== 'null' && current[entry].wdir !== current[entry].stage) {
+      if (current[entry].stage !== 'null' && current[entry].wdir !== current[entry].stage) {
         modified.push(entry)
       }
     }
@@ -120,10 +120,10 @@ export default class Index {
         
     for (let _path in index) {
       if (files[_path]) { // files at _path still exists
-        if (new Date(index[_path].mtime) < files[_path].mtime) { // files at _path has been modified
+        if (new Date(index[_path].mtime) <= new Date(files[_path].mtime)) { // files at _path has been modified
           let cid = await this.loom.node!.cid(path.join(this.loom.paths.root, _path), { file: true })
           index[_path].mtime = files[_path].mtime
-          index[_path].wdir = cid          
+          index[_path].wdir = cid        
         }
       } else { // files at _path has been deleted
         index[_path].mtime = new Date(Date.now())
@@ -137,6 +137,13 @@ export default class Index {
       index[_path] = { mtime: files[_path].mtime, wdir: cid, stage: 'null', repo: 'null' }
     }
     
+    // for (let _path in index) { // remove deleted files from index
+    //   if (index[_path].wdir === 'null') {
+    // 
+    //   }
+    // }
+    
+    
     this.current = index
     
     return index
@@ -149,8 +156,15 @@ export default class Index {
     for (let _path of _paths) {
       _path                     = path.normalize(_path)
       let relativePath          = path.relative(this.loom.paths.root, _path)
-      let cid                   = await this.loom.node!.upload(_path)
-      index[relativePath].stage = cid
+      
+      if (utils.fs.exists(_path)) {
+        let cid                   = await this.loom.node!.upload(_path)
+        index[relativePath].stage = cid
+      } else if (index[relativePath].wdir === 'null') {
+        delete index[relativePath]
+      } else {
+        throw new Error(_path + ' does not exist in current working directory')
+      }
     }
     
     this.current = index

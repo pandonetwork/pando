@@ -1,15 +1,14 @@
 import Pando        from '@pando'
 import Loom         from '@components/loom'
 import * as utils   from '@locals/utils'
-import IPLDPando    from 'ipld-pando'
 import IPFS         from 'ipfs'
 import IPLD         from 'ipld'
+import IPLDPando    from 'ipld-pando'
 import CID          from 'cids'
 import promisify    from 'promisify-event'
 import path         from 'path'
 
 export default class Node {
-
   public loom: Loom
   public ipfs: any
   public ipld: any
@@ -84,7 +83,6 @@ export default class Node {
       })
     })
   }
-
 
   public async put (object: any): Promise < any > {
     return new Promise < any > (async (resolve, reject) => {
