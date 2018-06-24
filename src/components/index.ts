@@ -70,11 +70,11 @@ export default class Index {
     this.loom = _loom
   }
   
-  public static async new (_loom: Loom): Promise < Index > {
+  public static new (_loom: Loom): Index {
     return new Index(_loom)
   }
   
-  public static async load (_loom: Loom): Promise < Index > {
+  public static load (_loom: Loom): Index {
     return new Index(_loom)
   }
   
