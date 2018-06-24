@@ -10,15 +10,15 @@ export default class Index {
   public get path () {
     return this.loom.paths.index
   }
-  
+
   public get current (): any {
     return utils.yaml.read(this.path)
   }
-  
+
   public set current (_index: any) {
     utils.yaml.write(this.path, _index)
   }
-  
+
   /**
   * Returns staged but unsnaphot files
   * 
@@ -36,7 +36,7 @@ export default class Index {
     
     return unsnaphot
   }
-  
+
   /**
   * Returns once staged files
   * 
@@ -54,7 +54,7 @@ export default class Index {
     
     return staged
   }
-  
+
   /**
   * Returns modified once staged files
   * 
@@ -72,11 +72,11 @@ export default class Index {
     
     return modified
   }
-  
+
   constructor (_loom: Loom) {
     this.loom = _loom
   }
-  
+
   public static async new (_loom: Loom): Promise < Index > {
     return new Index(_loom)
   }

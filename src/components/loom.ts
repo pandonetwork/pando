@@ -25,11 +25,6 @@ export default class Loom {
   public fibre =  new FibreFactory(this)
   public paths =  { ...Loom.paths }
 
-  public get head () {
-    // return utils.yaml.read(path.join(this.paths.fibres, utils.yaml.read(this.paths.current)))
-    return this.currentBranch.head
-  }
-
   public get currentBranchName (): string {
     return utils.yaml.read(this.paths.current)
   }
@@ -41,6 +36,10 @@ export default class Loom {
   public get currentBranch (): Fibre {
     return Fibre.load(this, this.currentBranchName)
   }
+  
+  public get head () {
+    return this.currentBranch.head
+  }
 
   public constructor (_pando: Pando, _path: string = '.', opts?: any) {
     for (let p in this.paths) { this.paths[p] = path.join(_path, this.paths[p]) }
@@ -50,17 +49,19 @@ export default class Loom {
   public static async new (_pando: Pando, _path: string = '.', opts?: any): Promise < Loom > {
     let loom = new Loom(_pando, _path)
 
+    // Initialize .pando directory
     await utils.fs.mkdir(loom.paths.pando)
     await utils.fs.mkdir(loom.paths.ipfs)
     await utils.fs.mkdir(loom.paths.fibres)
     await utils.yaml.write(loom.paths.index, {})
     
+    // Initialize master branch
     await Fibre.new(loom, 'master')
     await utils.yaml.write(loom.paths.current, 'master')
-    
 
+    // Initialize node and index
     loom.node  = await Node.new(loom)
-    loom.index = Index.new(loom)
+    loom.index = await Index.new(loom)
 
     return loom
   }
