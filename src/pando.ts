@@ -11,11 +11,8 @@ import Loom                from '@components/loom'
 import Index               from '@components/index'
 import Branch              from '@components/branch'
 
-const LinkMetadataKey = Symbol("link");
-const IPLDMetadataKey = Symbol("ipld");
 
-export default class Pando {
-  
+export default class Pando {  
   public static contracts = PandoContracts
   public static utils = PandoUtils
    
