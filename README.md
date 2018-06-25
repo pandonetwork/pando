@@ -76,7 +76,7 @@ let pando = new Pando(opts)
 let repository = await pando.repository.new(path?: string)
 ```
 
-> default path parameter: '.'
+default ```path``` parameter: ```'.'```
 
 #### Load an existing local repository
 
