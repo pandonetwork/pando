@@ -32,12 +32,12 @@ Its development is backed by a grant from the [Aragon Nest](https://github.com/a
 
 ### Why pando ?
 
-[Pando](https://en.wikipedia.org/wiki/Pando_(tree)) (Latin for "spread out"), also known as the Trembling Giant is a clonal colony of a single male quaking aspen (Populus tremuloides) determined to be a single living organism by identical genetic markers and assumed to have one massive underground root system. The plant occupies 43 hectares (106 acres) and is estimated to weigh collectively 6,000,000 kilograms (6,600 short tons), making it the heaviest known organism. The root system of Pando, at an estimated 80,000 years old, is among the oldest known living organisms.
+[Pando](https://en.wikipedia.org/wiki/Pando_(tree)) (Latin for "spread out") is a clonal colony of a single male quaking aspen determined to be a single living organism by identical genetic markers and assumed to have one massive underground root system. The plant occupies 43 hectares and is estimated to weigh collectively 6,000,000 kilograms, making it the heaviest known organism. The root system of Pando, at an estimated 80,000 years old, is among the oldest known living organisms.
 
 
 ## Install
 
-```
+```zsh
 npm install @ryhope/pando.js --save
 ```
 
