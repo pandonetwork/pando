@@ -73,7 +73,7 @@ let pando = new Pando(opts)
 #### Create a new local repository
 
 ```javascript
-let repository = await pando.repository.create(path?: string)
+let repository = await pando.repository.new(path?: string)
 ```
 
 > default path parameter: '.'
