@@ -49,7 +49,48 @@ import Pando from '@ryhope/pando.js'
 
 ## API
 
-TODO
+> ```pando.js``` follows the spec defined by pando-interface which is still under active development and prone to evolve quickly.
+
+### Pando constructor
+
+```javascript
+const opts = {
+  user: {
+    account: '0x2d6ef21eb58f164841b41a7b749d0d957790620a'
+  },
+  ethereum: {
+    gateway: 'http://localhost:8545'
+  }
+}
+
+let pando = new Pando(opts)
+```
+
+### Repository
+
+- Create a new local repository
+
+```javascript
+let repository = await pando.repository.create(path?: string)
+```
+
+- Load an existing local repository
+
+```javascript
+let repository = await pando.repository.load(path?: string)
+```
+
+#### Create a new branch
+
+```javascript
+let branch = await repository.branch.new(branchName: string)
+```
+
+#### Stage
+
+```javascript
+await repository.stage([filePath: string, filePath: string, ...])
+```
 
 ## Maintainers
 
