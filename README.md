@@ -68,20 +68,23 @@ let pando = new Pando(opts)
 
 ### Repository
 
-Repositories handle the local versions of your projects.
-<hr>
+> Repositories handle the local versions of your projects.
 
-Create a new local repository
+#### Create a new local repository
 
 ```javascript
 let repository = await pando.repository.create(path?: string)
 ```
 
-- Load an existing local repository
+> default path parameter: '.'
+
+#### Load an existing local repository
 
 ```javascript
 let repository = await pando.repository.load(path?: string)
 ```
+
+> default path parameter: '.'
 
 #### Create a new branch
 
