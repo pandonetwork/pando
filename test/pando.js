@@ -36,7 +36,7 @@ describe('Pando', () => {
         loom.paths.ipfs.should.be.equal(path.join('test','mocks','.pando','ipfs'))
         loom.paths.index.should.be.equal(path.join('test','mocks','.pando','index'))
         loom.paths.current.should.be.equal(path.join('test','mocks','.pando','current'))
-        loom.paths.fibres.should.be.equal(path.join('test','mocks','.pando','fibres'))
+        loom.paths.branches.should.be.equal(path.join('test','mocks','.pando','branches'))
       })
       it('should initialize loom\'s index correctly', () => {
         loom.index.should.exist
@@ -53,7 +53,7 @@ describe('Pando', () => {
         utils.fs.exists(path.join('test','mocks','.pando','ipfs')).should.be.equal(true)
         utils.fs.exists(path.join('test','mocks','.pando','index')).should.be.equal(true)
         utils.fs.exists(path.join('test','mocks','.pando','current')).should.be.equal(true)
-        utils.fs.exists(path.join('test','mocks','.pando','fibres')).should.be.equal(true)
+        utils.fs.exists(path.join('test','mocks','.pando','branches')).should.be.equal(true)
       })
     })
 
@@ -72,7 +72,7 @@ describe('Pando', () => {
         loaded.paths.ipfs.should.be.equal(path.join('test','mocks','.pando','ipfs'))
         loaded.paths.index.should.be.equal(path.join('test','mocks','.pando','index'))
         loaded.paths.current.should.be.equal(path.join('test','mocks','.pando','current'))
-        loaded.paths.fibres.should.be.equal(path.join('test','mocks','.pando','fibres'))
+        loaded.paths.branches.should.be.equal(path.join('test','mocks','.pando','branches'))
       })
       it('should initialize loom\'s index correctly', () => {
         loaded.index.should.exist
@@ -89,7 +89,7 @@ describe('Pando', () => {
         utils.fs.exists(path.join('test','mocks','.pando','ipfs')).should.be.equal(true)
         utils.fs.exists(path.join('test','mocks','.pando','index')).should.be.equal(true)
         utils.fs.exists(path.join('test','mocks','.pando','current')).should.be.equal(true)
-        utils.fs.exists(path.join('test','mocks','.pando','fibres')).should.be.equal(true)
+        utils.fs.exists(path.join('test','mocks','.pando','branches')).should.be.equal(true)
       })
       it('should reject if loom does not exist', () => {
         pando.loom.load('test').should.be.rejected

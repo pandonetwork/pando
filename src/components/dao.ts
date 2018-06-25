@@ -1,7 +1,6 @@
 import Pando from '@pando'
 
 export default class DAO {
-    
   public pando: Pando
   public kernel: any
   public acl?: any

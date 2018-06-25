@@ -64,7 +64,7 @@ describe('Index', async () => {
   })
   
   describe('#modified', async () => {
-    after(async () => {
+    after(() => {
       if (utils.fs.exists(path.join('test','mocks','test.md'))) {
         utils.fs.rm(path.join('test','mocks','test.md'))
       }
@@ -223,6 +223,4 @@ describe('Index', async () => {
       expect(index['test.md']).to.be.undefined
     })    
   })
-
-
 })

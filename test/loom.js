@@ -1,10 +1,10 @@
-import Pando                    from '../lib/main.js'
-import { Snapshot, Tree, Loom, Fibre } from '../lib/main.js'
-import { opts, cids }           from './data'
-import * as utils               from './utils'
-import chai                     from 'chai'
-import path         from 'path'
-import * as fs from 'fs-extra'
+import Pando           from '../lib/main.js'
+import { Loom, Branch } from '../lib/main.js'
+import { opts, cids }  from './data'
+import * as utils      from './utils'
+import * as fs        from 'fs-extra'
+import chai            from 'chai'
+import path            from 'path'
 
 
 import 'chai/register-should'
@@ -36,7 +36,7 @@ describe('Loom', () => {
       loom.paths.ipfs.should.be.equal(path.join('test','mocks','.pando','ipfs'))
       loom.paths.index.should.be.equal(path.join('test','mocks','.pando','index'))
       loom.paths.current.should.be.equal(path.join('test','mocks','.pando','current'))
-      loom.paths.fibres.should.be.equal(path.join('test','mocks','.pando','fibres'))
+      loom.paths.branches.should.be.equal(path.join('test','mocks','.pando','branches'))
     })
     it('should initialize loom\'s index correctly', () => {
       loom.index.should.exist
@@ -53,14 +53,14 @@ describe('Loom', () => {
       utils.fs.exists(path.join('test','mocks','.pando','ipfs')).should.be.equal(true)
       utils.fs.exists(path.join('test','mocks','.pando','index')).should.be.equal(true)
       utils.fs.exists(path.join('test','mocks','.pando','current')).should.be.equal(true)
-      utils.fs.exists(path.join('test','mocks','.pando','fibres')).should.be.equal(true)
+      utils.fs.exists(path.join('test','mocks','.pando','branches')).should.be.equal(true)
     })
     it('should initialize master branch correctly', () => {
       utils.fs.exists(path.join('test','mocks','.pando')).should.be.equal(true)
       utils.fs.exists(path.join('test','mocks','.pando','ipfs')).should.be.equal(true)
       utils.fs.exists(path.join('test','mocks','.pando','index')).should.be.equal(true)
       utils.fs.exists(path.join('test','mocks','.pando','current')).should.be.equal(true)
-      utils.fs.exists(path.join('test','mocks','.pando','fibres')).should.be.equal(true)
+      utils.fs.exists(path.join('test','mocks','.pando','branches')).should.be.equal(true)
     })
   })
   
@@ -80,7 +80,7 @@ describe('Loom', () => {
       loaded.paths.ipfs.should.be.equal(path.join('test','mocks','.pando','ipfs'))
       loaded.paths.index.should.be.equal(path.join('test','mocks','.pando','index'))
       loaded.paths.current.should.be.equal(path.join('test','mocks','.pando','current'))
-      loaded.paths.fibres.should.be.equal(path.join('test','mocks','.pando','fibres'))
+      loaded.paths.branches.should.be.equal(path.join('test','mocks','.pando','branches'))
     })
     it('should initialize loom\'s index correctly', () => {
       loaded.index.should.exist
@@ -97,7 +97,7 @@ describe('Loom', () => {
       utils.fs.exists(path.join('test','mocks','.pando','ipfs')).should.be.equal(true)
       utils.fs.exists(path.join('test','mocks','.pando','index')).should.be.equal(true)
       utils.fs.exists(path.join('test','mocks','.pando','current')).should.be.equal(true)
-      utils.fs.exists(path.join('test','mocks','.pando','fibres')).should.be.equal(true)
+      utils.fs.exists(path.join('test','mocks','.pando','branches')).should.be.equal(true)
     })
     it('should reject if loom does not exist', () => {
       pando.loom.load('test').should.be.rejected
@@ -179,7 +179,29 @@ describe('Loom', () => {
     })
   })
   
+  describe('#branch', () => {
+    let loom
 
+    before(async () => {
+      loom = await pando.loom.new(path.join('test','mocks'))
+    })
+
+    after(async () => { await utils.fs.rmdir(path.join('test','mocks','.pando')) })
+
+    describe('#new', () => {
+      it('should initialize new branch correctly', async () => {
+        let aragon = await loom.branch.new('aragon')
+
+        aragon.name.should.be.equal('aragon')
+        aragon.path.should.be.equal(path.join('test','mocks','.pando','branches','aragon'))
+      })
+      it('should throw if branch already exists', () => {
+        loom.branch.new('master').should.be.rejected
+      })
+    })
+
+  })
+  
   describe('#checkout', async () => {
     before(async () => {
       loom     = await pando.loom.new(path.join('test','mocks'))
@@ -216,7 +238,7 @@ describe('Loom', () => {
     })
     
     it('should update current branch correctly', async () => {
-      await Fibre.new(loom, 'dev')
+      await Branch.new(loom, 'dev')
       let branch1 = loom.currentBranchName
       await loom.checkout('dev')
       let branch2 = loom.currentBranchName
@@ -332,29 +354,7 @@ describe('Loom', () => {
   
   
 
-  describe('FibreFactory', () => {
-    let loom
-
-    before(async () => {
-      loom = await pando.loom.new(path.join('test','mocks'))
-    })
-
-    after(async () => { await utils.fs.rmdir(path.join('test','mocks','.pando')) })
-
-    describe('#new', () => {
-      it('should initialize fibre correctly', async () => {
-        let aragon = await loom.fibre.new('aragon')
-
-        aragon.name.should.be.equal('aragon')
-        aragon.path.should.be.equal(path.join('test','mocks','.pando','fibres','aragon'))
-        // check that specimen is undefined
-      })
-      // it('should locally save new fiber object properly', () => {
-      //
-      // })
-    })
-
-  })
+  
 
 
 })

@@ -1,14 +1,14 @@
-import Pando        from '@pando'
-import Node         from '@components/node'
-import Index        from '@components/index'
-import Fibre        from '@components/fibre'
-import Snapshot     from '@objects/snapshot'
-import Tree         from '@objects/tree'
-import File         from '@objects/file'
-import FibreFactory from '@factories/fibre-factory.ts'
-import * as utils   from '@locals/utils'
-import path         from 'path'
-import CID          from 'cids'
+import Pando         from '@pando'
+import Node          from '@components/node'
+import Index         from '@components/index'
+import Branch        from '@components/branch'
+import Snapshot      from '@objects/snapshot'
+import Tree          from '@objects/tree'
+import File          from '@objects/file'
+import BranchFactory from '@factories/branch-factory.ts'
+import * as utils    from '@locals/utils'
+import path          from 'path'
+import CID           from 'cids'
 
 export default class Loom {
   public static paths = {
@@ -17,13 +17,13 @@ export default class Loom {
     ipfs:     '.pando/ipfs',
     index:    '.pando/index',
     current:  '.pando/current',
-    fibres:   '.pando/fibres'
+    branches: '.pando/branches'
   }
-  public pando:   Pando
-  public node?:   Node
-  public index?:  Index
-  public fibre =  new FibreFactory(this)
-  public paths =  { ...Loom.paths }
+  public pando:    Pando
+  public node?:    Node
+  public index?:   Index
+  public branch =  new BranchFactory(this)
+  public paths  =  { ...Loom.paths }
 
   public get currentBranchName (): string {
     return utils.yaml.read(this.paths.current)
@@ -33,8 +33,8 @@ export default class Loom {
     utils.yaml.write(this.paths.current, _name)
   }
   
-  public get currentBranch (): Fibre {
-    return Fibre.load(this, this.currentBranchName)
+  public get currentBranch (): Branch {
+    return Branch.load(this, this.currentBranchName)
   }
   
   public get head () {
@@ -52,11 +52,11 @@ export default class Loom {
     // Initialize .pando directory
     await utils.fs.mkdir(loom.paths.pando)
     await utils.fs.mkdir(loom.paths.ipfs)
-    await utils.fs.mkdir(loom.paths.fibres)
+    await utils.fs.mkdir(loom.paths.branches)
     await utils.yaml.write(loom.paths.index, {})
     
     // Initialize master branch
-    await Fibre.new(loom, 'master')
+    await Branch.new(loom, 'master')
     await utils.yaml.write(loom.paths.current, 'master')
 
     // Initialize node and index
@@ -101,14 +101,14 @@ export default class Loom {
     return snapshot
   }
 
-  public async checkout (_fibreName: string) {
+  public async checkout (_branchName: string) {
     let baseTree, newTree
     
     await this.index!.update()
     
-    //We check if the fibre exists
-    if (!Fibre.exists(this, _fibreName)) {
-      throw new Error('Fibre ' + _fibreName + ' does not exist')
+    //We check if the branch exists
+    if (!Branch.exists(this, _branchName)) {
+      throw new Error('Branch ' + _branchName + ' does not exist')
     }
     if(this.index!.unsnapshot.length) {
       throw new Error('You have unsnapshot modifications: ' + this.index!.unsnapshot)
@@ -117,7 +117,7 @@ export default class Loom {
       throw new Error('You have unstaged and unsnaphot modifications: ' + this.index!.modified)
     }
         
-    let newHead  = Fibre.head(this, _fibreName)
+    let newHead  = Branch.head(this, _branchName)
     let baseHead = this.head
     // On ne modifie le tree que s'il y a déjà eu des choses commités dans la branche sur laquelle on part
     if (newHead !== 'undefined') {
@@ -135,7 +135,7 @@ export default class Loom {
       await this.index!.reinitialize(await (new Tree({ path: '.', children: [] })).toIPLD())
     }
   
-    this.currentBranchName = _fibreName
+    this.currentBranchName = _branchName
   }
 
   public async fromIPLD (object) {
