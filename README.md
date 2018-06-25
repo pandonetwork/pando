@@ -70,15 +70,15 @@ let pando = new Pando(opts)
 
 > Repositories handle the local versions of your projects.
 
-#### Create a new local repository
+#### Create a new repository
 
 ```javascript
 let repository = await pando.repository.new(path?: string)
 ```
 
-default ```path``` parameter: ```'.'```
+> default ```path``` parameter: ```'.'```
 
-#### Load an existing local repository
+#### Load an existing repository
 
 ```javascript
 let repository = await pando.repository.load(path?: string)
@@ -92,10 +92,22 @@ let repository = await pando.repository.load(path?: string)
 let branch = await repository.branch.new(branchName: string)
 ```
 
-#### Stage
+#### Checkout from one branch to another
+
+```javascript
+let branch = await repository.checkout(branchName: string)
+```
+
+#### Stage files for snapshot
 
 ```javascript
 await repository.stage([filePath: string, filePath: string, ...])
+```
+
+#### Snapshot (commit) modifications
+
+```javascript
+await repository.snapshot(message: string)
 ```
 
 ## Maintainers
