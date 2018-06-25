@@ -84,7 +84,7 @@ default ```path``` parameter: ```'.'```
 let repository = await pando.repository.load(path?: string)
 ```
 
-> default path parameter: '.'
+> default ```path``` parameter: ```'.'```
 
 #### Create a new branch
 
