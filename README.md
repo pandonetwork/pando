@@ -44,7 +44,7 @@ npm install @ryhope/pando.js --save
 ## Usage
 
 ```javascript
-import Pando from '@ryhope/pando.js';
+import Pando from '@ryhope/pando.js'
 ```
 
 ## API
