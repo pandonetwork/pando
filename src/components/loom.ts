@@ -89,6 +89,12 @@ export default class Loom {
   }
 
   public async snapshot (_message: string): Promise < Snapshot > {
+    let index = await this.index!.update()
+    
+    if (!this.index!.unsnapshot.length) {
+      throw new Error ('Nothing to snapshot')
+    }
+    
     let tree    = await this.tree()
     let treeCID = await tree.put(this.node!)
     let parents = this.head !== 'undefined' ? [await this.fromIPLD(await this.node!.get(this.head))] : undefined
@@ -102,25 +108,24 @@ export default class Loom {
   }
 
   public async checkout (_branchName: string) {
-    let baseTree, newTree
-    
     await this.index!.update()
     
-    //We check if the branch exists
     if (!Branch.exists(this, _branchName)) {
       throw new Error('Branch ' + _branchName + ' does not exist')
     }
-    if(this.index!.unsnapshot.length) {
+    if (this.index!.unsnapshot.length) {
       throw new Error('You have unsnapshot modifications: ' + this.index!.unsnapshot)
     }
-    if(this.index!.modified.length) {
+    if (this.index!.modified.length) {
       throw new Error('You have unstaged and unsnaphot modifications: ' + this.index!.modified)
     }
         
     let newHead  = Branch.head(this, _branchName)
     let baseHead = this.head
-    // On ne modifie le tree que s'il y a déjà eu des choses commités dans la branche sur laquelle on part
+
     if (newHead !== 'undefined') {
+      let baseTree, newTree
+      
       newTree = await this.node!.get(newHead, 'tree')
       
       if (baseHead !== 'undefined') {
@@ -261,8 +266,9 @@ export default class Loom {
         delete _baseTree[entry]
       }
     }
-    // Delete remaining files
+    
     for (let entry in _baseTree) {
+      // Delete remaining files
       let _path = await this.node!.get(_baseTree[entry]['/'], 'path')
       utils.fs.rm(path.join(this.paths.root, _path))
     }
