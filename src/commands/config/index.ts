@@ -9,9 +9,11 @@ const builder = (yargs) => {
   return yargs
     .option('global', {
       alias: 'g',
-      describe: 'verbose2 output',
+      describe: 'Configure pando globally',
       type: 'boolean'
     })
+    .help()
+    .version(false)
 }
 
 const handler = async (argv) => {

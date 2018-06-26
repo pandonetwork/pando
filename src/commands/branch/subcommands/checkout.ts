@@ -4,7 +4,11 @@ import * as display from '@ui/display'
 import yargs        from 'yargs'
 
 
-const builder = (yargs) => {}
+const builder = (yargs) => {
+  return yargs
+    .help()
+    .version(false)
+}
 
 const handler = async (argv) => {
   try {

@@ -1,4 +1,4 @@
-# pando.js
+# pando
 
 <!-- ![banner]() -->
 

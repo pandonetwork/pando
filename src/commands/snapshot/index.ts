@@ -11,6 +11,8 @@ const builder = (yargs) => {
       description: 'A message describing the snapshot',
       required: true
     })
+    .help()
+    .version(false)
 }
 
 const handler = async (argv) => {

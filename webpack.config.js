@@ -23,8 +23,7 @@ module.exports = {
       '@utils': path.resolve(__dirname, 'src/utils/'),
       '@lib': path.resolve(__dirname, 'src/lib/'),
       '@ui': path.resolve(__dirname, 'src/ui/'),
-      '@inquirer': path.resolve(__dirname, 'src/ui/inquirer'),
-      '@spinners': path.resolve(__dirname, 'src/ui/spinners')
+      '@inquirer': path.resolve(__dirname, 'src/ui/inquirer')
       // '@build': path.resolve(__dirname, 'build/'),
       // "@interfaces": path.resolve(__dirname, 'src/interfaces/ipando.d.ts')
     }

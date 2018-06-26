@@ -4,6 +4,12 @@ import * as display from '@ui/display'
 import yargs        from 'yargs'
 
 
+const builder = (yargs) => {
+  return yargs
+    .help()
+    .version(false)
+}
+
 const handler = async (argv: any) => {
   try {
     display.info('Staging ' + argv.files)
@@ -21,6 +27,6 @@ export const stage = {
   command: 'stage <files...>',
   aliases: ['add'],
   desc:    'Stage modifications',
-  builder: () => {},
+  builder: builder,
   handler: handler
 }

@@ -3,6 +3,12 @@ import * as config  from '@lib/config'
 import * as display from '@ui/display'
 import yargs        from 'yargs'
 
+const builder = (yargs) => {
+  return yargs
+    .help()
+    .version(false)
+}
+
 const handler = async () => {
   try {
     display.info('Initializing repository')
@@ -24,6 +30,6 @@ export const init = {
   command: 'initialize',
   aliases: ['init'],
   desc:    'Initialize repository',
-  builder: () => {},
+  builder: builder,
   handler: handler
 }
