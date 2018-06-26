@@ -1,13 +1,15 @@
 # pando.js
 
-![banner]()
+<!-- ![banner]() -->
 
 [![standard-readme compliant](https://img.shields.io/badge/standard--readme-OK-green.svg?style=flat-square)](https://github.com/RichardLitt/standard-readme)
-TODO: Put more badges here.
 
 > A distributed VCS based on IPFS, Ethereum and AragonOS
 
-TODO: Fill out this long description.
+Pando is a distributed cooperation and versioning system built on top of IPFS, AragonOS and the Ethereum blockchain. Its goal is to become a de facto standard. Pando’s specification and implementation are thus intended to be open-source and community-driven.
+
+One way to understand what pando is to think about it as a distributed version of a traditional versioning system like git. Another one is to think about it as a tool to track and govern the evolution of contents the same way an ecosystem works. A last one is to think about pando as a universal infrastructure to cooperatively create, link and archive contents: software, writing, music, video, etc. 
+
 
 ## Table of Contents
 
