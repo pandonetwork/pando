@@ -42,6 +42,14 @@ export default class Loom {
     return this.currentBranch.head
   }
 
+  public get config (): any {
+    return utils.yaml.read(this.paths.config)
+  }
+  
+  public set config (_configuration: any) {
+    utils.yaml.write(this.paths.config, _configuration)
+  }
+
   public constructor (_pando: Pando, _path: string = '.', opts?: any) {
     for (let p in this.paths) { this.paths[p] = path.join(_path, this.paths[p]) }
     this.pando = _pando
