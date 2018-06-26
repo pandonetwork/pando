@@ -42,16 +42,21 @@ npm install -g @ryhope/pando
 
 ## Usage
 
-Initialize a repository
-
 ```
-pando init
-```
+~ ❯❯❯ pando --help
 
-Initialize a repository
+pando <command>
 
-```
-pando init
+Commands:
+  pando configure            Configure pando                   [aliases: config]
+  pando initialize           Initialize repository               [aliases: init]
+  pando stage <files...>     Stage modifications                  [aliases: add]
+  pando snapshot             Snapshot modifications            [aliases: commit]
+  pando branch <subcommand>  Handle branches
+
+Options:
+  --version   Show version number                                      [boolean]
+  -h, --help  Show help                                                [boolean]
 ```
 
 ## Maintainers
