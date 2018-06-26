@@ -1,15 +1,14 @@
 import * as utils from '@utils'
-import _path from 'path'
-import os from 'os'
+import _path      from 'path'
+import os         from 'os'
 
 export const path = _path.join(os.homedir(), '.pandoconfig')
-
 
 export const exists = (): boolean => {
   return utils.fs.exists(path)
 }
 
-export const save = (_data) => {
+export const save = (_data: any) => {
   return utils.yaml.write(path, _data)
 }
 

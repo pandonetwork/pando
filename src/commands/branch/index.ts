@@ -7,6 +7,7 @@ const builder = (yargs) => {
     .usage('pando branch <subcommand>')
     .command(subcommands.new_)
     .command(subcommands.checkout)
+    .command(subcommands.current)
     .updateStrings({ 'Commands:': 'Subcommands:' })
     .demandCommand(1, 'No subcommand provided')
     .help()

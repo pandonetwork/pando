@@ -1,8 +1,4 @@
-const chalk = require('chalk')
-
-// export const info = chalk.blue
-// export const success = chalk.green
-// export const error = chalk.red
+import chalk from 'chalk'
 
 export const info = (_message: string) => {
   console.log(chalk.blue('+ ' + _message))
