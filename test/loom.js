@@ -25,7 +25,6 @@ describe('Loom', () => {
   after(async () => { await utils.fs.rmdir(path.join('test','mocks','.pando')) })
 
   describe('#new', async () => {
-  
     before(async () => { loom = await pando.loom.new(path.join('test','mocks')) })
   
     after(async () => { await utils.fs.rmdir(path.join('test','mocks','.pando')) })

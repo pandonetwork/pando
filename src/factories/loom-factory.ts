@@ -13,6 +13,6 @@ export default class LoomFactory {
   }
   
   public async load (_path: string = '.'): Promise < Loom > {
-    return await Loom.load(this.pando, _path)  
+    return await Loom.load(_path)  
   }
 }

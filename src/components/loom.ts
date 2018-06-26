@@ -17,6 +17,7 @@ export default class Loom {
     ipfs:     '.pando/ipfs',
     index:    '.pando/index',
     current:  '.pando/current',
+    config:   '.pando/config',
     branches: '.pando/branches'
   }
   public pando:    Pando
@@ -54,7 +55,7 @@ export default class Loom {
     await utils.fs.mkdir(loom.paths.ipfs)
     await utils.fs.mkdir(loom.paths.branches)
     await utils.yaml.write(loom.paths.index, {})
-    
+    await utils.yaml.write(loom.paths.config, _pando.configuration)
     // Initialize master branch
     await Branch.new(loom, 'master')
     await utils.yaml.write(loom.paths.current, 'master')
@@ -66,10 +67,11 @@ export default class Loom {
     return loom
   }
 
-  public static async load (_pando: Pando, _path: string = '.', opts?: any): Promise < Loom > {
+  public static async load (_path: string = '.', opts?: any): Promise < Loom > {
     if (!Loom.exists(_path)) { throw new Error('No pando loom found at ' + _path) }
 
-    let loom = new Loom(_pando, _path)
+    let pando  = new Pando(utils.yaml.read(path.join(_path, Loom.paths.config)))
+    let loom   = new Loom(pando, _path)
     loom.node  = await Node.load(loom)
     loom.index = await Index.load(loom)
 
