@@ -4,6 +4,8 @@ import * as utils from './utils'
 import chai       from 'chai'
 import path         from 'path'
 
+var lockFile = require('lockfile')
+
 import 'chai/register-should'
 
 const should = chai.should
@@ -13,24 +15,31 @@ chai.use(require('chai-as-promised'))
 
 describe('Pando', () => {
   let pando
-
+  
+  before(async () => {
+    pando = new Pando(opts)
+  })
+  
   describe('#new', () => {
     it('should initialize pando correctly', () => {
-      pando = new Pando(opts)
       pando.configuration.author.should.be.equal(opts.author)
       pando.configuration.ethereum.should.be.equal(opts.ethereum)
     })
   })
 
   describe('LoomFactory', () => {
-    let loom
-
-    before(async () => { loom = await pando.loom.new(path.join('test','mocks')) })
-
-    after(async () => { await utils.fs.rmdir(path.join('test','mocks','.pando')) })
+    after(async () => {
+      utils.fs.rmdir(path.join('test','mocks','.pando'))
+    })
 
     describe('#new', () => {
-      it('should initialize loom\'s paths correctly', () => {
+      let loom
+    
+      before(async () => {
+        loom = await pando.loom.new(path.join('test','mocks'))
+      })
+    
+      it('should initialize loom\'s paths correctly', async () => {
         loom.paths.root.should.be.equal(path.join('test','mocks'))
         loom.paths.pando.should.be.equal(path.join('test','mocks','.pando'))
         loom.paths.ipfs.should.be.equal(path.join('test','mocks','.pando','ipfs'))
