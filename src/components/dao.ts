@@ -16,7 +16,7 @@ export default class DAO {
     let kernelBase = await _pando.contracts.kernel.new()
     let aclBase = await _pando.contracts.acl.new()
     let factory = await _pando.contracts.daoFactory.new(kernelBase.address, aclBase.address, '0x00')
-    let receipt = await factory.newDAO(_pando.configuration.user.account)
+    let receipt = await factory.newDAO(_pando.configuration.author.account)
     
     let address = receipt.logs.filter(l => l.event === 'DeployDAO')[0].args.dao
     let kernel = await _pando.contracts.kernel.at(address)
@@ -33,10 +33,10 @@ export default class DAO {
   public async grantAppManagerRole (opts?: any): Promise < any > {
     let APP_MANAGER_ROLE = await this.kernel.APP_MANAGER_ROLE()
     let receipt = await this.acl.createPermission(
-      this.pando.configuration.user.account,
+      this.pando.configuration.author.account,
       this.kernel.address,
       APP_MANAGER_ROLE,
-      this.pando.configuration.user.account
+      this.pando.configuration.author.account
     )
     return receipt
   }
@@ -71,7 +71,7 @@ export default class DAO {
     return new Promise(async (resolve, reject) => {
       try {
         let PUSH = await this.tree.PUSH()
-        let receipt = await this.acl.grantPermission(this.pando.configuration.user.account, this.tree.address, PUSH)
+        let receipt = await this.acl.grantPermission(this.pando.configuration.author.account, this.tree.address, PUSH)
         resolve(receipt)
       } catch (err) {
         reject(err)

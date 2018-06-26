@@ -99,7 +99,7 @@ export default class Loom {
     let treeCID = await tree.put(this.node!)
     let parents = this.head !== 'undefined' ? [await this.fromIPLD(await this.node!.get(this.head))] : undefined
     
-    let snapshot = new Snapshot({ author: this.pando.configuration.user, tree: tree, parents: parents, message: _message })
+    let snapshot = new Snapshot({ author: this.pando.configuration.author, tree: tree, parents: parents, message: _message })
     let cid      = await this.node!.put(await snapshot.toIPLD())
 
     this.currentBranch.head = cid.toBaseEncodedString()

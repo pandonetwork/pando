@@ -27,7 +27,7 @@ export default class Pando {
   constructor (configuration: IConfiguration) {
     this.configuration = configuration
     this.web3 = Pando.utils.web3.get(configuration.ethereum)
-    this.contracts = Pando.contracts.initialize(this.web3, configuration.user.account)
+    this.contracts = Pando.contracts.initialize(this.web3, configuration.author.account)
   }
 }
 

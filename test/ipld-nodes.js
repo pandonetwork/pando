@@ -32,7 +32,7 @@ describe('IPLD Nodes', () => {
       it('should initialize snapshot correctly', async () => {
         snapshot.type.should.equal('snapshot')
         snapshot.tree.should.deep.equal(tree)
-        snapshot.author.should.deep.equal(opts.user)
+        snapshot.author.should.deep.equal(opts.author)
         snapshot.message.should.equal('My first snapshot')
         snapshot.parents.should.deep.equal([])
         // snapshot.timestamp ?

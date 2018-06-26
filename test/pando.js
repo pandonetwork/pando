@@ -17,7 +17,7 @@ describe('Pando', () => {
   describe('#new', () => {
     it('should initialize pando correctly', () => {
       pando = new Pando(opts)
-      pando.configuration.user.should.be.equal(opts.user)
+      pando.configuration.author.should.be.equal(opts.author)
       pando.configuration.ethereum.should.be.equal(opts.ethereum)
     })
   })

@@ -2,7 +2,7 @@ import path         from 'path'
 
 
 const opts = {
-  user: {
+  author: {
     account: '0x2d6ef21eb58f164841b41a7b749d0d957790620a'
   },
   ethereum: {

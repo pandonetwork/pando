@@ -1,4 +1,4 @@
-export interface IUser {
+export interface IAuthor {
   account: string
 }
 
@@ -8,17 +8,6 @@ export interface IEthereum {
 }
 
 export interface IConfiguration {
-  user: IUser
+  author: IAuthor
   ethereum: IEthereum
-}
-
-export interface IPaths {
-  root: string
-  pando: string
-  ipfs: string
-  conf: string
-  index: string
-  tmp: string
-  head: string
-  refs: string
 }
