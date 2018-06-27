@@ -1,4 +1,4 @@
-import DAOFactory          from '@factories/dao-factory.ts'
+// import DAOFactory          from '@factories/dao-factory.ts'
 import LoomFactory         from '@factories/loom-factory.ts'
 import * as PandoContracts from '@contracts'
 import * as PandoUtils     from '@utils'
@@ -18,8 +18,7 @@ export default class Pando {
    
   public web3: any
   public configuration: IConfiguration
-  
-  public dao = new DAOFactory(this)
+
   public loom = new LoomFactory(this)
   
   public contracts: any

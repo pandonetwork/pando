@@ -5,7 +5,8 @@ import Branch        from '@components/branch'
 import Snapshot      from '@objects/snapshot'
 import Tree          from '@objects/tree'
 import File          from '@objects/file'
-import BranchFactory from '@factories/branch-factory.ts'
+import BranchFactory from '@factories/branch-factory'
+import RemoteFactory from '@factories/remote-factory'
 import * as utils    from '@locals/utils'
 import path          from 'path'
 import CID           from 'cids'
@@ -18,12 +19,14 @@ export default class Loom {
     index:    '.pando/index',
     current:  '.pando/current',
     config:   '.pando/config',
-    branches: '.pando/branches'
+    branches: '.pando/branches',
+    remotes:  '.pando/remotes'
   }
   public pando:    Pando
   public node?:    Node
   public index?:   Index
   public branch =  new BranchFactory(this)
+  public remote =  new RemoteFactory(this)
   public paths  =  { ...Loom.paths }
 
   public get currentBranchName (): string {
@@ -62,12 +65,12 @@ export default class Loom {
     await utils.fs.mkdir(loom.paths.pando)
     await utils.fs.mkdir(loom.paths.ipfs)
     await utils.fs.mkdir(loom.paths.branches)
+    await utils.fs.mkdir(loom.paths.remotes)
     await utils.yaml.write(loom.paths.index, {})
     await utils.yaml.write(loom.paths.config, _pando.configuration)
     // Initialize master branch
     await Branch.new(loom, 'master')
     await utils.yaml.write(loom.paths.current, 'master')
-
     // Initialize node and index
     loom.node  = await Node.new(loom)
     loom.index = await Index.new(loom)
