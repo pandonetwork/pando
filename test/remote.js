@@ -19,9 +19,8 @@ describe('Repository#RemoteFactory', () => {
   let pando, loom, remote
 
   before(async () => {
-    pando  = new Pando(opts)
-    loom   = await pando.loom.new(path.join('test','mocks'))
-    remote = await loom.remote.deploy('origin')
+    pando = new Pando(opts)
+    loom  = await pando.loom.new(path.join('test','mocks'))
   })
 
   after(async () => { await utils.fs.rmdir(path.join('test','mocks','.pando')) })
@@ -29,7 +28,6 @@ describe('Repository#RemoteFactory', () => {
   describe('#deploy', async () => {
     it('should deploy remote correctly', async () => {
       remote = await loom.remote.deploy('origin')
-      let branch = await remote.tree.branches(0)
       
       expect(remote.kernel).to.exist
       expect(remote.acl).to.exist
@@ -37,7 +35,6 @@ describe('Repository#RemoteFactory', () => {
       remote.loom.should.deep.equal(loom)
       remote.name.should.equal('origin')
       remote.hash.should.equal('0x' + keccak256('origin'))
-      branch.should.equal('master')
     })
     
     it('should save remote informations correctly', async () => {

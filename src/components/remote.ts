@@ -39,9 +39,11 @@ export default class Remote {
     let receipt3 = await kernel.newAppInstance(Remote.TREE_APP_ID, base.address)
     let treeAddress  = receipt3.logs.filter(l => l.event === 'NewAppProxy')[0].args.proxy
     let tree = await _loom.pando.contracts.tree.at(treeAddress)    
-  // Create PUSH role
+    // Create PUSH role
     const PUSH   = await tree.PUSH()
     let receipt4 = await acl.createPermission(_loom.config.author.account, tree.address, PUSH, _loom.config.author.account)
+    // Create master branch
+    let receipt5 = await tree.newBranch('master')
     
     return new Remote(_loom, kernel, acl, tree, _name)
   }
