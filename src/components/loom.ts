@@ -111,10 +111,8 @@ export default class Loom {
     let tree    = await this.tree()
     let treeCID = await tree.put(this.node!)
     let parents = this.head !== 'undefined' ? [await this.fromIPLD(await this.node!.get(this.head))] : undefined
-    
     let snapshot = new Snapshot({ author: this.pando.configuration.author, tree: tree, parents: parents, message: _message })
     let cid      = await this.node!.put(await snapshot.toIPLD())
-
     this.currentBranch.head = cid.toBaseEncodedString()
 
     return snapshot
@@ -156,6 +154,14 @@ export default class Loom {
     this.currentBranchName = _branchName
   }
 
+  public async push(_remote: string, _branch: string): Promise < any > {
+    let head   = this.head
+    let remote = await this.remote.load(_remote)
+    let tx     = await remote.push(_branch, head)
+    
+    return tx
+  }
+
   public async fromIPLD (object) {
     let attributes = {}, data = {}, node
 
@@ -178,7 +184,7 @@ export default class Loom {
         let type = attributes[attribute].type
 
         switch (type) {
-          case 'map':
+          case 'map':          
             data['children'] = {}
             for (let child in object) {
               if(child !== '@type' && child !== 'path') {
@@ -189,14 +195,14 @@ export default class Loom {
           case 'array':
             data[attribute] = []
             for (let child of object[attribute]) {
-              data[attribute].push(await this.fromIPLD(await this.node!.get(object[attribute][child]['/'])))
+              data[attribute].push(await this.fromIPLD(await this.node!.get(child['/'])))
             }
             break
           case 'direct':
             data[attribute] = object[attribute]['/']
             break
-          default:
-            data[attribute] = await this.fromIPLD(await this.node!.get(object[attribute]['/']))
+          default: 
+            data[attribute] = await this.fromIPLD(await this.node!.get(object[attribute]['/']))            
         }
       } else {
         data[attribute] = object[attribute]
@@ -216,7 +222,7 @@ export default class Loom {
       default:
         throw new TypeError('Unrecognized IPLD node.')
     }
-
+    
    return node
   }
 
