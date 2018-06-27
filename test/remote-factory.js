@@ -49,11 +49,11 @@ describe('Repository#RemoteFactory', () => {
     })
   })
   
-  describe('#at', async () => {
+  describe('#load', async () => {
     let loaded
 
     it('should load remote informations correctly', async () => {
-      let info = loom.remote.load('origin')
+      let info = loom.remote.loadInformations('origin')
       
       info.kernel.should.equal(remote.kernel.address)
       info.acl.should.equal(remote.acl.address)
@@ -61,7 +61,7 @@ describe('Repository#RemoteFactory', () => {
     })
 
     it('should load remote correctly', async () => {
-      loaded = await loom.remote.at('origin')
+      loaded = await loom.remote.load('origin')
 
       loaded.kernel.address.should.equal(remote.kernel.address)
       loaded.acl.address.should.equal(remote.acl.address)

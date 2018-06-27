@@ -12,24 +12,24 @@ export default class RemoteFactory {
 
   public async deploy (_name: string): Promise < Remote > {    
     let remote = await Remote.deploy(this.loom, _name)
-    this.save(_name, remote)
+    this.saveInformations(_name, remote)
     return remote
   }
   
-  public async at (_name: string): Promise < Remote > {
-    let info = this.load(_name)
+  public async load (_name: string): Promise < Remote > {
+    let info = this.loadInformations(_name)
        
     let remote = await Remote.at(this.loom, info.kernel, info.acl, info.tree, _name)
     return remote
   }
 
-  public save (_name: string, _remote: Remote): any {
+  public saveInformations (_name: string, _remote: Remote): any {
     let info = { kernel: _remote.kernel.address, acl: _remote.acl.address, tree: _remote.tree.address }
     utils.yaml.write(path.join(this.loom.paths.remotes, _name), info)  
     return info
   }
 
-  public load (_name: string): any {    
+  public loadInformations (_name: string): any {    
     let info = utils.yaml.read(path.join(this.loom.paths.remotes, _name))
     return info
   }

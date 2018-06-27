@@ -35,10 +35,10 @@ export default class Remote {
     let APP_MANAGER_ROLE = await kernel.APP_MANAGER_ROLE()
     let receipt2         = await acl.createPermission(_loom.config.author.account, kernel.address, APP_MANAGER_ROLE, _loom.config.author.account)
     // Deploy tree app
-    let base     = await _loom.pando.contracts.tree.new()
-    let receipt3 = await kernel.newAppInstance(Remote.TREE_APP_ID, base.address)
-    let treeAddress  = receipt3.logs.filter(l => l.event === 'NewAppProxy')[0].args.proxy
-    let tree = await _loom.pando.contracts.tree.at(treeAddress)    
+    let base        = await _loom.pando.contracts.tree.new()
+    let receipt3    = await kernel.newAppInstance(Remote.TREE_APP_ID, base.address)
+    let treeAddress = receipt3.logs.filter(l => l.event === 'NewAppProxy')[0].args.proxy
+    let tree        = await _loom.pando.contracts.tree.at(treeAddress)    
     // Create PUSH role
     const PUSH   = await tree.PUSH()
     let receipt4 = await acl.createPermission(_loom.config.author.account, tree.address, PUSH, _loom.config.author.account)
@@ -54,6 +54,19 @@ export default class Remote {
     let tree   = await _loom.pando.contracts.kernel.at(_treeAddress)
     
     return new Remote(_loom, kernel, acl, tree, _name)
+  }
+  
+  public async newBranch (_name: string) {
+    await this.tree.newBranch(_name)
+  }
+  
+  public async getBranchesName (): Promise < string[] > {
+    let separator = await this.tree.SEPARATOR()
+    let branches  = await this.tree.getBranchesName()
+    let array     = branches.split(separator)
+    array.splice(-1, 1)
+    
+    return array
   }
   // public async push (cid: string): Promise < any > {
   //   let tx = await this.tree.setRepository(cid)

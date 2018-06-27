@@ -15,57 +15,32 @@ const expect = chai.expect
 
 chai.use(require('chai-as-promised'))
 
-describe('Repository#RemoteFactory', () => {
+describe('Remote', () => {
   let pando, loom, remote
 
   before(async () => {
-    pando = new Pando(opts)
-    loom  = await pando.loom.new(path.join('test','mocks'))
+    pando  = new Pando(opts)
+    loom   = await pando.loom.new(path.join('test','mocks'))
+    remote = await loom.remote.deploy('origin')
   })
 
   after(async () => { await utils.fs.rmdir(path.join('test','mocks','.pando')) })
 
-  describe('#deploy', async () => {
-    it('should deploy remote correctly', async () => {
-      remote = await loom.remote.deploy('origin')
-      
-      expect(remote.kernel).to.exist
-      expect(remote.acl).to.exist
-      expect(remote.tree).to.exist
-      remote.loom.should.deep.equal(loom)
-      remote.name.should.equal('origin')
-      remote.hash.should.equal('0x' + keccak256('origin'))
-    })
-    
-    it('should save remote informations correctly', async () => {
-      let info = utils.yaml.read(path.join(loom.paths.remotes, 'origin'))
-      
-      info.kernel.should.equal(remote.kernel.address)
-      info.acl.should.equal(remote.acl.address)
-      info.tree.should.equal(remote.tree.address)
+  describe('#newBranch', async () => {
+    it('should create remote branch correctly', async () => {
+      expect(remote.newBranch('dev')).to.be.fulfilled
+      let branch = await remote.tree.branches(1) 
+      branch.should.equal('dev')
     })
   })
   
-  describe('#at', async () => {
-    let loaded
-
-    it('should load remote informations correctly', async () => {
-      let info = loom.remote.load('origin')
+  describe('#getBranchesName', async () => {
+    it('should return remote branches name correctly', async () => {
+      let branches = await remote.getBranchesName()
       
-      info.kernel.should.equal(remote.kernel.address)
-      info.acl.should.equal(remote.acl.address)
-      info.tree.should.equal(remote.tree.address)
-    })
-
-    it('should load remote correctly', async () => {
-      loaded = await loom.remote.at('origin')
-
-      loaded.kernel.address.should.equal(remote.kernel.address)
-      loaded.acl.address.should.equal(remote.acl.address)
-      loaded.tree.address.should.equal(remote.tree.address)
-      loaded.loom.should.deep.equal(loom)
-      loaded.name.should.equal('origin')
-      loaded.hash.should.equal('0x' + keccak256('origin'))
+      branches[0].should.equal('master')
+      branches[1].should.equal('dev')
+      expect(branches[2]).to.not.exist
     })
   })
 })
