@@ -1,5 +1,5 @@
 import Pando           from '../lib/main.js'
-// import { Loom, Branch, Remote } from '../lib/main.js'
+import { Remote } from '../lib/main.js'
 import { opts, cids }  from './data'
 import * as utils      from './utils'
 import * as fs        from 'fs-extra'
@@ -36,28 +36,24 @@ describe('Repository#RemoteFactory', () => {
       expect(remote.tree).to.exist
       remote.loom.should.deep.equal(loom)
       remote.name.should.equal('origin')
-      remote.hash.should.equal('0x' + keccak256('origin'))
       branch.should.equal('master')
     })
     
-    it('should save remote informations correctly', async () => {
-      let info = utils.yaml.read(path.join(loom.paths.remotes, 'origin'))
+    it('should save remote address correctly', async () => {
+      let address = utils.yaml.read(path.join(loom.paths.remotes, 'origin'))
       
-      info.kernel.should.equal(remote.kernel.address)
-      info.acl.should.equal(remote.acl.address)
-      info.tree.should.equal(remote.tree.address)
+      address.should.equal(remote.kernel.address)
+
     })
   })
   
   describe('#load', async () => {
     let loaded
 
-    it('should load remote informations correctly', async () => {
-      let info = loom.remote.loadInformations('origin')
+    it('should load remote address correctly', async () => {
+      let address = loom.remote.loadAddress('origin')
       
-      info.kernel.should.equal(remote.kernel.address)
-      info.acl.should.equal(remote.acl.address)
-      info.tree.should.equal(remote.tree.address)
+      address.should.equal(remote.kernel.address)
     })
 
     it('should load remote correctly', async () => {
@@ -68,7 +64,30 @@ describe('Repository#RemoteFactory', () => {
       loaded.tree.address.should.equal(remote.tree.address)
       loaded.loom.should.deep.equal(loom)
       loaded.name.should.equal('origin')
-      loaded.hash.should.equal('0x' + keccak256('origin'))
     })
+  })
+  
+  describe('#add', async () => {
+    let deployed, added
+
+    before(async () => {
+      deployed = await Remote.deploy(loom)
+    })
+    
+    it('should add remote correctly', async () => {
+      added = await loom.remote.add('added', deployed.kernel.address)
+      
+      added.kernel.address.should.equal(deployed.kernel.address)
+      added.acl.address.should.equal(deployed.acl.address)
+      added.tree.address.should.equal(deployed.tree.address)
+    })
+    
+    it('should save remote address correctly', async () => {
+      let address = loom.remote.loadAddress('added')
+      
+      address.should.equal(deployed.kernel.address)
+    })
+
+    
   })
 })

@@ -1,6 +1,7 @@
 # pando.js
 
 ![banner]()
+<img align="center" src="https://github.com/wespr/pando/blob/master/logo.png" height="80px" />
 
 [![standard-readme compliant](https://img.shields.io/badge/standard--readme-OK-green.svg?style=flat-square)](https://github.com/RichardLitt/standard-readme)
 TODO: Put more badges here.

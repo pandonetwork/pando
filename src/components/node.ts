@@ -1,15 +1,14 @@
-import Pando        from '@pando'
-import Loom         from '@components/loom'
-import * as utils   from '@locals/utils'
-import IPFS         from 'ipfs'
-import IPFSRepo     from 'ipfs-repo'
-import memoryLock   from 'ipfs-repo/src/lock-memory' 
-import IPLD         from 'ipld'
-import IPLDPando    from 'ipld-pando'
-import CID          from 'cids'
-import promisify    from 'promisify-event'
-import path         from 'path'
-
+import Loom from '@components/loom'
+import Pando from '@pando'
+import * as utils from '@utils'
+import CID from 'cids'
+import IPFS from 'ipfs'
+import IPFSRepo from 'ipfs-repo'
+import memoryLock from 'ipfs-repo/src/lock-memory'
+import IPLD from 'ipld'
+import IPLDPando from 'ipld-pando'
+import path from 'path'
+import promisify from 'promisify-event'
 
 const IPFSRepoOpts = {
   storageBackends: {
@@ -49,18 +48,18 @@ export default class Node {
   public ipfs: any
   public ipld: any
 
-  public constructor (_loom: Loom, _ipfs: any, _ipld: any) {
+  public constructor(_loom: Loom, _ipfs: any, _ipld: any) {
     this.loom = _loom
     this.ipfs = _ipfs
     this.ipld = _ipld
   }
 
-  public static async new (_loom: Loom): Promise < Node > {
-    let repo = new IPFSRepo(_loom.paths.ipfs, IPFSRepoOpts)
-    let ipfs = new IPFS({ repo: repo, start: false })
-  
+  public static async new(_loom: Loom): Promise<Node> {
+    const repo = new IPFSRepo(_loom.paths.ipfs, IPFSRepoOpts)
+    const ipfs = new IPFS({ repo, start: false })
+
     await promisify(ipfs, 'ready')
-    let ipld = new IPLD(ipfs.block)
+    const ipld = new IPLD(ipfs.block)
 
     // Replace raw-format resolver by pando-format resolver until
     // pando-format is registered in the multiformat table
@@ -70,11 +69,11 @@ export default class Node {
     return new Node(_loom, ipfs, ipld)
   }
 
-  public static async load (_loom: Loom): Promise < Node > {
-    let repo = new IPFSRepo(_loom.paths.ipfs, IPFSRepoOpts)
-    let ipfs = new IPFS({ repo: repo, init: false, start: false })
+  public static async load(_loom: Loom): Promise<Node> {
+    const repo = new IPFSRepo(_loom.paths.ipfs, IPFSRepoOpts)
+    const ipfs = new IPFS({ repo, init: false, start: false })
     await promisify(ipfs, 'ready')
-    let ipld = new IPLD(ipfs.block)
+    const ipld = new IPLD(ipfs.block)
 
     // Replace raw-format resolver by pando-format resolver until
     // pando-format is registered in the multiformat table
@@ -84,34 +83,40 @@ export default class Node {
     return new Node(_loom, ipfs, ipld)
   }
 
-  public async upload (_path: string): Promise < string > {
-    let results = await this.ipfs.files.add([{ path: path.relative(this.loom.paths.root, _path), content: utils.fs.read(_path) }])
+  public async upload(_path: string): Promise<string> {
+    const results = await this.ipfs.files.add([
+      {
+        path: path.relative(this.loom.paths.root, _path),
+        content: utils.fs.read(_path)
+      }
+    ])
     return results[0].hash
   }
 
-  public async download (_cid: any, opts?: any) {
-    return new Promise < any > (async (resolve, reject) => {
-      let cid = CID.isCID(_cid) ? _cid : new CID(_cid)
+  public async download(_cid: any, opts?: any) {
+    return new Promise<any>(async (resolve, reject) => {
+      const cid = CID.isCID(_cid) ? _cid : new CID(_cid)
       this.ipld.get(cid, async (err, result) => {
         if (err) {
           reject(err)
         } else {
-          let node = result.value
-          let nodePath = path.join(this.loom.paths.root, node.path)
-          
+          const node = result.value
+          const nodePath = path.join(this.loom.paths.root, node.path)
+
           if (node['@type'] === 'tree') {
-            if (!utils.fs.exists(nodePath)) { utils.fs.mkdir(nodePath) }
-            
+            if (!utils.fs.exists(nodePath)) {
+              utils.fs.mkdir(nodePath)
+            }
+
             delete node['@type']
-            delete node['path']
-            
-            for (let entry in node) {
+            delete node.path
+
+            for (const entry in node) {
               this.download(node[entry]['/'])
             }
           } else if (node['@type'] === 'file') {
-            let buffer = await this.ipfs.files.cat(node.link['/'])
+            const buffer = await this.ipfs.files.cat(node.link['/'])
             utils.fs.write(nodePath, buffer)
-            
           }
           resolve(true)
         }
@@ -119,21 +124,25 @@ export default class Node {
     })
   }
 
-  public async put (object: any): Promise < any > {
-    return new Promise < any > (async (resolve, reject) => {
-      this.ipld.put(object, { format: 'raw', hashAlg: 'keccak-256'}, async (err, cid) => {
-        if(err) {
-          reject(err)
-        } else {
-          resolve(cid)
+  public async put(object: any): Promise<any> {
+    return new Promise<any>(async (resolve, reject) => {
+      this.ipld.put(
+        object,
+        { format: 'raw', hashAlg: 'keccak-256' },
+        async (err, cid) => {
+          if (err) {
+            reject(err)
+          } else {
+            resolve(cid)
+          }
         }
-      })
+      )
     })
   }
 
-  public async get (_cid: any, _path?: string): Promise < any > {
-    return new Promise < any > (async (resolve, reject) => {
-      let cid = CID.isCID(_cid) ? _cid : new CID(_cid)
+  public async get(_cid: any, _path?: string): Promise<any> {
+    return new Promise<any>(async (resolve, reject) => {
+      const cid = CID.isCID(_cid) ? _cid : new CID(_cid)
       this.ipld.get(cid, _path || '', async (err, result) => {
         if (err) {
           reject(err)
@@ -144,10 +153,15 @@ export default class Node {
     })
   }
 
-  public async cid (_data, opts: any) {
+  public async cid(_data, opts: any) {
     if (opts.file) {
-      let file = [{ path: path.relative(this.loom.paths.root, _data), content: utils.fs.read(_data) }]
-      let results = await this.ipfs.files.add(file, { 'only-hash': true })
+      const file = [
+        {
+          path: path.relative(this.loom.paths.root, _data),
+          content: utils.fs.read(_data)
+        }
+      ]
+      const results = await this.ipfs.files.add(file, { 'only-hash': true })
       return results[0].hash
     }
   }

@@ -15,7 +15,7 @@ class File extends IPLDNode {
   }
   
   public async put (node: Node) {
-    let cid = await node.put(await this.toIPLD())  
+    const cid = await node.put(await this.toIPLD())  
     return cid
   }
 }

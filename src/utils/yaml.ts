@@ -1,5 +1,5 @@
-import * as fs  from './fs'
 import yaml     from 'js-yaml'
+import * as fs  from './fs'
 
 export const read = (_path: string) => {
   return yaml.safeLoad(fs.read(_path))

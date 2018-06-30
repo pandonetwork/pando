@@ -1,174 +1,204 @@
-import Loom       from '@components/loom'
-import * as utils from '@locals/utils'
-import path       from 'path'
-import klaw       from 'klaw-sync'
-
+import Loom from '@components/loom'
+import * as utils from '@utils'
+import klaw from 'klaw-sync'
+import path from 'path'
 
 export default class Index {
-  loom: Loom
+  public static async new(loom: Loom): Promise<Index> {
+    return new Index(loom)
+  }
 
-  public get path () {
+  public static async load(loom: Loom): Promise<Index> {
+    return new Index(loom)
+  }
+
+  public loom: Loom
+
+  public get path() {
     return this.loom.paths.index
   }
 
-  public get current (): any {
+  public get current(): any {
     return utils.yaml.read(this.path)
   }
 
-  public set current (_index: any) {
-    utils.yaml.write(this.path, _index)
+  public set current(index: any) {
+    utils.yaml.write(this.path, index)
   }
 
   /**
-  * Returns staged but unsnaphot files
-  * 
-  * @returns {string[]}
-  */
-  public get unsnapshot (): string[] {
-    let current          = this.current
-    let unsnaphot: any[] = []
-    
-    for (let entry in current) {
+   * Returns staged but unsnaphot files
+   *
+   * @returns {string[]}
+   */
+  public get unsnapshot(): string[] {
+    const current = this.current
+    const unsnaphot: any[] = []
+
+    for (const entry in current) {
       if (current[entry].repo !== current[entry].stage) {
         unsnaphot.push(entry)
       }
     }
-    
+
     return unsnaphot
   }
 
   /**
-  * Returns once staged files
-  * 
-  * @returns {string[]}
-  */
-  public get staged (): string[] {
-    let current       = this.current
-    let staged: any[] = []
-    
-    for (let entry in current) {
+   * Returns once staged files
+   *
+   * @returns {string[]}
+   */
+  public get staged(): string[] {
+    const current = this.current
+    const staged: any[] = []
+
+    for (const entry in current) {
       if (current[entry].stage !== 'null') {
         staged.push(entry)
       }
     }
-    
+
     return staged
   }
 
   /**
-  * Returns modified once staged files
-  * 
-  * @returns {string[]}
-  */
-  public get modified (): string[] {
-    let current         = this.current
-    let modified: any[] = []
-    
-    for (let entry in current) {
-      if (current[entry].stage !== 'null' && current[entry].wdir !== current[entry].stage) {
+   * Returns modified once staged files
+   *
+   * @returns {string[]}
+   */
+  public get modified(): string[] {
+    const current = this.current
+    const modified: any[] = []
+
+    for (const entry in current) {
+      if (
+        current[entry].stage !== 'null' &&
+        current[entry].wdir !== current[entry].stage
+      ) {
         modified.push(entry)
       }
     }
-    
+
     return modified
   }
 
-  constructor (_loom: Loom) {
-    this.loom = _loom
+  constructor(loom: Loom) {
+    this.loom = loom
   }
 
-  public static async new (_loom: Loom): Promise < Index > {
-    return new Index(_loom)
-  }
-  
-  public static async load (_loom: Loom): Promise < Index > {
-    return new Index(_loom)
-  }
-  
-  public async reinitialize (tree: any, _index?: any): Promise < any > {
-    let index = _index || {}
-    
+  public async reinitialize(tree: any, index?: any): Promise<any> {
+    index = index || {}
+
     delete tree['@type']
-    delete tree['path']
-    
-    for (let entry in tree) {
-      let node = await this.loom.node!.get(tree[entry]['/'])      
-      if (node['@type'] === 'tree') {
-        await this.reinitialize(node, index)
-      } else if (node['@type'] === 'file') {
-        let cid = node.link['/']
-        index[node.path] = { mtime: new Date(Date.now()), wdir: cid, stage: cid, repo: cid }
+    delete tree.path
+
+    for (const entry in tree) {
+      if (tree.hasOwnProperty(entry)) {
+        const node = await this.loom.node!.get(tree[entry]['/'])
+        if (node['@type'] === 'tree') {
+          await this.reinitialize(node, index)
+        } else if (node['@type'] === 'file') {
+          const cid = node.link['/']
+          index[node.path] = {
+            mtime: new Date(Date.now()),
+            repo: cid,
+            stage: cid,
+            wdir: cid
+          }
+        }
       }
     }
 
     this.current = index
   }
-  
-  public async update (): Promise < any > {
-    let index   = this.current
-    let files   = {}
-    let filter  = item => item.path.indexOf('.pando') < 0 
-    let listing = klaw(this.loom.paths.root, { nodir: true, filter: filter })
-    
-    for (let item in listing) {
-      let _path = path.relative(this.loom.paths.root, listing[item].path)
-      let _mtime = listing[item].stats.mtime
-      files[_path] = { mtime: new Date(_mtime) }
+
+  public async update(): Promise<any> {
+    const index = this.current
+    const files = {}
+    const filter = item => item.path.indexOf('.pando') < 0
+    const listing = klaw(this.loom.paths.root, { nodir: true, filter })
+
+    for (const item of listing) {
+      const relativePath = path.relative(this.loom.paths.root, item.path)
+      files[relativePath] = { mtime: new Date(item.stats.mtime) }
     }
-    
-    let newFiles: any = Object.assign(files)
-        
-    for (let _path in index) {
-      if (files[_path]) { // files at _path still exists
-        if (new Date(index[_path].mtime) <= new Date(files[_path].mtime)) { // files at _path has been modified
-          let cid = await this.loom.node!.cid(path.join(this.loom.paths.root, _path), { file: true })
-          index[_path].mtime = files[_path].mtime
-          index[_path].wdir = cid        
+
+    const newFiles: any = Object.assign(files)
+
+    for (const relativePath in index) {
+      if (index.hasOwnProperty(relativePath)) {
+        if (files[relativePath]) {
+          // files at _path still exists
+          if (
+            new Date(index[relativePath].mtime) <=
+            new Date(files[relativePath].mtime)
+          ) {
+            // files at _path has been modified
+            const cid = await this.loom.node!.cid(
+              path.join(this.loom.paths.root, relativePath),
+              { file: true }
+            )
+            index[relativePath].mtime = files[relativePath].mtime
+            index[relativePath].wdir = cid
+          }
+        } else {
+          // files at _path has been deleted
+          index[relativePath].mtime = new Date(Date.now())
+          index[relativePath].wdir = 'null'
         }
-      } else { // files at _path has been deleted
-        index[_path].mtime = new Date(Date.now())
-        index[_path].wdir = 'null'
+        delete newFiles[relativePath]
       }
-      delete newFiles[_path]
     }
-    
-    for (let _path in newFiles) { // file at _path has been added
-      let cid = await this.loom.node!.cid(path.join(this.loom.paths.root, _path), { file: true })
-      index[_path] = { mtime: files[_path].mtime, wdir: cid, stage: 'null', repo: 'null' }
+
+    for (const relativePath in newFiles) {
+      if (newFiles.hasOwnProperty(relativePath)) {
+        // file at _path has been added
+        const cid = await this.loom.node!.cid(
+          path.join(this.loom.paths.root, relativePath),
+          { file: true }
+        )
+        index[relativePath] = {
+          mtime: files[relativePath].mtime,
+          repo: 'null',
+          stage: 'null',
+          wdir: cid
+        }
+      }
     }
-    
+
     // for (let _path in index) { // remove deleted files from index
     //   if (index[_path].wdir === 'null') {
-    // 
+    //
     //   }
     // }
-    
-    
+
     this.current = index
-    
+
     return index
-  
   }
-  
-  public async stage (_paths: string[]): Promise < any > {
-    let index = await this.update()
-    
-    for (let _path of _paths) {
-      _path                     = path.normalize(_path)
-      let relativePath          = path.relative(this.loom.paths.root, _path)
-      
-      if (utils.fs.exists(_path)) {
-        let cid                   = await this.loom.node!.upload(_path)
+
+  public async stage(filePaths: string[]): Promise<any> {
+    const index = await this.update()
+
+    for (let filePath of filePaths) {
+      filePath = path.normalize(filePath)
+      const relativePath = path.relative(this.loom.paths.root, filePath)
+
+      if (utils.fs.exists(filePath)) {
+        const cid = await this.loom.node!.upload(filePath)
         index[relativePath].stage = cid
       } else if (index[relativePath].wdir === 'null') {
         delete index[relativePath]
       } else {
-        throw new Error(_path + ' does not exist in current working directory')
+        throw new Error(
+          filePath + ' does not exist in current working directory'
+        )
       }
     }
-    
+
     this.current = index
-    
+
     return index
   }
 }

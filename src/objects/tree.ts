@@ -15,15 +15,15 @@ class Tree extends IPLDNode {
   }
 
   public async put (node: Node) {
-    let cid = await node.put(await this.toIPLD())
-    for (let child in this.children) {
+    const cid = await node.put(await this.toIPLD())
+    for (const child in this.children) {
       await this.children[child].put(node)
     }
     return cid
   }
 
   public static async get (node: Node,_cid : string) {
-    let tree = await node.get(_cid,'tree')
+    const tree = await node.get(_cid,'tree')
     return tree
   }
 }

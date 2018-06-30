@@ -1,93 +1,175 @@
-import Loom          from '@components/loom'
-import { keccak256 } from 'js-sha3'
-import { hash }      from 'eth-ens-namehash'
+import Loom from '@components/loom';
+import { hash } from 'eth-ens-namehash';
+import ethereumRegex from 'ethereum-regex';
+import { keccak256, sha3_256 } from 'js-sha3';
+import web3Utils from 'web3-utils';
 
 export default class Remote {
-  public static TREE_APP_ID = hash('tree.pando.aragonpm.test')
+  public static APP_BASE_NAMESPACE = '0x' + keccak256('base');
+  public static TREE_BASE_APP_ID = hash('tree.pando.aragonpm.test');
+  public static TREE_APP_ID = web3Utils.sha3(
+    Remote.APP_BASE_NAMESPACE + Remote.TREE_BASE_APP_ID.substring(2),
+    { encoding: 'hex' }
+  );
 
-  public loom:   Loom
-  public name:   string
-  public hash:   string
-  public kernel: any
-  public acl?:   any
-  public tree?:  any
-  
-  public constructor (_loom: Loom, _kernel: any, _acl: any, _tree: any, _name: string) {
-    this.loom   = _loom
-    this.name   = _name
-    this.hash   = '0x' + keccak256(_name)
-    this.kernel = _kernel
-    this.acl    = _acl
-    this.tree   = _tree
+  public loom: Loom;
+  public name: string;
+  public kernel: any;
+  public acl?: any;
+  public tree?: any;
+
+  public constructor(
+    _loom: Loom,
+    _kernel: any,
+    _acl: any,
+    _tree: any,
+    _name: string
+  ) {
+    this.loom = _loom;
+    this.name = _name;
+    this.kernel = _kernel;
+    this.acl = _acl;
+    this.tree = _tree;
   }
-  
-  public static async deploy (_loom: Loom, _name: string): Promise < Remote > {
+
+  public static async deploy(_loom: Loom): Promise<any> {
     // Deploy base contracts
-    let kernelBase = await _loom.pando.contracts.kernel.new()
-    let aclBase    = await _loom.pando.contracts.acl.new()
-    let factory    = await _loom.pando.contracts.daoFactory.new(kernelBase.address, aclBase.address, '0x00')
+    const kernelBase = await _loom.pando.contracts.kernel.new();
+    const aclBase = await _loom.pando.contracts.acl.new();
+    const factory = await _loom.pando.contracts.daoFactory.new(
+      kernelBase.address,
+      aclBase.address,
+      '0x00'
+    );
     // Deploy aragonOS-based DAO
-    let receipt       = await factory.newDAO(_loom.config.author.account) 
-    let kernelAddress = receipt.logs.filter(l => l.event === 'DeployDAO')[0].args.dao
-    let kernel        = await _loom.pando.contracts.kernel.at(kernelAddress)
-    let acl           = await _loom.pando.contracts.acl.at(await kernel.acl())
-    // Grant current author APP_MANAGER_ROLE over the DAO    
-    let APP_MANAGER_ROLE = await kernel.APP_MANAGER_ROLE()
-    let receipt2         = await acl.createPermission(_loom.config.author.account, kernel.address, APP_MANAGER_ROLE, _loom.config.author.account)
+    const receipt = await factory.newDAO(_loom.config.author.account);
+    const kernelAddress = receipt.logs.filter(l => l.event === 'DeployDAO')[0]
+      .args.dao;
+    const kernel = await _loom.pando.contracts.kernel.at(kernelAddress);
+    const acl = await _loom.pando.contracts.acl.at(await kernel.acl());
+    // Grant current author APP_MANAGER_ROLE over the DAO
+    const APP_MANAGER_ROLE = await kernel.APP_MANAGER_ROLE();
+    const receipt2 = await acl.createPermission(
+      _loom.config.author.account,
+      kernel.address,
+      APP_MANAGER_ROLE,
+      _loom.config.author.account
+    );
     // Deploy tree app
-    let base        = await _loom.pando.contracts.tree.new()
-    let receipt3    = await kernel.newAppInstance(Remote.TREE_APP_ID, base.address)
-    let treeAddress = receipt3.logs.filter(l => l.event === 'NewAppProxy')[0].args.proxy
-    let tree        = await _loom.pando.contracts.tree.at(treeAddress)    
-    // Create PUSH role
-    const PUSH   = await tree.PUSH()
-    let receipt4 = await acl.createPermission(_loom.config.author.account, tree.address, PUSH, _loom.config.author.account)
+    const tree = await _loom.pando.contracts.tree.new();
+    const receipt3 = await kernel.newAppInstance(
+      Remote.TREE_BASE_APP_ID,
+      tree.address
+    );
+    // let treeAddress = receipt3.logs.filter(l => l.event === 'NewAppProxy')[0].args.proxy
+    // let tree        = await _loom.pando.contracts.tree.at(treeAddress)
+    // // Create PUSH role
+    const PUSH = await tree.PUSH();
+    const receipt4 = await acl.createPermission(
+      _loom.config.author.account,
+      tree.address,
+      PUSH,
+      _loom.config.author.account
+    );
     // Create master branch
-    let receipt5 = await tree.newBranch('master')
-    
-    return new Remote(_loom, kernel, acl, tree, _name)
-  }
-  
-  public static async at (_loom: Loom, _kernelAddress: string, _aclAddress: string, _treeAddress: string, _name: string): Promise < Remote > {
-    let kernel = await _loom.pando.contracts.kernel.at(_kernelAddress)
-    let acl    = await _loom.pando.contracts.kernel.at(_aclAddress)
-    let tree   = await _loom.pando.contracts.kernel.at(_treeAddress)
-    
-    return new Remote(_loom, kernel, acl, tree, _name)
-  }
-  
-  public async newBranch (_name: string) {
-    await this.tree.newBranch(_name)
-  }
-  
-  public async getBranchesName (): Promise < string[] > {
-    let separator = await this.tree.SEPARATOR()
-    let branches  = await this.tree.getBranchesName()
-    let array     = branches.split(separator)
-    array.splice(-1, 1)
-    
-    return array
-  }
-  // public async push (cid: string): Promise < any > {
-  //   let tx = await this.tree.setRepository(cid)
-  //   return tx
-  // }
-  // 
-  // public async head (): Promise < string > {
-  //   let cid = await this.tree.getRepository()
-  //   return cid
-  // }
-  // 
-  // public grantPushRole (): Promise < any > {
-  //   return new Promise(async (resolve, reject) => {
-  //     try {
-  //       let PUSH = await this.tree.PUSH()
-  //       let receipt = await this.acl.grantPermission(this.pando.configuration.author.account, this.tree.address, PUSH)
-  //       resolve(receipt)
-  //     } catch (err) {
-  //       reject(err)
-  //     }
-  //   })
-  // }
+    const receipt5 = await tree.newBranch('master');
 
+    return { kernel, acl, tree };
+  }
+
+  public static async at(_loom: Loom, _kernelAddress: string): Promise<any> {
+    const kernel = await _loom.pando.contracts.kernel.at(_kernelAddress);
+    const acl = await _loom.pando.contracts.acl.at(await kernel.acl());
+    const tree = await _loom.pando.contracts.tree.at(
+      await kernel.getApp(Remote.TREE_APP_ID)
+    );
+
+    return { kernel, acl, tree };
+  }
+
+  public async newBranch(_name: string) {
+    await this.tree.newBranch(_name);
+    await this.loom.branch.new(_name, { remote: this.name });
+  }
+
+  public async getBranchesName(): Promise<string[]> {
+    const separator = await this.tree.SEPARATOR();
+    const branches = await this.tree.getBranchesName();
+    const array = branches.split(separator);
+    array.splice(-1, 1);
+
+    return array;
+  }
+
+  public async push(_branch: string, _cid: string): Promise<any> {
+    const branchHash = '0x' + keccak256(_branch);
+    const tx = await this.tree.setHead(_branch, _cid);
+
+    return tx;
+  }
+
+  public async head(_branch: string): Promise<any> {
+    const branchHash = '0x' + keccak256(_branch);
+    const head = await this.tree.getHead(branchHash);
+
+    return head;
+  }
+
+  public async show(): Promise<any> {
+    const branches = await this.getBranchesName();
+    const remote = {
+      kernel: this.kernel.address,
+      acl: this.acl.address,
+      tree: this.tree.address,
+      branches: {}
+    };
+
+    for (const branch of branches) {
+      console.log(branch);
+      remote.branches[branch] = { head: await this.head(branch) };
+    }
+
+    return remote;
+  }
+
+  public async fetch(): Promise<any> {
+    const branches = await this.getBranchesName();
+    console.log('banches');
+    console.log(branches);
+    const heads = {};
+    console.log('avant boucle');
+    for (const branchName of branches) {
+      console.log(branchName);
+      const head = await this.head(branchName);
+      console.log('Name');
+      console.log(this.name);
+      const branch = await this.loom.branch.load(branchName, {
+        remote: this.name
+      });
+      console.log('on a la branch');
+      branch.head = head;
+      heads[branchName] = await this.head(branchName);
+    }
+
+    return heads;
+  }
+
+  public async grant(_what: string, _who: string): Promise<any> {
+    let receipt;
+
+    if (!ethereumRegex({ exact: true }).test(_who)) {
+      throw new TypeError('Invalid ethereum address: ' + _who);
+    }
+
+    switch (_what) {
+      case 'PUSH':
+        const PUSH = await this.tree.PUSH();
+        receipt = await this.acl.grantPermission(_who, this.tree.address, PUSH);
+        break;
+      default:
+        throw new TypeError('Invalid role: ' + _what);
+    }
+
+    return receipt;
+  }
 }
