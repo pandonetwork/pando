@@ -7,7 +7,7 @@ Pando is distributed [versioning control system](https://en.wikipedia.org/wiki/V
 
 This repository is a monorepo including pando related smart contracts, libraries and tools. Each public sub-package is independently published to NPM.
 
-### Published Packages
+## Published Packages
 
 | Package                                           | Description                           |
 | ------------------------------------------------- | ------------------------------------- |
