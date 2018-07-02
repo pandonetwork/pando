@@ -81,8 +81,9 @@ export default class Repository {
     this.pando = pando
   }
 
-  public async stage(paths: string[]): Promise<void> {
-    return this.index!.stage(paths)
+  public async stage(paths: string[]): Promise<any> {
+    const index = await this.index!.stage(paths)
+    return index
   }
 
   public async snapshot(message: string): Promise<Snapshot> {
@@ -246,8 +247,19 @@ export default class Repository {
 
   private tree() {
     const index = this.index!.current
-    const staged = this.index!.staged
     const tree = new Tree({ path: '.' })
+    let staged = this.index!.staged
+    // for (const file of staged) {
+    //   if (index[file].wdir === 'null') {
+    //     delete index[file]
+    // }
+
+    staged.forEach((file, i) => {
+      if (index[file].stage === 'todelete') {
+        delete index[file]
+        staged = staged.splice(i, 1)
+      }
+    })
 
     for (const file of staged) {
       file.split(npath.sep).reduce((parent, name): any => {
@@ -266,6 +278,7 @@ export default class Repository {
         return parent.children[name]
       }, tree)
     }
+
     this.index!.current = index
     return tree
   }
