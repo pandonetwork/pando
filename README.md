@@ -1,7 +1,7 @@
 <div align="center">
   <img align="center" src="visuals/logo.png" height="300px" />
   <h1></h1>
- </div>
+</div>
 
 Pando is distributed [versioning control system](https://en.wikipedia.org/wiki/Version_control) enforcing [DAO-based](https://en.wikipedia.org/wiki/Decentralized_autonomous_organization) versioning, contribution tracking and governance. It is built on top of [IPFS](https://ipfs.io), [ethereum](https://ethereum.org) and [aragonOS](https://aragon.on/ose).
 
