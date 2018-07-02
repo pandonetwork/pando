@@ -1,5 +1,5 @@
 <div align="center">
-  <img align="center" src="visuals/logo.png" height="300px" />
+  <img align="center" src="https://github.com/wespr/pando/blob/master/visuals/logo.png" height="300px" />
   <h1></h1>
 </div>
 
@@ -53,7 +53,7 @@ Options:
 
 ## Contribute
 
-Feel free to fork, open issues and send pull requests. Read our [contribution guidelines](../github/CONTRIBUTING.md).
+Feel free to fork, open issues and send pull requests. Read our [contribution guidelines](https://github.com/wespr/pando/blob/master/github/CONTRIBUTING.md).
 
 ## License
 
