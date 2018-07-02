@@ -28,7 +28,7 @@ npm install --save-dev @pando/core
 
 ## Usage
 
-Coming soon. Check out the [tests](test/) to have a look at pando.js API.
+Coming soon. Check out the [tests](test/) to have a look at `pando core` API.
 
 ## Maintainers
 
