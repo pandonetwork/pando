@@ -1,12 +1,11 @@
 /* eslint-disable import/no-duplicates */
 import Pando from '../../lib/pando.js'
-import { Remote, Repository } from '../../lib/pando.js'
+import { Repository } from '../../lib/pando.js'
 /* eslint-enable import/no-duplicates */
-import { opts, cids } from '../data'
+import { opts } from '../data'
 import * as utils from '../utils'
 import chai from 'chai'
 import npath from 'path'
-import Web3 from 'Web3'
 import 'chai/register-should'
 
 chai.use(require('dirty-chai'))

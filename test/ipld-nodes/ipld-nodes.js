@@ -2,25 +2,21 @@
 import Pando from '../../lib/pando.js'
 import { Repository } from '../../lib/pando.js'
 /* eslint-enable import/no-duplicates */
-import { opts, cids } from '../data'
-import * as utils from '../utils'
+import { opts } from '../data'
 import chai from 'chai'
 import npath from 'path'
-import Web3 from 'Web3'
 import 'chai/register-should'
 
 chai.use(require('dirty-chai'))
 chai.use(require('chai-as-promised'))
 
-const expect = chai.expect
-
 describe('IPLD Nodes', () => {
-  let pando, repository, index, snapshot, tree, file
+  let pando, repository, snapshot, tree, file
 
   before(async () => {
     pando = await Pando.create(opts)
     repository = await pando.repositories.create(npath.join('test', 'mocks'))
-    index = await repository.stage([
+    await repository.stage([
       npath.join('test', 'mocks', 'test.md'),
       npath.join('test', 'mocks', 'test-directory', 'test-1.md')
     ])

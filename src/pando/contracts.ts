@@ -6,7 +6,7 @@ export const artifacts = {
   appProxyUpgradeable: require('@aragon/os/build/contracts/AppProxyUpgradeable.json'),
   daoFactory: require('@aragon/os/build/contracts/DAOFactory.json'),
   kernel: require('@aragon/os/build/contracts/Kernel.json'),
-  tree: require('@ryhope/pando-core/build/contracts/Tree.json')
+  tree: require('@pando/core/build/contracts/Tree.json')
 }
 
 export const acl = contractor(artifacts.acl)

@@ -6,7 +6,6 @@ import { opts, cids } from '../data'
 import * as utils from '../utils'
 import chai from 'chai'
 import npath from 'path'
-import Web3 from 'Web3'
 import 'chai/register-should'
 
 chai.use(require('dirty-chai'))
@@ -35,7 +34,7 @@ describe('Repository#Index', () => {
 
   describe('#staged', () => {
     it('should return staged files correctly', async () => {
-      let index = await repository.stage([
+      await repository.stage([
         npath.join('test', 'mocks', 'test.md'),
         npath.join('test', 'mocks', 'test-directory', 'test-1.md')
       ])
@@ -43,13 +42,13 @@ describe('Repository#Index', () => {
 
       staged[0].should.equal(npath.join('test-directory', 'test-1.md'))
       staged[1].should.equal('test.md')
-      expect(staged[2]).to.not.exist
+      expect(staged[2]).to.not.exist()
     })
   })
 
   describe('#unsnapshot', () => {
     it('should return unspnashot files correctly', async () => {
-      let index = await repository.stage([
+      await repository.stage([
         npath.join('test', 'mocks', 'test.md'),
         npath.join('test', 'mocks', 'test-directory', 'test-1.md')
       ])
@@ -57,7 +56,7 @@ describe('Repository#Index', () => {
 
       unsnapshot[0].should.equal(npath.join('test-directory', 'test-1.md'))
       unsnapshot[1].should.equal('test.md')
-      expect(unsnapshot[2]).to.not.exist
+      expect(unsnapshot[2]).to.not.exist()
     })
   })
 
@@ -76,7 +75,7 @@ describe('Repository#Index', () => {
       let modified = repository.index.modified
 
       modified[0].should.equal('test.md')
-      expect(modified[1]).to.not.exist
+      expect(modified[1]).to.not.exist()
     })
   })
 
@@ -135,9 +134,7 @@ describe('Repository#Index', () => {
     })
 
     it('should reinitialize index correctly', async () => {
-      let index = await repository.stage([
-        npath.join('test', 'mocks', 'test.md')
-      ])
+      await repository.stage([npath.join('test', 'mocks', 'test.md')])
       let snapshot = await repository.snapshot('My first snapshot')
       let reinitialized = await repository.index.reinitialize(
         await snapshot.tree.toIPLD()

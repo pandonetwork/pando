@@ -6,7 +6,6 @@ import { opts, cids } from '../data'
 import * as utils from '../utils'
 import chai from 'chai'
 import npath from 'path'
-import Web3 from 'Web3'
 import 'chai/register-should'
 
 chai.use(require('dirty-chai'))
@@ -95,7 +94,7 @@ describe('Repository', () => {
         npath.join('test', 'mocks', 'test.md')
       ])
 
-      expect(index['test.md']).to.be.undefined
+      expect(index['test.md']).to.be.undefined()
     })
   })
 
@@ -126,36 +125,40 @@ describe('Repository', () => {
 
     it("should build snapshot's tree correctly", async () => {
       snapshot.tree.path.should.be.equal('.')
-      snapshot.tree.children['test.md'].should.exist
+      snapshot.tree.children['test.md'].should.exist()
       snapshot.tree.children['test.md'].path.should.equal('test.md')
       snapshot.tree.children['test.md'].link.should.equal(cids['test.md'])
-      snapshot.tree.children['test-directory'].should.exist
+      snapshot.tree.children['test-directory'].should.exist()
       snapshot.tree.children['test-directory'].path.should.equal(
         'test-directory'
       )
-      snapshot.tree.children['test-directory'].children['test-1.md'].should
-        .exist
+      snapshot.tree.children['test-directory'].children[
+        'test-1.md'
+      ].should.exist()
       snapshot.tree.children['test-directory'].children[
         'test-1.md'
       ].path.should.equal('test-directory/test-1.md')
       snapshot.tree.children['test-directory'].children[
         'test-1.md'
       ].link.should.equal(cids['test-directory/test-1.md'])
-      snapshot.tree.children['test-directory'].children['test-2.md'].should
-        .exist
+      snapshot.tree.children['test-directory'].children[
+        'test-2.md'
+      ].should.exist()
       snapshot.tree.children['test-directory'].children[
         'test-2.md'
       ].path.should.equal('test-directory/test-2.md')
       snapshot.tree.children['test-directory'].children[
         'test-2.md'
       ].link.should.equal(cids['test-directory/test-2.md'])
-      snapshot.tree.children['test-directory'].children['test-subdirectory']
-        .should.exist
+      snapshot.tree.children['test-directory'].children[
+        'test-subdirectory'
+      ].should.exist()
       snapshot.tree.children['test-directory'].children[
         'test-subdirectory'
       ].path.should.equal('test-directory/test-subdirectory')
-      snapshot.tree.children['test-directory'].children['test-subdirectory']
-        .children['test.md'].should.exist
+      snapshot.tree.children['test-directory'].children[
+        'test-subdirectory'
+      ].children['test.md'].should.exist()
       snapshot.tree.children['test-directory'].children[
         'test-subdirectory'
       ].children['test.md'].path.should.equal(
