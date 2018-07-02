@@ -23,7 +23,7 @@ This software is in a **very** alpha stage and is not meant to be used in produc
 ## Install
 
 ```zsh
-npm install -g @pando/pando.js
+npm install --save-dev @pando/pando.js
 ```
 
 ## Usage
