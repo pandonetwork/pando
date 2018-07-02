@@ -46,6 +46,10 @@ describe('Repository', () => {
       repository = await pando.repositories.create(npath.join('test', 'mocks'))
     })
 
+    after(async () => {
+      await Repository.remove(npath.join('test', 'mocks'))
+    })
+
     afterEach(() => {
       utils.test.cleanMocks()
     })
@@ -88,23 +92,25 @@ describe('Repository', () => {
       }
     })
 
-    it('should remove entry if file has been deleted', async () => {
+    it("should update repository's index wdir field correctly if file has been deleted", async () => {
       utils.fs.rm(npath.join('test', 'mocks', 'test.md'))
       let index = await repository.stage([
         npath.join('test', 'mocks', 'test.md')
       ])
 
-      expect(index['test.md']).to.be.undefined()
+      index['test.md'].wdir.should.equal('null')
     })
   })
 
-  describe('#snapshot', async () => {
+  describe('#snapshot', () => {
     let snapshot, index
 
     before(async () => {
+      repository = await pando.repositories.create(npath.join('test', 'mocks'))
       await repository.stage([
         npath.join('test', 'mocks', 'test.md'),
         npath.join('test', 'mocks', 'test-directory', 'test-1.md'),
+        npath.join('test', 'mocks', 'test-directory', 'test-2.md'),
         npath.join(
           'test',
           'mocks',
@@ -114,7 +120,11 @@ describe('Repository', () => {
         )
       ])
       snapshot = await repository.snapshot('My first snapshot')
-      index = await repository.index.current
+      index = repository.index.current
+    })
+
+    after(() => {
+      utils.test.cleanMocks()
     })
 
     it("should update repository's index repo fields correctly", async () => {
@@ -177,6 +187,27 @@ describe('Repository', () => {
       let deserialized = await repository.fromIPLD(serialized)
 
       deserialized.should.be.deep.equal(snapshot)
+    })
+
+    it('should push snapshot to ipfs/ipld correctly', async () => {
+      let cid = await snapshot.cid()
+      let serialized = await repository.node.get(cid)
+      let deserialized = await repository.fromIPLD(serialized)
+
+      deserialized.should.be.deep.equal(snapshot)
+    })
+
+    it("should delete repository's index entry if file has been deleted and staged", async () => {
+      index = repository.index.current
+      console.log(index)
+      utils.fs.rm(npath.join('test', 'mocks', 'test.md'))
+      await repository.stage([npath.join('test', 'mocks', 'test.md')])
+      index = repository.index.current
+      console.log(index)
+      await repository.snapshot('Delete test.md')
+      index = repository.index.current
+
+      expect(index['test.md']).to.not.exist()
     })
   })
 })

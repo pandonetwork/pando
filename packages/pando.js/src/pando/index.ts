@@ -22,7 +22,7 @@ export default class Pando {
     return pando
   }
 
-  public static load(path: string): Pando {
+  public static load(path: string = '.'): Pando {
     if (!Repository.exists(path)) {
       throw new Error('No repository found at ' + path)
     }

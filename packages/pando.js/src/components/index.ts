@@ -190,18 +190,19 @@ export default class Index {
       if (utils.fs.exists(filePath)) {
         const cid = await this.repository.node!.upload(filePath)
         index[relativePath].stage = cid
-      } else if (index[relativePath] && index[relativePath].wdir === 'null') {
-        delete index[relativePath]
+      } else if (index[relativePath]) {
+        index[relativePath].wdir = 'null'
+        index[relativePath].stage = 'todelete'
+        // delete index[relativePath]
       } else {
         throw new Error(
           filePath +
-            ' does not exist neither in current working directory nor index'
+            ' does not exist neither in current working directory nor in index'
         )
       }
     }
 
     this.current = index
-
     return index
   }
 }
