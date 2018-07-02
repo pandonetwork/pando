@@ -1,4 +1,5 @@
 import * as fs from './fs'
-import * as json from './json'
+import * as test from './test'
 import * as yaml from './yaml'
-export { fs, json, yaml }
+
+export { fs, test, yaml }

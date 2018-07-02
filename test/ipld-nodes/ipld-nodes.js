@@ -1,31 +1,37 @@
-import Pando                              from '../lib/main.js'
-import { Snapshot, Tree, File, IPLDNode } from '../lib/main.js'
-import { opts }                           from './data'
-import * as utils                         from './utils'
-import chai                               from 'chai'
-import path         from 'path'
-
+/* eslint-disable import/no-duplicates */
+import Pando from '../../lib/pando.js'
+import { Repository } from '../../lib/pando.js'
+/* eslint-enable import/no-duplicates */
+import { opts, cids } from '../data'
+import * as utils from '../utils'
+import chai from 'chai'
+import npath from 'path'
+import Web3 from 'Web3'
 import 'chai/register-should'
 
-const should = chai.should
-const expect = chai.expect
-
+chai.use(require('dirty-chai'))
 chai.use(require('chai-as-promised'))
 
+const expect = chai.expect
 
 describe('IPLD Nodes', () => {
-  let pando, loom, index, snapshot, tree, file
+  let pando, repository, index, snapshot, tree, file
 
   before(async () => {
-    pando     = new Pando(opts)
-    loom      = await pando.loom.new(path.join('test','mocks'))
-    index     = await loom.index.stage([path.join('test','mocks','test.md'), path.join('test','mocks','test-directory','test-1.md')])
-    snapshot  = await loom.snapshot('My first snapshot')
-    tree      = await snapshot.tree
-    file      = await tree.children['test.md']
+    pando = await Pando.create(opts)
+    repository = await pando.repositories.create(npath.join('test', 'mocks'))
+    index = await repository.stage([
+      npath.join('test', 'mocks', 'test.md'),
+      npath.join('test', 'mocks', 'test-directory', 'test-1.md')
+    ])
+    snapshot = await repository.snapshot('My first snapshot')
+    tree = snapshot.tree
+    file = tree.children['test.md']
   })
 
-  after(async () => { await utils.fs.rmdir(path.join('test','mocks','.pando')) })
+  after(async () => {
+    await Repository.remove(npath.join('test', 'mocks'))
+  })
 
   describe('Snapshot', async () => {
     describe('#constructor', async () => {
@@ -41,7 +47,7 @@ describe('IPLD Nodes', () => {
     describe('IPLD (de)serialization', async () => {
       it('should round-trip (de)serialization correctly', async () => {
         let serialized = await snapshot.toIPLD()
-        let deserialized = await loom.fromIPLD(serialized)
+        let deserialized = await repository.fromIPLD(serialized)
 
         deserialized.should.deep.equal(snapshot)
       })
@@ -54,7 +60,9 @@ describe('IPLD Nodes', () => {
         tree.path.should.equal('.')
         tree.children['test.md'].type.should.equal('file')
         tree.children['test.md'].path.should.equal('test.md')
-        tree.children['test.md'].link.should.equal('QmbxGVmc917jMqK1EQy2SzUEA2WahwGW8ztX7NLNX59MzX')
+        tree.children['test.md'].link.should.equal(
+          'QmbxGVmc917jMqK1EQy2SzUEA2WahwGW8ztX7NLNX59MzX'
+        )
         tree.children['test-directory'].type.should.equal('tree')
         tree.children['test-directory'].path.should.equal('test-directory')
       })
@@ -62,7 +70,7 @@ describe('IPLD Nodes', () => {
     describe('IPLD (de)serialization', async () => {
       it('should round-trip (de)serialization correctly', async () => {
         let serialized = await tree.toIPLD()
-        let deserialized = await loom.fromIPLD(serialized)
+        let deserialized = await repository.fromIPLD(serialized)
 
         deserialized.should.deep.equal(tree)
       })
@@ -80,11 +88,10 @@ describe('IPLD Nodes', () => {
     describe('IPLD (de)serialization', async () => {
       it('should round-trip (de)serialization correctly', async () => {
         let serialized = await file.toIPLD()
-        let deserialized = await loom.fromIPLD(serialized)
+        let deserialized = await repository.fromIPLD(serialized)
 
         deserialized.should.deep.equal(file)
       })
     })
   })
-
 })

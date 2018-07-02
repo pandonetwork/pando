@@ -1,42 +1,22 @@
-import Loom from '@components/loom'
+import Repository from '@components/repository'
 import * as utils from '@utils'
 import path from 'path'
 
 export default class Branch {
-  public static async new(
-    loom: Loom,
-    name: string,
-    opts?: any
-  ): Promise<Branch> {
-    if (Branch.exists(loom, name)) {
-      throw new Error('Branch ' + name + ' already exists')
-    }
-
-    return new Branch(loom, name)
-  }
-
-  public static load(loom: Loom, name: string, opts?: any): Branch {
-    if (!Branch.exists(loom, name)) {
-      throw new Error('Branch ' + name + ' does not exist')
-    }
-
-    return new Branch(loom, name)
-  }
-
-  public static exists(loom: Loom, name: string): boolean {
-    return utils.fs.exists(path.join(loom.paths.branches, name))
-  }
-
-  public static head(loom: Loom, name: string): string {
-    return utils.yaml.read(path.join(loom.paths.branches, name))
-  }
-
-  public loom: Loom
+  public repository: Repository
   public name: string
   public remote?: string
 
+  public get fullName(): string {
+    if (this.remote) {
+      return this.remote + ':' + this.name
+    } else {
+      return this.name
+    }
+  }
+
   public get path(): string {
-    return path.join(this.loom.paths.branches, this.name)
+    return path.join(this.repository.paths.branches, this.fullName)
   }
 
   public get head(): string {
@@ -47,9 +27,10 @@ export default class Branch {
     utils.yaml.write(this.path, cid)
   }
 
-  public constructor(loom: Loom, name: string) {
-    this.loom = loom
+  public constructor(repository: Repository, name: string, opts?: any) {
+    this.repository = repository
     this.name = name
+    this.remote = opts && opts.remote ? opts.remote : undefined
     this.head = utils.fs.exists(this.path) ? this.head : 'undefined'
   }
 }

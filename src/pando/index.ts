@@ -1,9 +1,8 @@
 import Branch from '@components/branch'
 import Index from '@components/index'
-import Repository from '@components/loom'
 import Remote from '@components/remote'
-import RemoteBranch from '@components/remote-branch'
-import RepositoryFactory from '@factories/loom-factory.ts'
+import Repository from '@components/repository'
+import RepositoryFactory from '@factories/repository-factory'
 import { IConfiguration } from '@interfaces'
 import File from '@objects/file'
 import IPLDNode from '@objects/ipld-node'
@@ -18,12 +17,12 @@ export default class Pando {
   public static contracts = PandoContracts
   public static utils = PandoUtils
 
-  public static async create(configuration: IConfiguration): Promise<Pando> {
+  public static create(configuration: IConfiguration): Pando {
     const pando = new Pando(configuration)
     return pando
   }
 
-  public static async load(path: string): Promise<Pando> {
+  public static load(path: string): Pando {
     if (!Repository.exists(path)) {
       throw new Error('No repository found at ' + path)
     }
@@ -36,7 +35,7 @@ export default class Pando {
 
   public config: IConfiguration
   public contracts: any
-  public repository = new RepositoryFactory(this)
+  public repositories = new RepositoryFactory(this)
   public web3: any
 
   constructor(config: IConfiguration) {

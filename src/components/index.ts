@@ -1,21 +1,21 @@
-import Loom from '@components/loom'
+import Repository from '@components/repository'
 import * as utils from '@utils'
 import klaw from 'klaw-sync'
 import path from 'path'
 
 export default class Index {
-  public static async new(loom: Loom): Promise<Index> {
-    return new Index(loom)
+  public static async new(repository: Repository): Promise<Index> {
+    return new Index(repository)
   }
 
-  public static async load(loom: Loom): Promise<Index> {
-    return new Index(loom)
+  public static async load(repository: Repository): Promise<Index> {
+    return new Index(repository)
   }
 
-  public loom: Loom
+  public repository: Repository
 
   public get path() {
-    return this.loom.paths.index
+    return this.repository.paths.index
   }
 
   public get current(): any {
@@ -83,8 +83,8 @@ export default class Index {
     return modified
   }
 
-  constructor(loom: Loom) {
-    this.loom = loom
+  constructor(repository: Repository) {
+    this.repository = repository
   }
 
   public async reinitialize(tree: any, index?: any): Promise<any> {
@@ -95,7 +95,7 @@ export default class Index {
 
     for (const entry in tree) {
       if (tree.hasOwnProperty(entry)) {
-        const node = await this.loom.node!.get(tree[entry]['/'])
+        const node = await this.repository.node!.get(tree[entry]['/'])
         if (node['@type'] === 'tree') {
           await this.reinitialize(node, index)
         } else if (node['@type'] === 'file') {
@@ -111,16 +111,18 @@ export default class Index {
     }
 
     this.current = index
+
+    return index
   }
 
   public async update(): Promise<any> {
     const index = this.current
     const files = {}
     const filter = item => item.path.indexOf('.pando') < 0
-    const listing = klaw(this.loom.paths.root, { nodir: true, filter })
+    const listing = klaw(this.repository.paths.root, { nodir: true, filter })
 
     for (const item of listing) {
-      const relativePath = path.relative(this.loom.paths.root, item.path)
+      const relativePath = path.relative(this.repository.paths.root, item.path)
       files[relativePath] = { mtime: new Date(item.stats.mtime) }
     }
 
@@ -135,8 +137,8 @@ export default class Index {
             new Date(files[relativePath].mtime)
           ) {
             // files at _path has been modified
-            const cid = await this.loom.node!.cid(
-              path.join(this.loom.paths.root, relativePath),
+            const cid = await this.repository.node!.cid(
+              path.join(this.repository.paths.root, relativePath),
               { file: true }
             )
             index[relativePath].mtime = files[relativePath].mtime
@@ -154,8 +156,8 @@ export default class Index {
     for (const relativePath in newFiles) {
       if (newFiles.hasOwnProperty(relativePath)) {
         // file at _path has been added
-        const cid = await this.loom.node!.cid(
-          path.join(this.loom.paths.root, relativePath),
+        const cid = await this.repository.node!.cid(
+          path.join(this.repository.paths.root, relativePath),
           { file: true }
         )
         index[relativePath] = {
@@ -183,16 +185,17 @@ export default class Index {
 
     for (let filePath of filePaths) {
       filePath = path.normalize(filePath)
-      const relativePath = path.relative(this.loom.paths.root, filePath)
+      const relativePath = path.relative(this.repository.paths.root, filePath)
 
       if (utils.fs.exists(filePath)) {
-        const cid = await this.loom.node!.upload(filePath)
+        const cid = await this.repository.node!.upload(filePath)
         index[relativePath].stage = cid
-      } else if (index[relativePath].wdir === 'null') {
+      } else if (index[relativePath] && index[relativePath].wdir === 'null') {
         delete index[relativePath]
       } else {
         throw new Error(
-          filePath + ' does not exist in current working directory'
+          filePath +
+            ' does not exist neither in current working directory nor index'
         )
       }
     }

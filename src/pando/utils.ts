@@ -1,20 +1,16 @@
 import Web3 from 'web3'
 
+Web3.providers.HttpProvider.prototype.sendAsync =
+  Web3.providers.HttpProvider.prototype.send
+
 export const web3 = {
   get: opts => {
-    let access
     if (opts.gateway) {
-      access = new Web3(new Web3.providers.HttpProvider(opts.gateway))
-
-      // if (typeof access.currentProvider.sendAsync !== 'function') {
-      //   access.currentProvider.sendAsync = args => {
-      //     return access.currentProvider.send.apply(access.currentProvider, args)
-      //   }
-      // }
+      return new Web3(new Web3.providers.HttpProvider(opts.gateway))
     } else {
+      throw new Error('Please specify a web3 provider')
       // Handle the case for Mist/Metamask in browser web3 injection
       // See gnosis.js Gnosis.setWeb3Provider() method for inspiration
     }
-    return access
   }
 }
