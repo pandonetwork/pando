@@ -6,10 +6,10 @@ module.exports = {
   entry: './src/index.ts',
   output: {
     path: path.resolve(__dirname, 'lib'),
-    filename: '[name].js',
+    filename: 'pando',
     libraryTarget: 'umd',
-    library: 'Pando',
-    umdNamedDefine: true,
+    library: 'pando',
+    umdNamedDefine: true
   },
   resolve: {
     extensions: ['.ts', '.tsx', '.js'],
@@ -29,13 +29,11 @@ module.exports = {
     }
   },
   module: {
-    rules: [
-      { test: /.tsx?$/, loader: 'ts-loader' }
-    ]
+    rules: [{ test: /.tsx?$/, loader: 'ts-loader' }]
   },
   plugins: [
-    new webpack.BannerPlugin({banner: '#!/usr/bin/env node', raw: true})
-  ], 
+    new webpack.BannerPlugin({ banner: '#!/usr/bin/env node', raw: true })
+  ],
   target: 'node', // in order to ignore built-in modules like path, fs, etc.
-  externals: [nodeExternals()], 
+  externals: [nodeExternals()]
 }
