@@ -1,7 +1,7 @@
 <div align="center">
   <img align="center" src="visuals/logo.png" height="300px" />
   <br/>
-  <h1>A cooperation and versioning system based on [IPFS](https://ipfs.io) and [AragonOS](https://github.com/aragon/aragonOS)</h1>
+  <h1>A distributed cooperation and versioning system based on IPFS, ethereum and aragonOS</h1>
 
  </div>
 
@@ -24,7 +24,7 @@ This software is in a **very** alpha stage and is not meant to be used in produc
 
 ### Who are we ?
 
-Pando is currently developed by the [ryhope network](https://www.ryhope.network) team. Its development is backed by a grant from the [Aragon Nest](https://github.com/aragon/nest) program. However, pando intends to become a public library and infrastructure developed by the whole web3 / ethereum community: feel free to fork, open issues and push PRs.
+Pando is currently developed by the [ryhope network](https://www.ryhope.network) team. Its development is backed by a grant from the [Aragon Nest](https://github.com/aragon/nest) program. However, pando intends to become a public library and infrastructure developed by the whole web3 / ethereum community: feel free to fork, open issues and send pull requests.
 
 ### Why pando ?
 
@@ -41,7 +41,7 @@ Dedicated documentation pages:
 
 ## Contribute
 
-Feel free to fork, open issues and push PRs. Also: read our [contribution guidelines](/github/CONTRIBUTING.md).
+Feel free to fork, open issues and send pull requests. Read our [contribution guidelines](/github/CONTRIBUTING.md).
 
 ## License
 
