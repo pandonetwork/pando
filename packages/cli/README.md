@@ -1,5 +1,5 @@
 <div align="center">
-  <img align="center" src="https://github.com/wespr/pando/blob/master/visuals/logo.png" height="300px" />
+  <img align="center" src="https://github.com/wespr/pando/blob/master/visuals/logo-noname.png" height="300px" />
   <h1>pando cli</h1>
 </div>
 
