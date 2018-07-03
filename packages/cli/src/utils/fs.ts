@@ -12,7 +12,6 @@ export const write = (path: string, data: any) => {
   return fs.writeFileSync(path, data)
 }
 
-export const read = (_path: string) => {
-  return fs.readFileSync(_path)
+export const read = (path: string) => {
+  return fs.readFileSync(path)
 }
-

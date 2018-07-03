@@ -1,13 +1,15 @@
 import chalk from 'chalk'
 
-export const info = (_message: string) => {
-  console.log(chalk.blue(_message))
+/* tslint:disable:no-console */
+export const info = (message: string) => {
+  console.log(chalk.blue(message))
 }
 
-export const success = (_message: string) => {
-  console.log(chalk.green('+ ' + _message))
+export const success = (message: string) => {
+  console.log(chalk.green(message))
 }
 
-export const error = (_message: string) => {
-  console.log(chalk.red('- ' + _message))
+export const error = (message: string) => {
+  console.log(chalk.red(message))
 }
+/* tslint:enable:no-console */
