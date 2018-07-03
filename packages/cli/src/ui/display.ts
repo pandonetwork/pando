@@ -1,7 +1,7 @@
 import chalk from 'chalk'
 
 export const info = (_message: string) => {
-  console.log(chalk.blue('+ ' + _message))
+  console.log(chalk.blue(_message))
 }
 
 export const success = (_message: string) => {
