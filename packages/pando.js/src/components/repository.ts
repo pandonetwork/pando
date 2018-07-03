@@ -119,6 +119,17 @@ export default class Repository {
     return tx
   }
 
+  public async fetch(remotes: string[]): Promise<any> {
+    const heads = {}
+
+    for (const remoteName of remotes) {
+      const remote = await this.remotes.load(remoteName)
+      heads[remoteName] = await remote.fetch()
+    }
+
+    return heads
+  }
+
   public async fromIPLD(object) {
     let attributes = {}
 
