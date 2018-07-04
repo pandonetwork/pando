@@ -15,7 +15,7 @@ testrpc_running() {
 
 start_testrpc() {
   if [ "$SOLIDITY_COVERAGE" = true ]; then
-    npx testrpc-sc -i 16 -g 0xfffffffffff --port "$testrpc_port"  > /dev/null &
+    npx testrpc-sc -i 16 -l 0xfffffffffff -g 0x01 --port "$testrpc_port"  > /dev/null &
   else
     npx ganache-cli -i 15 -l 0xfffffffffff -g 0x01 --port "$testrpc_port" > /dev/null &
   fi
