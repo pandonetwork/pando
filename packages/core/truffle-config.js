@@ -1,9 +1,9 @@
 module.exports = {
   networks: {
     rpc: {
-      network_id: 15,
       host: 'localhost',
       port: 8545,
+      network_id: 15,
       // gas: 6.9e6
       gas: 0xffffffffff,
       gasPrice: 0x01
