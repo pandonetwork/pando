@@ -1,5 +1,5 @@
 pragma solidity ^0.4.18;
-pragma experimental ABIEncoderV2;
+/* pragma experimental ABIEncoderV2; */
 
 import "@aragon/os/contracts/apps/AragonApp.sol";
 import "./utils/Strings.sol";
@@ -48,7 +48,7 @@ contract Tree is AragonApp {
     uint branchID = knownBranches[hash].id;
     branches[branchID].snapshots.push(Snapshot(msg.sender, block.number, _head));
     
-    emit NewSnapshot(_branch, msg.sender, _head);
+    NewSnapshot(_branch, msg.sender, _head);
   }
   
   /* function getHead(string _branch) public view returns (string _cid){
@@ -60,14 +60,15 @@ contract Tree is AragonApp {
     
   } */
   
-  function getHead(bytes32 _hash) public view returns (string cid_){
-    require(isBranch(_hash));
+  function getHead(string _branchName) public view returns (string cid_){
+    bytes32 hash = keccak256(abi.encodePacked(_branchName));
+    require(isBranch(hash));
     
-    uint branchID = knownBranches[_hash].id;
+    uint branchID = knownBranches[hash].id;
     if(branches[branchID].snapshots.length != 0) {
       return branches[branchID].snapshots[branches[branchID].snapshots.length - 1].cid;   
     } else {
-      return "root snapshot";
+      return "undefined";
     }
      
   }
@@ -80,7 +81,7 @@ contract Tree is AragonApp {
     branches[branchID].name = _name;
     knownBranches[hash] = BranchID(true, branchID);
     
-    emit NewBranch(_name, branchID);
+    NewBranch(_name, branchID);
     
     return branchID;
   }

@@ -1,251 +1,234 @@
 const namehash = require('eth-ens-namehash').hash
 const keccak256 = require('js-sha3').keccak256
 const artifactor = require('truffle-contract')
+const web3Utils = require('web3-utils')
+const { assertRevert } = require('./helpers/assertThrow')
 
-const Kernel = artifactor(require('@aragon/os/build/contracts/Kernel.json'))
-const DAOFactory = artifactor(
-  require('@aragon/os/build/contracts/DAOFactory.json')
-)
-const ACL = artifactor(require('@aragon/os/build/contracts/ACL.json'))
-const AppProxy = artifactor(
-  require('@aragon/os/build/contracts/AppProxyUpgradeable.json')
-)
-const AppProxyFactory = artifactor(
-  require('@aragon/os/build/contracts/AppProxyFactory.json')
-)
-const Specimen = artifacts.require('./Tree.sol')
+const kernelA = require('@aragon/os/build/contracts/Kernel.json')
+const aclA = require('@aragon/os/build/contracts/ACL.json')
+const daoFactoryA = require('@aragon/os/build/contracts/DAOFactory.json')
+const appProxyUpgradeableA = require('@aragon/os/build/contracts/AppProxyUpgradeable.json')
 
-const GAS = 100000000
+const Kernel = artifactor(kernelA)
+const DAOFactory = artifactor(daoFactoryA)
+const ACL = artifactor(aclA)
+const AppProxyUpgradeable = artifactor(appProxyUpgradeableA)
+const Tree = artifacts.require('Tree')
+
+const GAS = 0xfffffffffff
+const APP_NAMESPACE = '0x' + keccak256('app')
 const APP_BASE_NAMESPACE = '0x' + keccak256('base')
-const APP_ID = namehash('pando.aragonpm.test')
+const TREE_BASE_APP_ID = namehash('tree.pando.aragonpm.test')
+const TREE_APP_ID = web3Utils.sha3(
+  APP_BASE_NAMESPACE + TREE_BASE_APP_ID.substring(2),
+  { encoding: 'hex' }
+)
+const PROXY_APP_ID = web3Utils.sha3(
+  APP_NAMESPACE + TREE_BASE_APP_ID.substring(2),
+  { encoding: 'hex' }
+)
 
-contract('Specimen', accounts => {
-  let kernel, acl, specimen
+contract('Tree', function(accounts) {
+  let kernel, acl, tree
 
   before(async () => {
-    // Configure artifacts
+    // Configure contracts
     Kernel.setProvider(web3.currentProvider)
     Kernel.defaults({ from: accounts[0], gas: GAS })
     DAOFactory.setProvider(web3.currentProvider)
     DAOFactory.defaults({ from: accounts[0], gas: GAS })
     ACL.setProvider(web3.currentProvider)
     ACL.defaults({ from: accounts[0], gas: GAS })
-    AppProxy.setProvider(web3.currentProvider)
-    AppProxy.defaults({ from: accounts[0], gas: GAS })
-    AppProxyFactory.setProvider(web3.currentProvider)
-    AppProxyFactory.defaults({ from: accounts[0], gas: GAS })
+    AppProxyUpgradeable.setProvider(web3.currentProvider)
+    AppProxyUpgradeable.defaults({ from: accounts[0], gas: GAS })
 
-    // Deploy AragonOS-based DAO
-    let kernelBase = await Kernel.new()
-    let aclBase = await ACL.new()
-    let factory = await DAOFactory.new(
+    // Deploy DAOFactory
+    const kernelBase = await Kernel.new()
+    const aclBase = await ACL.new()
+    const factory = await DAOFactory.new(
       kernelBase.address,
       aclBase.address,
       '0x00'
     )
-    let receipt = await factory.newDAO(accounts[0])
-    let address = receipt.logs.filter(l => l.event === 'DeployDAO')[0].args.dao
 
-    kernel = await Kernel.at(address)
+    // Deploy aragonOS-based DAO
+    const receipt = await factory.newDAO(accounts[0])
+    const dao = receipt.logs.filter(l => l.event === 'DeployDAO')[0].args.dao
+    kernel = await Kernel.at(dao)
     acl = await ACL.at(await kernel.acl())
 
-    // Grant accounts[0] APP_MANAGER_ROLE over the DAO
-    let APP_MANAGER_ROLE = await kernel.APP_MANAGER_ROLE()
-    let receipt2 = await acl.createPermission(
+    // Grant APP_MANAGER_ROLE over the DAO
+    const APP_MANAGER_ROLE = await kernel.APP_MANAGER_ROLE()
+    const receipt2 = await acl.createPermission(
       accounts[0],
       kernel.address,
       APP_MANAGER_ROLE,
       accounts[0]
     )
+
+    // // Deploy tree app
+    const treeBase = await Tree.new()
+    await kernel.setApp(APP_BASE_NAMESPACE, TREE_BASE_APP_ID, treeBase.address)
+    const initializationPayload = treeBase.contract.initialize.getData()
+    const appProxy = await AppProxyUpgradeable.new(
+      kernel.address,
+      TREE_BASE_APP_ID,
+      initializationPayload,
+      { gas: 6e6 }
+    )
+    tree = await Tree.at(appProxy.address)
+    await kernel.setApp(APP_NAMESPACE, TREE_BASE_APP_ID, tree.address)
   })
 
   it('should deploy correctly', async () => {
-    let base = await Specimen.new()
-    let receipt = await kernel.newAppInstance(APP_ID, base.address)
-    let address = receipt.logs.filter(l => l.event === 'NewAppProxy')[0].args
-      .proxy
-    specimen = await Specimen.at(address)
+    await Tree.new()
   })
 
-  it('should create PUSH role correctly', async () => {
-    const PUSH = await specimen.PUSH()
-    let receipt = await acl.createPermission(
+  it('should allow to create PUSH role correctly', async () => {
+    const PUSH = await tree.PUSH()
+    const receipt = await acl.createPermission(
       accounts[0],
-      specimen.address,
+      tree.address,
       PUSH,
       accounts[0]
     )
-  })
-
-  it('should grant PUSH role correctly', async () => {
-    const PUSH = await specimen.PUSH()
-    let receipt = await acl.grantPermission(accounts[1], specimen.address, PUSH)
-  })
-
-  it('should create new branch correctly', async () => {
-    let receipt = await specimen.newBranch('testbranch')
-    let logName = receipt.logs.filter(l => l.event === 'NewBranch')[0].args.name
-    let branchName = await specimen.branches(0)
+    const pManager = await acl.getPermissionManager(tree.address, PUSH)
 
     assert.equal(
-      branchName,
-      'testbranch',
-      'the registered branch name is incorrect'
-    )
-    assert.equal(
-      logName,
-      'testbranch',
-      'the event broadcasted branch name is incorrect'
+      pManager,
+      accounts[0],
+      'accounts[0] should be permission manager of PUSH role over tree'
     )
   })
 
-  it('should push snapshots correctly', async () => {
-    let receipt = await specimen.setHead('testbranch', 'Qmv85')
-    // event NewSnapshot(string branch, address author, string cid);
-    let branch = receipt.logs.filter(l => l.event === 'NewSnapshot')[0].args
-      .branch
-    let author = receipt.logs.filter(l => l.event === 'NewSnapshot')[0].args
-      .author
-    let cid = receipt.logs.filter(l => l.event === 'NewSnapshot')[0].args.cid
+  it('should allow to grant PUSH role correctly', async () => {
+    const PUSH = await tree.PUSH()
+    const receipt = await acl.grantPermission(accounts[1], tree.address, PUSH)
+    const permission = await acl.hasPermission(accounts[1], tree.address, PUSH)
 
-    let branchReg = await specimen.branches(0)
-
-    let hash = '0x' + keccak256('testbranch')
-    let head = await specimen.getHead(hash)
-
-    console.log(branch)
-    console.log(author)
-    console.log(cid)
-    console.log(branchReg)
-    console.log(head)
-
-    // let hash = '0x' + keccak256('testbranch')
-    // let headH = await specimen.getHeadH(hash);
-    // console.log(headH)
-
-    // let branchName = await specimen.branches(0)
-    //
-    // assert.equal(branchName, 'testbranch', 'the registered branch name is incorrect')
-    // assert.equal(logName, 'testbranch', 'the event broadcasted branch name is incorrect')
+    assert.equal(permission, true, 'accounts[1] should own PUSH role over tree')
   })
 
-  it('should fail if not push RIGHTS', async () => {
-    let receipt = await specimen.setHead('testbranch', 'Qmv85', {
-      from: accounts[2]
+  context('#newBranch', () => {
+    let receipt
+
+    it('should create new branch correctly', async () => {
+      receipt = await tree.newBranch('master')
+      let branchName = await tree.branches(0)
+
+      assert.equal(branchName, 'master', "branch name should equal 'master'")
     })
-    // event NewSnapshot(string branch, address author, string cid);
-    let branch = receipt.logs.filter(l => l.event === 'NewSnapshot')[0].args
-      .branch
-    let author = receipt.logs.filter(l => l.event === 'NewSnapshot')[0].args
-      .author
-    let cid = receipt.logs.filter(l => l.event === 'NewSnapshot')[0].args.cid
 
-    let branchReg = await specimen.branches(0)
+    it('should emit NewBranch event correctly', async () => {
+      let event = receipt.logs.filter(l => l.event === 'NewBranch')[0]
+      let name = event.args.name
+      let branchID = event.args.branchID
 
-    let hash = '0x' + keccak256('testbranch')
-    let head = await specimen.getHead(hash)
+      assert.exists(event, "newBranch should emit a 'NewBranch' event")
+      assert.equal(name, 'master', "NewBranch 'name' arg should equal 'master'")
+      assert.equal(branchID, 0, "NewBranch 'branchID' arg should equal 0")
+    })
 
-    console.log(branch)
-    console.log(author)
-    console.log(cid)
-    console.log(branchReg)
-    console.log(head)
+    it('should revert if user do not own PUSH role', async () => {
+      return assertRevert(async () => {
+        await tree.newBranch('test', { from: accounts[2] })
+      })
+    })
 
-    // let hash = '0x' + keccak256('testbranch')
-    // let headH = await specimen.getHeadH(hash);
-    // console.log(headH)
-
-    // let branchName = await specimen.branches(0)
-    //
-    // assert.equal(branchName, 'testbranch', 'the registered branch name is incorrect')
-    // assert.equal(logName, 'testbranch', 'the event broadcasted branch name is incorrect')
+    it('should revert if branch already exists', async () => {
+      return assertRevert(async () => {
+        await tree.newBranch('master')
+      })
+    })
   })
 
-  it('should get remote branches correctly', async () => {
-    await specimen.newBranch('dev')
-    await specimen.newBranch('features')
+  context('#getBranchesName', () => {
+    it('should get remote branches name correctly', async () => {
+      await tree.newBranch('dev')
+      let branchesName = await tree.getBranchesName()
+      let branches = branchesName.split('0x|x0')
+      branches.splice(-1, 1)
 
-    let branches = await specimen.getBranchesName()
+      assert.equal(branches[0], 'master', "branches[0] should equal 'master'")
+      assert.equal(branches[1], 'dev', "branches[1] should equal 'dev'")
+      assert.notExists(branches[2], 'branches[2] should not exist')
+    })
+  })
 
-    console.log(branches)
+  context('#setHead', () => {
+    let receipt
 
-    let b = branches.split('0x|x0')
+    it('should set head correctly', async () => {
+      receipt = await tree.setHead('master', 'testcid')
+      let head = await tree.getHead('master')
 
-    b.splice(-1, 1)
+      assert.equal(head, 'testcid', "head should equal 'testcid'")
+    })
 
-    console.log(b)
+    it('should emit NewSnapshot event correctly', async () => {
+      let event = receipt.logs.filter(l => l.event === 'NewSnapshot')[0]
+      let branch = event.args.branch
+      let author = event.args.author
+      let cid = event.args.cid
 
-    // let hash = '0x' + keccak256('testbranch')
-    // let headH = await specimen.getHeadH(hash);
-    // console.log(headH)
+      assert.exists(event, "setHead should emit a 'NewSnapshot' event")
+      assert.equal(
+        branch,
+        'master',
+        "NewSnapshot branch arg should equal 'master'"
+      )
+      assert.equal(
+        author,
+        accounts[0],
+        'NewSnapshot author arg should equal accounts[0]'
+      )
+      assert.equal(cid, 'testcid', "NewSnapshot cid arg should equal 'testcid'")
+    })
 
-    // let branchName = await specimen.branches(0)
-    //
-    // assert.equal(branchName, 'testbranch', 'the registered branch name is incorrect')
-    // assert.equal(logName, 'testbranch', 'the event broadcasted branch name is incorrect')
+    it('should revert if user do not own PUSH role', async () => {
+      return assertRevert(async () => {
+        await tree.setHead('master', 'testcid2', { from: accounts[2] })
+      })
+    })
+
+    it('should revert if branch does not exist', async () => {
+      return assertRevert(async () => {
+        await tree.setHead('doesnotexist', 'testcid2')
+      })
+    })
+  })
+
+  context('#getHead', () => {
+    it('should get head correctly', async () => {
+      let head = await tree.getHead('master')
+
+      assert.equal(head, 'testcid', "head should equal 'testcid'")
+    })
+
+    it('should revert if branch does not exist', async () => {
+      return assertRevert(async () => {
+        await tree.getHead('doesnotexist')
+      })
+    })
+  })
+
+  context('#isBranch', () => {
+    it('should return true if branch exists', async () => {
+      let hash = '0x' + keccak256('master')
+      let exists = await tree.isBranch(hash)
+
+      assert.equal(exists, true, "isBranch('master') should return true")
+    })
+
+    it('should return true if branch exists', async () => {
+      let hash = '0x' + keccak256('doesnotexist')
+      let exists = await tree.isBranch(hash)
+
+      assert.equal(
+        exists,
+        false,
+        "isBranch('doesnotexist') should return false"
+      )
+    })
   })
 })
-
-// var MetaCoin = artifacts.require("./MetaCoin.sol");
-//
-// contract('MetaCoin', function(accounts) {
-//   it("should put 10000 MetaCoin in the first account", function() {
-//     return MetaCoin.deployed().then(function(instance) {
-//       return instance.getBalance.call(accounts[0]);
-//     }).then(function(balance) {
-//       assert.equal(balance.valueOf(), 10000, "10000 wasn't in the first account");
-//     });
-//   });
-//   it("should call a function that depends on a linked library", function() {
-//     var meta;
-//     var metaCoinBalance;
-//     var metaCoinEthBalance;
-//
-//     return MetaCoin.deployed().then(function(instance) {
-//       meta = instance;
-//       return meta.getBalance.call(accounts[0]);
-//     }).then(function(outCoinBalance) {
-//       metaCoinBalance = outCoinBalance.toNumber();
-//       return meta.getBalanceInEth.call(accounts[0]);
-//     }).then(function(outCoinBalanceEth) {
-//       metaCoinEthBalance = outCoinBalanceEth.toNumber();
-//     }).then(function() {
-//       assert.equal(metaCoinEthBalance, 2 * metaCoinBalance, "Library function returned unexpected function, linkage may be broken");
-//     });
-//   });
-//   it("should send coin correctly", function() {
-//     var meta;
-//
-//     // Get initial balances of first and second account.
-//     var account_one = accounts[0];
-//     var account_two = accounts[1];
-//
-//     var account_one_starting_balance;
-//     var account_two_starting_balance;
-//     var account_one_ending_balance;
-//     var account_two_ending_balance;
-//
-//     var amount = 10;
-//
-//     return MetaCoin.deployed().then(function(instance) {
-//       meta = instance;
-//       return meta.getBalance.call(account_one);
-//     }).then(function(balance) {
-//       account_one_starting_balance = balance.toNumber();
-//       return meta.getBalance.call(account_two);
-//     }).then(function(balance) {
-//       account_two_starting_balance = balance.toNumber();
-//       return meta.sendCoin(account_two, amount, {from: account_one});
-//     }).then(function() {
-//       return meta.getBalance.call(account_one);
-//     }).then(function(balance) {
-//       account_one_ending_balance = balance.toNumber();
-//       return meta.getBalance.call(account_two);
-//     }).then(function(balance) {
-//       account_two_ending_balance = balance.toNumber();
-//
-//       assert.equal(account_one_ending_balance, account_one_starting_balance - amount, "Amount wasn't correctly taken from the sender");
-//       assert.equal(account_two_ending_balance, account_two_starting_balance + amount, "Amount wasn't correctly sent to the receiver");
-//     });
-//   });
-// });
