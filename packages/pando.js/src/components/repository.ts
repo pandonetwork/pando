@@ -130,6 +130,53 @@ export default class Repository {
     return heads
   }
 
+  public async pull(remote: string, branch: string): Promise<any> {
+    await this.index!.update()
+
+    if (!this.remotes.exists(remote)) {
+      throw new Error("Remote '" + remote + "' does not exist")
+    }
+
+    if (!this.branches.exists(branch, { remote })) {
+      throw new Error("Branch '" + remote + ':' + branch + "' does not exist")
+    }
+    if (this.index!.unsnapshot.length) {
+      throw new Error(
+        'You have unsnapshot modifications: ' + this.index!.unsnapshot
+      )
+    }
+    if (this.index!.modified.length) {
+      throw new Error(
+        'You have unstaged and unsnaphot modifications: ' + this.index!.modified
+      )
+    }
+
+    await this.fetch([remote])
+
+    const newHead = this.branches.head(branch, { remote })
+    const baseHead = this.head
+
+    if (newHead !== 'undefined') {
+      let baseTree
+      let newTree
+
+      newTree = await this.node!.get(newHead, 'tree')
+
+      if (baseHead !== 'undefined') {
+        baseTree = await this.node!.get(baseHead, 'tree')
+      } else {
+        baseTree = new Tree({ path: '.', children: [] }).toIPLD()
+      }
+
+      await this.updateWorkingDirectory(baseTree, newTree)
+      await this.index!.reinitialize(newTree)
+    } else {
+      await this.index!.reinitialize(
+        await new Tree({ path: '.', children: [] }).toIPLD()
+      )
+    }
+  }
+
   public async fromIPLD(object) {
     let attributes = {}
 

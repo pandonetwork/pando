@@ -22,6 +22,8 @@ export default class RemoteFactory {
       aclBase.address,
       '0x00'
     )
+    const appProxyFactory = await this.repository.pando.contracts.appProxyFactory.new()
+
     // Deploy aragonOS-based DAO
     const receipt = await factory.newDAO(this.repository.config.author.account)
     const kernelAddress = receipt.logs.filter(l => l.event === 'DeployDAO')[0]
@@ -39,13 +41,70 @@ export default class RemoteFactory {
       this.repository.config.author.account
     )
     // // Deploy tree app
-    const tree = await this.repository.pando.contracts.tree.new()
-    const receipt3 = await kernel.newAppInstance(
+    const APP_BASE_NAMESPACE = await kernel.APP_BASES_NAMESPACE()
+    const APP_NAMESPACE = await kernel.APP_ADDR_NAMESPACE()
+
+    let tree = await this.repository.pando.contracts.tree.new()
+
+    // const receipt3 = await kernel.newAppInstance(
+    //   Remote.TREE_BASE_APP_ID,
+    //   tree.address
+    // )
+
+    // await kernel.setApp(
+    //   APP_BASE_NAMESPACE,
+    //   Remote.TREE_BASE_APP_ID,
+    //   tree.address
+    // )
+
+    await kernel.setApp(
+      Remote.APP_BASE_NAMESPACE,
       Remote.TREE_BASE_APP_ID,
       tree.address
     )
+
+    const initializationPayload = tree.contract.initialize.getData()
+
+    // const appProxy = await this.repository.pando.contracts.appProxyUpgradeable.new(
+    //   kernel.address,
+    //   Remote.TREE_BASE_APP_ID
+    // )
+
+    const appProxy = await this.repository.pando.contracts.appProxyUpgradeable.new(
+      kernel.address,
+      Remote.TREE_BASE_APP_ID,
+      initializationPayload,
+      { gas: 6e6 }
+    )
+
+    let address = appProxy.address
+
+    await kernel.setApp(
+      APP_NAMESPACE,
+      Remote.TREE_BASE_APP_ID,
+      appProxy.address
+    )
+
+    // const appProxy = await appProxyFactory.newAppProxy(
+    //   kernel.address,
+    //   Remote.TREE_BASE_APP_ID,
+    //   initializationPayload
+    // )
+    //
+    // const address = appProxy.logs.filter(l => l.event === 'NewAppProxy')[0].args
+    //   .proxy
+
+    tree = await this.repository.pando.contracts.tree.at(address)
+
+    // await kernel.setApp(
+    //   Remote.APP_BASE_NAMESPACE,
+    //   Remote.TREE_BASE_APP_ID,
+    //   appProxy.address
+    // )
+
     // // Create PUSH role
     const PUSH = await tree.PUSH()
+
     const receipt4 = await acl.createPermission(
       this.repository.config.author.account,
       tree.address,
@@ -91,9 +150,15 @@ export default class RemoteFactory {
       throw new Error("Remote '" + name + "' already exists")
     }
     const { kernel, acl, tree } = await Remote.at(this.repository, address)
+    const remote = new Remote(this.repository, kernel, acl, tree, name)
     this.saveAddress(name, kernel.address)
+    const branches = await remote.branches.list()
 
-    return new Remote(this.repository, kernel, acl, tree, name)
+    for (const branch of branches) {
+      await this.repository.branches.create(branch, { remote: name })
+    }
+
+    return remote
   }
 
   public exists(name: string): boolean {

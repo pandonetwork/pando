@@ -7,10 +7,15 @@ import { keccak256, sha3_256 } from 'js-sha3'
 import web3Utils from 'web3-utils'
 
 export default class Remote {
+  public static APP_NAMESPACE = '0x' + keccak256('app')
   public static APP_BASE_NAMESPACE = '0x' + keccak256('base')
   public static TREE_BASE_APP_ID = hash('tree.pando.aragonpm.test')
   public static TREE_APP_ID = web3Utils.sha3(
     Remote.APP_BASE_NAMESPACE + Remote.TREE_BASE_APP_ID.substring(2),
+    { encoding: 'hex' }
+  )
+  public static PROXY_APP_ID = web3Utils.sha3(
+    Remote.APP_NAMESPACE + Remote.TREE_BASE_APP_ID.substring(2),
     { encoding: 'hex' }
   )
 
@@ -20,8 +25,10 @@ export default class Remote {
   ): Promise<any> {
     const kernel = await repository.pando.contracts.kernel.at(kernelAddress)
     const acl = await repository.pando.contracts.acl.at(await kernel.acl())
+    let address = await kernel.getApp(Remote.TREE_APP_ID)
+    let address2 = await kernel.getApp(Remote.PROXY_APP_ID)
     const tree = await repository.pando.contracts.tree.at(
-      await kernel.getApp(Remote.TREE_APP_ID)
+      await kernel.getApp(Remote.PROXY_APP_ID)
     )
 
     return { kernel, acl, tree }
@@ -49,6 +56,12 @@ export default class Remote {
   }
 
   public async push(branch: string, cid: string): Promise<any> {
+    const PUSH = await this.tree.PUSH()
+    const PERM = await this.acl.hasPermission(
+      this.repository.config.author.account,
+      this.tree.address,
+      PUSH
+    )
     if (!this.repository.branches.exists(branch, { remote: this.name })) {
       throw new Error(
         "Branch '" + this.name + ':' + branch + "' does not exist'"
@@ -57,9 +70,16 @@ export default class Remote {
     if (!CID.isCID(new CID(cid))) {
       throw new Error('CID ' + cid + ' is not valid')
     }
+    if (!PERM) {
+      throw new Error(
+        "You do not own PUSH role over remote '" + this.name + "'"
+      )
+    }
 
     const branchHash = '0x' + keccak256(branch)
-    const receipt = await this.tree.setHead(branch, cid)
+    const receipt = await this.tree.setHead(branch, cid, {
+      from: this.repository.config.author.account
+    })
 
     return receipt
   }
@@ -70,9 +90,7 @@ export default class Remote {
         "Branch '" + this.name + ':' + branch + "' does not exist'"
       )
     }
-
-    const branchHash = '0x' + keccak256(branch)
-    const head = await this.tree.getHead(branchHash)
+    const head = await this.tree.getHead(branch)
 
     return head
   }
@@ -113,16 +131,18 @@ export default class Remote {
     let receipt
 
     if (!ethereumRegex({ exact: true }).test(who)) {
-      throw new TypeError('Invalid ethereum address: ' + who)
+      throw new TypeError("'" + who + "' is not a valid ethereum address")
     }
 
     switch (what) {
       case 'PUSH':
         const PUSH = await this.tree.PUSH()
-        receipt = await this.acl.grantPermission(who, this.tree.address, PUSH)
+        receipt = await this.acl.grantPermission(who, this.tree.address, PUSH, {
+          from: this.repository.config.author.account
+        })
         break
       default:
-        throw new TypeError('Invalid role: ' + what)
+        throw new TypeError("'" + what + "' is not a valid role")
     }
 
     return receipt

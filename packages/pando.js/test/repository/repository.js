@@ -199,11 +199,8 @@ describe('Repository', () => {
 
     it("should delete repository's index entry if file has been deleted and staged", async () => {
       index = repository.index.current
-      console.log(index)
       utils.fs.rm(npath.join('test', 'mocks', 'test.md'))
       await repository.stage([npath.join('test', 'mocks', 'test.md')])
-      index = repository.index.current
-      console.log(index)
       await repository.snapshot('Delete test.md')
       index = repository.index.current
 

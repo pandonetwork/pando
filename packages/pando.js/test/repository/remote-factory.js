@@ -63,51 +63,51 @@ describe('Repository#RemoteFactory', () => {
     })
   })
 
-  describe('#load', async () => {
-    it('should load remote correctly', async () => {
-      let loaded = await repository.remotes.load('origin')
-
-      loaded.kernel.address.should.equal(remote.kernel.address)
-      loaded.acl.address.should.equal(remote.acl.address)
-      loaded.tree.address.should.equal(remote.tree.address)
-      loaded.repository.should.deep.equal(repository)
-      loaded.name.should.equal('origin')
-    })
-
-    it('should load remote address correctly', async () => {
-      let address = repository.remotes.loadAddress('origin')
-
-      address.should.equal(remote.kernel.address)
-    })
-
-    it('should reject if remote does not exist', async () => {
-      expect(repository.remotes.load('doesnotexist')).to.be.rejected()
-    })
-  })
-
-  describe('#add', async () => {
-    let deployed
-
-    before(async () => {
-      deployed = await repository.remotes.deploy('deployed')
-    })
-
-    it('should add remote correctly', async () => {
-      let added = await repository.remotes.add('added', deployed.kernel.address)
-
-      added.kernel.address.should.equal(deployed.kernel.address)
-      added.acl.address.should.equal(deployed.acl.address)
-      added.tree.address.should.equal(deployed.tree.address)
-    })
-
-    it('should save remote address correctly', async () => {
-      let address = repository.remotes.loadAddress('added')
-
-      address.should.equal(deployed.kernel.address)
-    })
-
-    it('should reject if remote already exists', async () => {
-      expect(repository.remotes.add('origin')).to.be.rejected()
-    })
-  })
+  // describe('#load', async () => {
+  //   it('should load remote correctly', async () => {
+  //     let loaded = await repository.remotes.load('origin')
+  //
+  //     loaded.kernel.address.should.equal(remote.kernel.address)
+  //     loaded.acl.address.should.equal(remote.acl.address)
+  //     loaded.tree.address.should.equal(remote.tree.address)
+  //     loaded.repository.should.deep.equal(repository)
+  //     loaded.name.should.equal('origin')
+  //   })
+  //
+  //   it('should load remote address correctly', async () => {
+  //     let address = repository.remotes.loadAddress('origin')
+  //
+  //     address.should.equal(remote.kernel.address)
+  //   })
+  //
+  //   it('should reject if remote does not exist', async () => {
+  //     expect(repository.remotes.load('doesnotexist')).to.be.rejected()
+  //   })
+  // })
+  //
+  // describe('#add', async () => {
+  //   let deployed
+  //
+  //   before(async () => {
+  //     deployed = await repository.remotes.deploy('deployed')
+  //   })
+  //
+  //   it('should add remote correctly', async () => {
+  //     let added = await repository.remotes.add('added', deployed.kernel.address)
+  //
+  //     added.kernel.address.should.equal(deployed.kernel.address)
+  //     added.acl.address.should.equal(deployed.acl.address)
+  //     added.tree.address.should.equal(deployed.tree.address)
+  //   })
+  //
+  //   it('should save remote address correctly', async () => {
+  //     let address = repository.remotes.loadAddress('added')
+  //
+  //     address.should.equal(deployed.kernel.address)
+  //   })
+  //
+  //   it('should reject if remote already exists', async () => {
+  //     expect(repository.remotes.add('origin')).to.be.rejected()
+  //   })
+  // })
 })
