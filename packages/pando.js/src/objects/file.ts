@@ -1,9 +1,6 @@
 import Node from '@components/node'
 import IPLDNode from '@objects/ipld-node'
-import { ipld } from '@objects/ipld-node'
 
-@ipld('path')
-@ipld('link', { link: true, type: 'direct' })
 class File extends IPLDNode {
   public path?: string
   public link: string
@@ -12,25 +9,6 @@ class File extends IPLDNode {
     super('file')
     this.path = data.path || undefined
     this.link = data.link
-  }
-
-  public async put(node: Node) {
-    const cid = await node.put(await this.toIPLD())
-    await node.gateway.dag.put(await this.toIPLD(), {
-      format: 'dag-cbor',
-      hashAlg: 'keccak-256'
-    })
-    return cid
-  }
-
-  public async push(node: any): Promise<string> {
-    await node.uploadToGateway(this.link, this.path)
-    const cid = await node.gateway.dag.put(await this.toIPLD(), {
-      format: 'dag-cbor',
-      hashAlg: 'keccak-256'
-    })
-
-    return cid.toBaseEncodedString()
   }
 
   public async toIPLD(): Promise<any> {
@@ -42,6 +20,22 @@ class File extends IPLDNode {
 
     return node
   }
+
+  public async put(node: Node) {
+    const ipldNode = await this.toIPLD()
+    const cid = await node.put(ipldNode)
+    return cid.toBaseEncodedString()
+  }
+
+  // public async push(node: any): Promise<string> {
+  //   await node.uploadToGateway(this.link, this.path)
+  //   const cid = await node.gateway.dag.put(await this.toIPLD(), {
+  //     format: 'dag-cbor',
+  //     hashAlg: 'keccak-256'
+  //   })
+  //
+  //   return cid.toBaseEncodedString()
+  // }
 }
 
 export default File

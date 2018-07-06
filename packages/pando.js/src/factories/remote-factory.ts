@@ -77,7 +77,7 @@ export default class RemoteFactory {
       { gas: 6e6 }
     )
 
-    let address = appProxy.address
+    const address = appProxy.address
 
     await kernel.setApp(
       APP_NAMESPACE,

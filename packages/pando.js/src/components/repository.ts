@@ -115,9 +115,23 @@ export default class Repository {
   public async push(remoteName: string, branch: string): Promise<any> {
     const head = this.head
     const remote = await this.remotes.load(remoteName)
+    const remoteHead = await remote.head(branch)
+
+    if (head === 'undefined') {
+      throw new Error('Nothing to push')
+    }
+    if (remoteHead === head) {
+      throw new Error(
+        "Branch '" +
+          branch +
+          "' of remote '" +
+          remoteName +
+          "' is already up to date"
+      )
+    }
     const tx = await remote.push(branch, head)
     const snapshot = await this.fromCID(head)
-    await snapshot.push(this.node!)
+    await snapshot.put(this.node!)
 
     return tx
   }
@@ -188,9 +202,9 @@ export default class Repository {
       case 'snapshot':
         data = {
           author: object.author,
-          timestamp: object.timestamp,
           message: object.message,
           parents: [],
+          timestamp: object.timestamp,
           tree: undefined
         }
 
@@ -217,8 +231,8 @@ export default class Repository {
       case 'file':
         const link = new CID(object.link['/'])
         return new File({
-          path: object.path,
           link: link.toBaseEncodedString()
+          path: object.path,
         })
       default:
         throw new TypeError('Unrecognized IPLD node')
@@ -228,8 +242,7 @@ export default class Repository {
   public async updateWorkingDirectory(baseTree: any, newTree: any) {
     const baseCID = await this.node!.cid(baseTree)
     const newCID = await this.node!.cid(newTree)
-    // console.log(baseTree)
-    // console.log(newTree)
+
     // Delete meta properties to loop over tree's entries only
     delete baseTree['@type']
     delete baseTree.path
@@ -238,7 +251,6 @@ export default class Repository {
     delete newTree.path
 
     for (const entry in newTree) {
-      // console.log('ENTRY ' + entry)
       if (!baseTree[entry]) {
         // entry existing in newTree but not in baseTree
         // await this.node!.download(newTree[entry]['/'])
@@ -252,24 +264,16 @@ export default class Repository {
 
           if (baseEntryType !== newEntryType) {
             // entry type differs in baseTree and newTree
-            // await this.node!.download(newTree[entry]['/'])
             await this.node!.download(newCID, entry)
           } else if (baseEntryType === 'file') {
             // entry type is the same in baseTree and newTree
             // entry is a file
-            // await this.node!.download(newTree[entry]['/'])
             await this.node!.download(newCID, entry)
           } else if (baseEntryType === 'tree') {
             // entry type is the same in baseTree and newTree
             // entry is a tree
-            // const baseEntry = await this.node!.get(baseTree[entry]['/'])
-            // const newEntry = await this.node!.get(newTree[entry]['/'])
             const baseEntry = await await this.node!.get(baseCID, entry + '/')
             const newEntry = await this.node!.get(newCID, entry + '/')
-            // console.log('BASE ENTRY : ' + entry)
-            // console.log(baseEntry)
-            // console.log('NEW ENTRY : ' + entry)
-            // console.log(newEntry)
             await this.updateWorkingDirectory(baseEntry, newEntry)
           }
         }
@@ -279,12 +283,8 @@ export default class Repository {
 
     for (const entry in baseTree) {
       if (baseTree.hasOwnProperty(entry)) {
-        // Delete remaining files
-        // console.log('Avant qu on delete ' + entry)
-        // console.log(baseTree)
         const path = await this.node!.get(baseCID, entry + '/path/')
         utils.fs.rm(npath.join(this.paths.root, path))
-        // console.log('APRES qu on delete')
       }
     }
   }
@@ -292,11 +292,7 @@ export default class Repository {
   private tree() {
     const index = this.index!.current
     const tree = new Tree({ path: '.' })
-    let staged = this.index!.staged
-    // for (const file of staged) {
-    //   if (index[file].wdir === 'null') {
-    //     delete index[file]
-    // }
+    const staged = this.index!.staged
 
     staged.forEach((file, i) => {
       if (index[file].stage === 'todelete') {

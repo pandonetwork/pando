@@ -27,8 +27,8 @@ export default class Remote {
   ): Promise<any> {
     const kernel = await repository.pando.contracts.kernel.at(kernelAddress)
     const acl = await repository.pando.contracts.acl.at(await kernel.acl())
-    let address = await kernel.getApp(Remote.TREE_APP_ID)
-    let address2 = await kernel.getApp(Remote.PROXY_APP_ID)
+    const address = await kernel.getApp(Remote.TREE_APP_ID)
+    const address2 = await kernel.getApp(Remote.PROXY_APP_ID)
     const tree = await repository.pando.contracts.tree.at(
       await kernel.getApp(Remote.PROXY_APP_ID)
     )
@@ -64,6 +64,7 @@ export default class Remote {
       this.tree.address,
       PUSH
     )
+
     if (!this.repository.branches.exists(branch, { remote: this.name })) {
       throw new Error(
         "Branch '" + this.name + ':' + branch + "' does not exist'"
@@ -78,40 +79,9 @@ export default class Remote {
       )
     }
 
-    const branchHash = '0x' + keccak256(branch)
     const receipt = await this.tree.setHead(branch, cid, {
       from: this.repository.config.author.account
     })
-
-    // const node = IPFS({
-    //   host: '178.128.202.49',
-    //   port: 8080,
-    //   protocol: 'http'
-    // })
-
-    // const node = IPFS({
-    //   host: 'ipfs.infura.io',
-    //   port: 5001,
-    //   protocol: 'https'
-    // })
-
-    // const node = IPFS('ipfs.infura.io', '5001', { protocol: 'https' })
-
-    // const node = IPFS('178.128.202.49', '8002', { protocol: 'http' })
-
-    // const message = Buffer.from('toto')
-    //
-    // const pin = util.promisify(node.pin.add)
-    // await this.repository.node!.ipfs.start()
-    // await pin(cid)
-    // await this.repository.node!.ipfs.start()
-    // node.pin.add(cid, (err, res) => {
-    //   if (err) {
-    //     console.log(err)
-    //   } else {
-    //     console.log(res)
-    //   }
-    // })
 
     return receipt
   }

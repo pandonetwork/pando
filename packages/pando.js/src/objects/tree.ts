@@ -1,15 +1,7 @@
 import Node from '@components/node'
 import IPLDNode from '@objects/ipld-node'
-import { ipld } from '@objects/ipld-node'
 
-@ipld('path')
-@ipld('children', { link: true, type: 'map' })
 class Tree extends IPLDNode {
-  public static async get(node: Node, cid: string) {
-    const tree = await node.get(cid, 'tree')
-    return tree
-  }
-
   public path?: string
   public children: object
 
@@ -38,11 +30,8 @@ class Tree extends IPLDNode {
   }
 
   public async put(node: Node) {
-    const cid = await node.put(await this.toIPLD())
-    await node.gateway.dag.put(await this.toIPLD(), {
-      format: 'dag-cbor',
-      hashAlg: 'keccak-256'
-    })
+    const ipldNode = await this.toIPLD()
+    const cid = await node.put(ipldNode)
     for (const child in this.children) {
       if (this.children.hasOwnProperty(child)) {
         await this.children[child].put(node)
@@ -51,20 +40,20 @@ class Tree extends IPLDNode {
     return cid
   }
 
-  public async push(node: any): Promise<string> {
-    for (const child in this.children) {
-      if (this.children.hasOwnProperty(child)) {
-        await this.children[child].push(node)
-      }
-    }
-
-    const cid = await node.gateway.dag.put(await this.toIPLD(), {
-      format: 'dag-cbor',
-      hashAlg: 'keccak-256'
-    })
-
-    return cid.toBaseEncodedString()
-  }
+  // public async push(node: any): Promise<string> {
+  //   for (const child in this.children) {
+  //     if (this.children.hasOwnProperty(child)) {
+  //       await this.children[child].push(node)
+  //     }
+  //   }
+  //
+  //   const cid = await node.gateway.dag.put(await this.toIPLD(), {
+  //     format: 'dag-cbor',
+  //     hashAlg: 'keccak-256'
+  //   })
+  //
+  //   return cid.toBaseEncodedString()
+  // }
 }
 
 export default Tree
