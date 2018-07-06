@@ -3,7 +3,7 @@
   <h1>pando cli</h1>
 </div>
 
-Pando is distributed [versioning control system](https://en.wikipedia.org/wiki/Version_control) enforcing [DAO-based](https://en.wikipedia.org/wiki/Decentralized_autonomous_organization) versioning, contribution tracking and governance. It is built on top of [IPFS](https://ipfs.io), [ethereum](https://ethereum.org) and [aragonOS](https://aragon.on/ose).
+Pando is distributed [versioning control system](https://en.wikipedia.org/wiki/Version_control) enforcing [DAO-based](https://en.wikipedia.org/wiki/Decentralized_autonomous_organization) versioning, contribution tracking and governance. It is built on top of [IPFS](https://ipfs.io), [ethereum](https://ethereum.org) and [aragonOS](https://aragon.one/os).
 
 [![standard-readme compliant](https://img.shields.io/badge/standard--readme-OK-green.svg?style=flat-square)](https://github.com/RichardLitt/standard-readme)
 
@@ -43,6 +43,52 @@ Commands:
 Options:
   --version   Show version number                                      [boolean]
   -h, --help  Show help                                                [boolean]
+```
+
+### Initialization
+
+#### `pando init`
+
+```
+$ pando init
+```
+
+Creates a new repository in the current working directory.
+
+#### `pando config`
+
+```
+$ pando config [--global]
+```
+
+Configures pando either globally or locally. This command will allow you to choose for an ethereum node, an ethereum account and an IPFS node.
+
+### Remotes
+
+#### `pando remote deploy`
+
+```
+$ pando remote deploy <name>
+```
+
+Deploy an new aragonOS-based remote DAO named `name` in the current repository. This command also grants full administration rights over this DAO to the current user.
+
+#### `pando remote add`
+
+```
+$ pando remote add <name> <address>
+```
+
+#### `pando remote show`
+
+```
+$ pando remote show <name>
+```
+
+#### `pando remote grant`
+
+```
+$ pando remote grant <name> <role> <address>
 ```
 
 ## Maintainers
