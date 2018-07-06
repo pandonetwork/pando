@@ -94,17 +94,18 @@ export default class Repository {
     }
 
     const tree = await this.tree()
-    const treeCID = await tree.put(this.node!)
+    await tree.put(this.node!)
+
     const parents =
-      this.head !== 'undefined'
-        ? [await this.fromIPLD(await this.node!.get(this.head))]
-        : undefined
+      this.head !== 'undefined' ? [await this.fromCID(this.head)] : undefined
+
     const snapshot = new Snapshot({
       author: this.pando.config.author,
       message,
       parents,
       tree
     })
+
     const cid = await this.node!.put(await snapshot.toIPLD())
     this.currentBranch.head = cid.toBaseEncodedString()
 
@@ -115,6 +116,8 @@ export default class Repository {
     const head = this.head
     const remote = await this.remotes.load(remoteName)
     const tx = await remote.push(branch, head)
+    const snapshot = await this.fromCID(head)
+    await snapshot.push(this.node!)
 
     return tx
   }
@@ -136,7 +139,6 @@ export default class Repository {
     if (!this.remotes.exists(remote)) {
       throw new Error("Remote '" + remote + "' does not exist")
     }
-
     if (!this.branches.exists(branch, { remote })) {
       throw new Error("Branch '" + remote + ':' + branch + "' does not exist")
     }
@@ -156,102 +158,78 @@ export default class Repository {
     const newHead = this.branches.head(branch, { remote })
     const baseHead = this.head
 
-    if (newHead !== 'undefined') {
-      let baseTree
-      let newTree
-
-      newTree = await this.node!.get(newHead, 'tree')
-
-      if (baseHead !== 'undefined') {
-        baseTree = await this.node!.get(baseHead, 'tree')
-      } else {
-        baseTree = new Tree({ path: '.', children: [] }).toIPLD()
-      }
-
-      await this.updateWorkingDirectory(baseTree, newTree)
-      await this.index!.reinitialize(newTree)
-    } else {
-      await this.index!.reinitialize(
-        await new Tree({ path: '.', children: [] }).toIPLD()
+    if (newHead === 'undefined') {
+      throw new Error(
+        "Branch '" + branch + ':' + remote + "' has no snapshot yet"
       )
     }
+
+    let newTree
+    let baseTree
+
+    newTree = await this.node!.get(newHead, 'tree')
+
+    if (baseHead !== 'undefined') {
+      baseTree = await this.node!.get(baseHead, 'tree')
+    } else {
+      baseTree = await new Tree({ path: '.', children: [] }).toIPLD()
+    }
+
+    await this.updateWorkingDirectory(baseTree, newTree)
+    await this.index!.reinitialize(newTree)
   }
 
-  public async fromIPLD(object) {
-    let attributes = {}
-
-    const data: any = {}
-
-    let node
+  public async fromCID(cid: string, path?: string) {
+    path = path || ''
+    let data: any
+    const object = await this.node!.get(cid, path || '')
 
     switch (object['@type']) {
       case 'snapshot':
-        attributes = Reflect.getMetadata('ipld', Snapshot.prototype.constructor)
-        break
-      case 'tree':
-        attributes = Reflect.getMetadata('ipld', Tree.prototype.constructor)
-        break
-      case 'file':
-        attributes = Reflect.getMetadata('ipld', File.prototype.constructor)
-        break
-      default:
-        throw new TypeError('Unrecognized IPLD node.')
-    }
-
-    for (const attribute in attributes) {
-      if (attributes[attribute].link) {
-        const type = attributes[attribute].type
-
-        switch (type) {
-          case 'map':
-            data.children = {}
-            for (const child in object) {
-              if (child !== '@type' && child !== 'path') {
-                data.children[child] = await this.fromIPLD(
-                  await this.node!.get(object[child]['/'])
-                )
-              }
-            }
-            break
-          case 'array':
-            data[attribute] = []
-            for (const child of object[attribute]) {
-              data[attribute].push(
-                await this.fromIPLD(await this.node!.get(child['/']))
-              )
-            }
-            break
-          case 'direct':
-            data[attribute] = object[attribute]['/']
-            break
-          default:
-            data[attribute] = await this.fromIPLD(
-              await this.node!.get(object[attribute]['/'])
-            )
+        data = {
+          author: object.author,
+          timestamp: object.timestamp,
+          message: object.message,
+          parents: [],
+          tree: undefined
         }
-      } else {
-        data[attribute] = object[attribute]
-      }
-    }
 
-    switch (object['@type']) {
-      case 'snapshot':
-        node = new Snapshot(data)
-        break
+        data.tree = await this.fromCID(cid, path + 'tree/')
+        object.parents.forEach(async (parent, index) => {
+          data.parents.push(
+            await this.fromCID(cid, path + 'parents/' + index + '/')
+          )
+        })
+
+        return new Snapshot(data)
+
       case 'tree':
-        node = new Tree(data)
-        break
-      case 'file':
-        node = new File(data)
-        break
-      default:
-        throw new TypeError('Unrecognized IPLD node.')
-    }
+        data = { path: object.path, children: {} }
+        delete object['@type']
+        delete object.path
 
-    return node
+        for (const child in object) {
+          if (object.hasOwnProperty(child)) {
+            data.children[child] = await this.fromCID(cid, path + child + '/')
+          }
+        }
+        return new Tree(data)
+      case 'file':
+        const link = new CID(object.link['/'])
+        return new File({
+          path: object.path,
+          link: link.toBaseEncodedString()
+        })
+      default:
+        throw new TypeError('Unrecognized IPLD node')
+    }
   }
 
   public async updateWorkingDirectory(baseTree: any, newTree: any) {
+    const baseCID = await this.node!.cid(baseTree)
+    const newCID = await this.node!.cid(newTree)
+    // console.log(baseTree)
+    // console.log(newTree)
     // Delete meta properties to loop over tree's entries only
     delete baseTree['@type']
     delete baseTree.path
@@ -260,33 +238,38 @@ export default class Repository {
     delete newTree.path
 
     for (const entry in newTree) {
+      // console.log('ENTRY ' + entry)
       if (!baseTree[entry]) {
         // entry existing in newTree but not in baseTree
-        await this.node!.download(newTree[entry]['/'])
+        // await this.node!.download(newTree[entry]['/'])
+        await this.node!.download(newCID, entry)
         delete baseTree[entry]
       } else {
         // entry existing both in newTree and in baseTree
         if (baseTree[entry]['/'] !== newTree[entry]['/']) {
-          const baseEntryType = await this.node!.get(
-            baseTree[entry]['/'],
-            '@type'
-          )
-          const newEntryType = await this.node!.get(
-            newTree[entry]['/'],
-            '@type'
-          )
+          const baseEntryType = await this.node!.get(baseCID, entry + '/@type/')
+          const newEntryType = await this.node!.get(newCID, entry + '/@type/')
+
           if (baseEntryType !== newEntryType) {
             // entry type differs in baseTree and newTree
-            await this.node!.download(newTree[entry]['/'])
+            // await this.node!.download(newTree[entry]['/'])
+            await this.node!.download(newCID, entry)
           } else if (baseEntryType === 'file') {
             // entry type is the same in baseTree and newTree
             // entry is a file
-            await this.node!.download(newTree[entry]['/'])
+            // await this.node!.download(newTree[entry]['/'])
+            await this.node!.download(newCID, entry)
           } else if (baseEntryType === 'tree') {
             // entry type is the same in baseTree and newTree
             // entry is a tree
-            const baseEntry = await this.node!.get(baseTree[entry]['/'])
-            const newEntry = await this.node!.get(newTree[entry]['/'])
+            // const baseEntry = await this.node!.get(baseTree[entry]['/'])
+            // const newEntry = await this.node!.get(newTree[entry]['/'])
+            const baseEntry = await await this.node!.get(baseCID, entry + '/')
+            const newEntry = await this.node!.get(newCID, entry + '/')
+            // console.log('BASE ENTRY : ' + entry)
+            // console.log(baseEntry)
+            // console.log('NEW ENTRY : ' + entry)
+            // console.log(newEntry)
             await this.updateWorkingDirectory(baseEntry, newEntry)
           }
         }
@@ -297,8 +280,11 @@ export default class Repository {
     for (const entry in baseTree) {
       if (baseTree.hasOwnProperty(entry)) {
         // Delete remaining files
-        const path = await this.node!.get(baseTree[entry]['/'], 'path')
+        // console.log('Avant qu on delete ' + entry)
+        // console.log(baseTree)
+        const path = await this.node!.get(baseCID, entry + '/path/')
         utils.fs.rm(npath.join(this.paths.root, path))
+        // console.log('APRES qu on delete')
       }
     }
   }
@@ -315,7 +301,7 @@ export default class Repository {
     staged.forEach((file, i) => {
       if (index[file].stage === 'todelete') {
         delete index[file]
-        staged = staged.splice(i, 1)
+        staged.splice(i, 1)
       }
     })
 

@@ -73,7 +73,7 @@ export default class BranchFactory {
       if (baseHead !== 'undefined') {
         baseTree = await this.repository.node!.get(baseHead, 'tree')
       } else {
-        baseTree = new Tree({ path: '.', children: [] }).toIPLD()
+        baseTree = await new Tree({ path: '.', children: [] }).toIPLD()
       }
 
       await this.repository.updateWorkingDirectory(baseTree, newTree)

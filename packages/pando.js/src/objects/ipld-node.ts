@@ -1,5 +1,6 @@
 import Snapshot from '@objects/snapshot'
-import IPLDPando from 'ipld-pando'
+// import IPLDPando from 'ipld-pando'
+import IPLDPando from 'ipld-dag-cbor'
 import 'reflect-metadata'
 import { promisify } from 'util'
 

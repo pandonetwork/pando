@@ -12,7 +12,7 @@ const handler = async argv => {
     let pando = await Pando.load()
     let repository = await pando.repositories.load()
     let receipt = await repository.push(argv.remote, argv.branch)
-    display.info('Modifications pushed at tx ' + receipt.tx)
+    display.success('Modifications pushed at tx ' + receipt.tx)
   } catch (err) {
     display.error(err.message)
   }

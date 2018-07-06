@@ -183,16 +183,8 @@ describe('Repository', () => {
 
     it('should push snapshot to ipfs/ipld correctly', async () => {
       let cid = await snapshot.cid()
-      let serialized = await repository.node.get(cid)
-      let deserialized = await repository.fromIPLD(serialized)
-
-      deserialized.should.be.deep.equal(snapshot)
-    })
-
-    it('should push snapshot to ipfs/ipld correctly', async () => {
-      let cid = await snapshot.cid()
-      let serialized = await repository.node.get(cid)
-      let deserialized = await repository.fromIPLD(serialized)
+      // let serialized = await repository.node.get(cid)
+      let deserialized = await repository.fromCID(cid)
 
       deserialized.should.be.deep.equal(snapshot)
     })

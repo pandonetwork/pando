@@ -1,5 +1,6 @@
 import Repository from '@components/repository'
 import * as utils from '@utils'
+import CID from 'cids'
 import klaw from 'klaw-sync'
 import path from 'path'
 
@@ -99,7 +100,7 @@ export default class Index {
         if (node['@type'] === 'tree') {
           await this.reinitialize(node, index)
         } else if (node['@type'] === 'file') {
-          const cid = node.link['/']
+          const cid = new CID(node.link['/']).toBaseEncodedString()
           index[node.path] = {
             mtime: new Date(Date.now()),
             repo: cid,

@@ -3,7 +3,9 @@ import RemoteBranchFactory from '@factories/remote-branch-factory'
 import CID from 'cids'
 import { hash } from 'eth-ens-namehash'
 import ethereumRegex from 'ethereum-regex'
+import IPFS from 'ipfs-api'
 import { keccak256, sha3_256 } from 'js-sha3'
+import util from 'util'
 import web3Utils from 'web3-utils'
 
 export default class Remote {
@@ -80,6 +82,36 @@ export default class Remote {
     const receipt = await this.tree.setHead(branch, cid, {
       from: this.repository.config.author.account
     })
+
+    // const node = IPFS({
+    //   host: '178.128.202.49',
+    //   port: 8080,
+    //   protocol: 'http'
+    // })
+
+    // const node = IPFS({
+    //   host: 'ipfs.infura.io',
+    //   port: 5001,
+    //   protocol: 'https'
+    // })
+
+    // const node = IPFS('ipfs.infura.io', '5001', { protocol: 'https' })
+
+    // const node = IPFS('178.128.202.49', '8002', { protocol: 'http' })
+
+    // const message = Buffer.from('toto')
+    //
+    // const pin = util.promisify(node.pin.add)
+    // await this.repository.node!.ipfs.start()
+    // await pin(cid)
+    // await this.repository.node!.ipfs.start()
+    // node.pin.add(cid, (err, res) => {
+    //   if (err) {
+    //     console.log(err)
+    //   } else {
+    //     console.log(res)
+    //   }
+    // })
 
     return receipt
   }

@@ -1,7 +1,7 @@
-import * as commands from './commands'
 import yargs from 'yargs'
+import * as commands from './commands'
 
-var argv = yargs
+const argv = yargs
   .usage('pando <command>')
   .command(commands.configure)
   .command(commands.init)
@@ -9,6 +9,7 @@ var argv = yargs
   .command(commands.snapshot)
   .command(commands.fetch)
   .command(commands.push)
+  .command(commands.pull)
   .command(commands.branch)
   .command(commands.remote)
   .demandCommand(1, 'No command provided')

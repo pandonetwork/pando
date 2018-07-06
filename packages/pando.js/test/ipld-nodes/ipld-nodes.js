@@ -42,9 +42,13 @@ describe('IPLD Nodes', () => {
     })
     describe('IPLD (de)serialization', async () => {
       it('should round-trip (de)serialization correctly', async () => {
-        let serialized = await snapshot.toIPLD()
-        let deserialized = await repository.fromIPLD(serialized)
+        // let serialized = await snapshot.toIPLD()
+        let cid = await snapshot.cid()
+        let deserialized = await repository.fromCID(cid)
 
+        // let deserialized = await repository.fromIPLD(serialized)
+        // console.log('tfromIPLD')
+        // console.log(deserialized)
         deserialized.should.deep.equal(snapshot)
       })
     })
@@ -65,8 +69,9 @@ describe('IPLD Nodes', () => {
     })
     describe('IPLD (de)serialization', async () => {
       it('should round-trip (de)serialization correctly', async () => {
-        let serialized = await tree.toIPLD()
-        let deserialized = await repository.fromIPLD(serialized)
+        // let serialized = await tree.toIPLD()
+        let cid = await tree.cid()
+        let deserialized = await repository.fromCID(cid)
 
         deserialized.should.deep.equal(tree)
       })
@@ -84,7 +89,8 @@ describe('IPLD Nodes', () => {
     describe('IPLD (de)serialization', async () => {
       it('should round-trip (de)serialization correctly', async () => {
         let serialized = await file.toIPLD()
-        let deserialized = await repository.fromIPLD(serialized)
+        let cid = await file.cid()
+        let deserialized = await repository.fromCID(cid)
 
         deserialized.should.deep.equal(file)
       })

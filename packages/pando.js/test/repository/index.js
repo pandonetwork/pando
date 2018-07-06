@@ -136,6 +136,8 @@ describe('Repository#Index', () => {
     it('should reinitialize index correctly', async () => {
       await repository.stage([npath.join('test', 'mocks', 'test.md')])
       let snapshot = await repository.snapshot('My first snapshot')
+      const tree = await snapshot.tree.toIPLD()
+
       let reinitialized = await repository.index.reinitialize(
         await snapshot.tree.toIPLD()
       )

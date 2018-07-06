@@ -7,6 +7,7 @@ const builder = yargs => {
     .command(subcommands.deploy)
     .command(subcommands.add)
     .command(subcommands.show)
+    .command(subcommands.grant)
     .updateStrings({ 'Commands:': 'Subcommands:' })
     .demandCommand(1, 'No subcommand provided')
     .help()

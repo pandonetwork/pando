@@ -19,14 +19,51 @@ class Tree extends IPLDNode {
     this.children = data.children || {}
   }
 
+  public async toIPLD(): Promise<any> {
+    const node: any = {}
+
+    node['@type'] = this.type
+    node.path = this.path
+
+    for (const child in this.children) {
+      if (this.children.hasOwnProperty(child)) {
+        const cid = await this.children[child].cid()
+        node[child] = {
+          '/': cid.toBaseEncodedString()
+        }
+      }
+    }
+
+    return node
+  }
+
   public async put(node: Node) {
     const cid = await node.put(await this.toIPLD())
+    await node.gateway.dag.put(await this.toIPLD(), {
+      format: 'dag-cbor',
+      hashAlg: 'keccak-256'
+    })
     for (const child in this.children) {
       if (this.children.hasOwnProperty(child)) {
         await this.children[child].put(node)
       }
     }
     return cid
+  }
+
+  public async push(node: any): Promise<string> {
+    for (const child in this.children) {
+      if (this.children.hasOwnProperty(child)) {
+        await this.children[child].push(node)
+      }
+    }
+
+    const cid = await node.gateway.dag.put(await this.toIPLD(), {
+      format: 'dag-cbor',
+      hashAlg: 'keccak-256'
+    })
+
+    return cid.toBaseEncodedString()
   }
 }
 
