@@ -1,3 +1,5 @@
+import register from 'module-alias/register'
+
 import Repository from '@components/repository'
 import RemoteBranchFactory from '@factories/remote-branch-factory'
 import CID from 'cids'
@@ -7,6 +9,7 @@ import IPFS from 'ipfs-api'
 import { keccak256, sha3_256 } from 'js-sha3'
 import util from 'util'
 import web3Utils from 'web3-utils'
+import isIPFS from 'is-ipfs'
 
 export default class Remote {
   public static APP_NAMESPACE = '0x' + keccak256('app')
@@ -70,7 +73,7 @@ export default class Remote {
         "Branch '" + this.name + ':' + branch + "' does not exist'"
       )
     }
-    if (!CID.isCID(new CID(cid))) {
+    if (!isIPFS.cid(cid)) {
       throw new Error('CID ' + cid + ' is not valid')
     }
     if (!PERM) {

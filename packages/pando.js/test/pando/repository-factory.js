@@ -1,6 +1,6 @@
 /* eslint-disable import/no-duplicates */
-import Pando from '../../lib/pando.js'
-import { Repository } from '../../lib/pando.js'
+import Pando from '../../lib'
+import Repository from '../../lib/components/repository'
 /* eslint-enable import/no-duplicates */
 import { opts } from '../data'
 import chai from 'chai'
@@ -50,7 +50,7 @@ describe('Pando#RepositoryFactory', () => {
       repository.node.should.exist()
       repository.node.repository.should.be.deep.equal(repository)
       repository.node.ipfs.should.exist()
-      // repository.node.ipld.should.exist()
+      // test ipfs configuration
     })
 
     it("should initialize repository's branch factory correctly", () => {
@@ -99,7 +99,7 @@ describe('Pando#RepositoryFactory', () => {
       loaded.node.should.exist()
       loaded.node.repository.should.be.deep.equal(loaded)
       loaded.node.ipfs.should.exist()
-      // loaded.node.ipld.should.exist()
+      // test ipfs configuration
     })
 
     it("should initialize repository's branch factory correctly", () => {
@@ -112,8 +112,18 @@ describe('Pando#RepositoryFactory', () => {
       loaded.remotes.repository.should.be.deep.equal(loaded)
     })
 
-    it('should reject if repository does not already exist', async () => {
+    it('should reject if repository does not exist', async () => {
       pando.repositories.load('doesnotexist').should.be.rejected()
+    })
+  })
+
+  describe('#exists', () => {
+    it('should return true if repository exists', async () => {
+      pando.repositories.exists(npath.join('test', 'mocks')).should.equal(true)
+    })
+
+    it('should return false if repository does not exist', async () => {
+      pando.repositories.exists('doesnotexist').should.equal(false)
     })
   })
 })

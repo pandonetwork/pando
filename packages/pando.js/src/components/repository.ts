@@ -1,3 +1,5 @@
+import register from 'module-alias/register'
+
 import Branch from '@components/branch'
 import Index from '@components/index'
 import Node from '@components/node'
@@ -6,7 +8,7 @@ import RemoteFactory from '@factories/remote-factory'
 import File from '@objects/file'
 import Snapshot from '@objects/snapshot'
 import Tree from '@objects/tree'
-import Pando from '@pando'
+import Pando from '@root'
 import * as utils from '@utils'
 import CID from 'cids'
 import npath from 'path'
@@ -97,7 +99,7 @@ export default class Repository {
     await tree.put(this.node!)
 
     const parents =
-      this.head !== 'undefined' ? [await this.fromCID(this.head)] : undefined
+      this.head !== 'undefined' ? [await this.fromCID(this.head)] : []
 
     const snapshot = new Snapshot({
       author: this.pando.config.author,
@@ -106,8 +108,9 @@ export default class Repository {
       tree
     })
 
-    const cid = await this.node!.put(await snapshot.toIPLD())
-    this.currentBranch.head = cid.toBaseEncodedString()
+    // const cid = await this.node!.put(await snapshot.toIPLD())
+    const cid = await snapshot.put(this.node!)
+    this.currentBranch.head = cid
 
     return snapshot
   }
@@ -115,7 +118,10 @@ export default class Repository {
   public async push(remoteName: string, branch: string): Promise<any> {
     const head = this.head
     const remote = await this.remotes.load(remoteName)
-    const remoteHead = await remote.head(branch)
+    const remoteBranch = await this.branches.load(branch, {
+      remote: remoteName
+    })
+    const remoteHead = await remoteBranch.head
 
     if (head === 'undefined') {
       throw new Error('Nothing to push')
@@ -129,10 +135,11 @@ export default class Repository {
           "' is already up to date"
       )
     }
-    const tx = await remote.push(branch, head)
+
     const snapshot = await this.fromCID(head)
     await snapshot.put(this.node!)
-
+    const tx = await remote.push(branch, head)
+    remoteBranch.head = head
     return tx
   }
 
@@ -191,11 +198,32 @@ export default class Repository {
 
     await this.updateWorkingDirectory(baseTree, newTree)
     await this.index!.reinitialize(newTree)
+
+    this.currentBranch.head = newHead
+  }
+
+  public async status(): Promise<any> {
+    await this.index!.update()
+
+    const unsnapshot = this.index!.unsnapshot
+    const modified = this.index!.modified
+    const untracked = this.index!.untracked
+
+    return { unsnapshot, modified, untracked }
+  }
+
+  public async log(branchName: string, opts?: any): Promise<any[]> {
+    const branch = await this.branches.load(branchName, opts)
+    const log = await branch.log()
+
+    return log
   }
 
   public async fromCID(cid: string, path?: string) {
     path = path || ''
     let data: any
+    let index = 0
+
     const object = await this.node!.get(cid, path || '')
 
     switch (object['@type']) {
@@ -209,14 +237,17 @@ export default class Repository {
         }
 
         data.tree = await this.fromCID(cid, path + 'tree/')
-        object.parents.forEach(async (parent, index) => {
-          data.parents.push(
-            await this.fromCID(cid, path + 'parents/' + index + '/')
+
+        for (const parent of object.parents) {
+          const parentSnapshot = await this.fromCID(
+            cid,
+            path + 'parents/' + index + '/'
           )
-        })
+          data.parents.push(parentSnapshot)
+          index++
+        }
 
         return new Snapshot(data)
-
       case 'tree':
         data = { path: object.path, children: {} }
         delete object['@type']
@@ -231,8 +262,8 @@ export default class Repository {
       case 'file':
         const link = new CID(object.link['/'])
         return new File({
-          link: link.toBaseEncodedString()
-          path: object.path,
+          link: link.toBaseEncodedString(),
+          path: object.path
         })
       default:
         throw new TypeError('Unrecognized IPLD node')

@@ -1,6 +1,6 @@
 /* eslint-disable import/no-duplicates */
-import Pando from '../../lib/pando.js'
-import { Repository } from '../../lib/pando.js'
+import Pando from '../../lib'
+import Repository from '../../lib/components/repository'
 /* eslint-enable import/no-duplicates */
 import { opts } from '../data'
 import chai from 'chai'

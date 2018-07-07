@@ -2,7 +2,7 @@ import Branch from '@components/branch'
 import Index from '@components/index'
 import Node from '@components/node'
 import Repository from '@components/repository'
-import Pando from '@pando'
+import Pando from '@root'
 import * as utils from '@utils'
 import npath from 'path'
 
@@ -49,6 +49,14 @@ export default class RepositoryFactory {
     const repository = new Repository(pando, path)
     repository.node = await Node.load(repository)
     repository.index = await Index.load(repository)
+
+    return repository
+  }
+
+  public async clone(address: string, path: string = '.'): Promise<Repository> {
+    const repository = await this.create(path)
+    const remote = await repository.remotes.add('origin', address)
+    await repository.pull('origin', 'master')
 
     return repository
   }

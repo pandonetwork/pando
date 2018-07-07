@@ -1,6 +1,6 @@
 /* eslint-disable import/no-duplicates */
-import Pando from '../../lib/pando.js'
-import { Repository } from '../../lib/pando.js'
+import Pando from '../../lib'
+import Repository from '../../lib/components/repository'
 /* eslint-enable import/no-duplicates */
 import { opts } from '../data'
 import chai from 'chai'
@@ -40,15 +40,11 @@ describe('IPLD Nodes', () => {
         // snapshot.timestamp ?
       })
     })
+
     describe('IPLD (de)serialization', async () => {
       it('should round-trip (de)serialization correctly', async () => {
-        // let serialized = await snapshot.toIPLD()
         let cid = await snapshot.cid()
         let deserialized = await repository.fromCID(cid)
-
-        // let deserialized = await repository.fromIPLD(serialized)
-        // console.log('tfromIPLD')
-        // console.log(deserialized)
         deserialized.should.deep.equal(snapshot)
       })
     })
@@ -67,9 +63,9 @@ describe('IPLD Nodes', () => {
         tree.children['test-directory'].path.should.equal('test-directory')
       })
     })
+
     describe('IPLD (de)serialization', async () => {
       it('should round-trip (de)serialization correctly', async () => {
-        // let serialized = await tree.toIPLD()
         let cid = await tree.cid()
         let deserialized = await repository.fromCID(cid)
 
@@ -86,9 +82,9 @@ describe('IPLD Nodes', () => {
         file.link.should.equal('QmbxGVmc917jMqK1EQy2SzUEA2WahwGW8ztX7NLNX59MzX')
       })
     })
+
     describe('IPLD (de)serialization', async () => {
       it('should round-trip (de)serialization correctly', async () => {
-        let serialized = await file.toIPLD()
         let cid = await file.cid()
         let deserialized = await repository.fromCID(cid)
 

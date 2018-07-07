@@ -1,3 +1,5 @@
+import register from 'module-alias/register'
+
 import Branch from '@components/branch'
 import Index from '@components/index'
 import Remote from '@components/remote'
@@ -8,10 +10,15 @@ import File from '@objects/file'
 import IPLDNode from '@objects/ipld-node'
 import Snapshot from '@objects/snapshot'
 import Tree from '@objects/tree'
-import * as PandoContracts from '@pando/contracts'
-import * as PandoUtils from '@pando/utils'
+import * as PandoContracts from '@root/contracts'
+import * as PandoUtils from '@root/utils'
 import * as utils from '@utils'
 import npath from 'path'
+import HDWalletProvider from 'truffle-hdwallet-provider'
+import Web3 from 'web3'
+
+// Web3.providers.HttpProvider.prototype.sendAsync =
+//   Web3.providers.HttpProvider.prototype.send
 
 export default class Pando {
   public static contracts = PandoContracts

@@ -1,6 +1,8 @@
+import register from 'module-alias/register'
 import Repository from '@components/repository'
-import * as utils from '@utils'
+import Snapshot from '@objects/snapshot'
 import path from 'path'
+import * as utils from '@utils'
 
 export default class Branch {
   public repository: Repository
@@ -32,5 +34,20 @@ export default class Branch {
     this.name = name
     this.remote = opts && opts.remote ? opts.remote : undefined
     this.head = utils.fs.exists(this.path) ? this.head : 'undefined'
+  }
+
+  public async log(): Promise<any[]> {
+    if (this.head === 'undefined') {
+      throw new Error("Branch '" + this.fullName + "' is empty")
+    }
+    const log: any[] = []
+    let snapshot: any = await this.repository.fromCID(this.head)
+
+    do {
+      log.push(snapshot)
+      snapshot = snapshot.parents[0] ? snapshot.parents[0] : undefined
+    } while (snapshot)
+
+    return log
   }
 }

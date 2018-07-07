@@ -1,8 +1,11 @@
+import register from 'module-alias/register'
+
 import Repository from '@components/repository'
 import * as utils from '@utils'
 import CID from 'cids'
 import klaw from 'klaw-sync'
 import path from 'path'
+import fs from 'fs'
 
 export default class Index {
   public static async new(repository: Repository): Promise<Index> {
@@ -43,6 +46,19 @@ export default class Index {
     }
 
     return unsnaphot
+  }
+
+  public get untracked(): string[] {
+    const current = this.current
+    const untracked: any[] = []
+
+    for (const entry in current) {
+      if (current[entry].stage === 'null') {
+        untracked.push(entry)
+      }
+    }
+
+    return untracked
   }
 
   /**
@@ -119,7 +135,11 @@ export default class Index {
   public async update(): Promise<any> {
     const index = this.current
     const files = {}
-    const filter = item => item.path.indexOf('.pando') < 0
+    const filter = item => {
+      return (
+        item.path.indexOf('.pando') < 0 && item.path.indexOf('node_modules') < 0
+      )
+    }
     const listing = klaw(this.repository.paths.root, { nodir: true, filter })
 
     for (const item of listing) {
@@ -183,23 +203,39 @@ export default class Index {
 
   public async stage(filePaths: string[]): Promise<any> {
     const index = await this.update()
-
     for (let filePath of filePaths) {
       filePath = path.normalize(filePath)
-      const relativePath = path.relative(this.repository.paths.root, filePath)
+      if (fs.lstatSync(filePath).isDirectory()) {
+        const filter = item => {
+          return (
+            item.path.indexOf('.pando') < 0 &&
+            item.path.indexOf('node_modules') < 0
+          )
+        }
+        const listing = klaw(filePath, { nodir: true, filter })
 
-      if (utils.fs.exists(filePath)) {
-        const cid = await this.repository.node!.upload(filePath)
-        index[relativePath].stage = cid
-      } else if (index[relativePath]) {
-        index[relativePath].wdir = 'null'
-        index[relativePath].stage = 'todelete'
-        // delete index[relativePath]
-      } else {
-        throw new Error(
-          filePath +
-            ' does not exist neither in current working directory nor in index'
-        )
+        for (const item of listing) {
+          const relativePath = path.relative(
+            this.repository.paths.root,
+            item.path
+          )
+          filePaths.push(relativePath)
+        }
+      } else if (fs.lstatSync(filePath).isFile()) {
+        const relativePath = path.relative(this.repository.paths.root, filePath)
+
+        if (utils.fs.exists(filePath)) {
+          const cid = await this.repository.node!.upload(filePath)
+          index[relativePath].stage = cid
+        } else if (index[relativePath]) {
+          index[relativePath].wdir = 'null'
+          index[relativePath].stage = 'todelete'
+        } else {
+          throw new Error(
+            filePath +
+              ' does not exist neither in current working directory nor in index'
+          )
+        }
       }
     }
 

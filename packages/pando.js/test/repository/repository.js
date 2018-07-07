@@ -1,6 +1,6 @@
 /* eslint-disable import/no-duplicates */
-import Pando from '../../lib/pando.js'
-import { Repository } from '../../lib/pando.js'
+import Pando from '../../lib'
+import Repository from '../../lib/components/repository'
 /* eslint-enable import/no-duplicates */
 import { opts, cids } from '../data'
 import * as utils from '../utils'
@@ -35,14 +35,68 @@ describe('Repository', () => {
   })
 
   describe('static#remove', async () => {
+    after(async () => {
+      repository = await pando.repositories.create(npath.join('test', 'mocks'))
+    })
+
     it('should remove repository correctly', () => {
       Repository.remove(npath.join('test', 'mocks'))
       Repository.exists(npath.join('test', 'mocks')).should.be.equal(false)
     })
   })
 
+  describe('getter#currentBranchName', async () => {
+    before(async () => {
+      await repository.branches.create('dev')
+    })
+
+    after(async () => {
+      await repository.branches.checkout('master')
+    })
+
+    it('should get currentBranchName correctly', async () => {
+      repository.currentBranchName.should.equal('master')
+      await repository.branches.checkout('dev')
+      repository.currentBranchName.should.equal('dev')
+    })
+  })
+
+  describe('setter#currentBranchName', async () => {
+    it('should set currentBranchName correctly', async () => {
+      // TODO
+    })
+  })
+
+  describe('getter#currentBranch', async () => {
+    it('should get currentBranch correctly', async () => {
+      const currentBranch = repository.currentBranch
+      currentBranch.repository.should.deep.equal(repository)
+      currentBranch.name.should.deep.equal('master')
+      expect(currentBranch.remote).to.not.exist()
+    })
+  })
+
+  describe('getter#head', async () => {
+    it('should get head correctly', async () => {
+      // TODO
+    })
+  })
+
+  describe('getter#config', async () => {
+    it('should get config correctly', async () => {
+      // TODO
+    })
+  })
+
+  describe('setter#config', async () => {
+    it('should set config correctly', async () => {
+      // TODO
+    })
+  })
+
   describe('#stage', async () => {
     before(async () => {
+      await Repository.remove(npath.join('test', 'mocks'))
       repository = await pando.repositories.create(npath.join('test', 'mocks'))
     })
 
@@ -54,51 +108,76 @@ describe('Repository', () => {
       utils.test.cleanMocks()
     })
 
-    it("should update repository's index stage fields correctly", async () => {
-      let index = await repository.stage([
+    it("should update repository's index fields correctly", async () => {
+      let index
+
+      index = repository.index.current
+      index.should.be.empty()
+
+      index = await repository.stage([
         npath.join('test', 'mocks', 'test.md'),
-        npath.join('test', 'mocks', 'test-directory', 'test-1.md'),
-        npath.join('test', 'mocks', 'test-directory', 'test-2.md'),
-        npath.join(
-          'test',
-          'mocks',
-          'test-directory',
-          'test-subdirectory',
-          'test.md'
-        )
+        npath.join('test', 'mocks', 'test-directory', 'test-1.md')
       ])
 
-      for (let path in cids) {
-        index[path].stage.should.be.equal(cids[path])
-      }
+      index['test.md'].wdir.should.be.equal(cids['test.md'])
+      index['test.md'].stage.should.be.equal(cids['test.md'])
+      index['test.md'].repo.should.be.equal('null')
+      index['test-directory/test-1.md'].wdir.should.be.equal(
+        cids['test-directory/test-1.md']
+      )
+      index['test-directory/test-1.md'].stage.should.be.equal(
+        cids['test-directory/test-1.md']
+      )
+      index['test-directory/test-1.md'].repo.should.be.equal('null')
+      index['test-directory/test-2.md'].wdir.should.be.equal(
+        cids['test-directory/test-2.md']
+      )
+      index['test-directory/test-2.md'].stage.should.be.equal('null')
+      index['test-directory/test-2.md'].repo.should.be.equal('null')
+      index['test-directory/test-subdirectory/test.md'].wdir.should.be.equal(
+        cids['test-directory/test-subdirectory/test.md']
+      )
+      index['test-directory/test-subdirectory/test.md'].stage.should.equal(
+        'null'
+      )
+      index['test-directory/test-subdirectory/test.md'].repo.should.equal(
+        'null'
+      )
     })
 
-    it('should reject if file does not exist in neither working directory nor index', () => {
+    it('should reject if file does not exist neither in working directory nor in index', () => {
       repository
         .stage([npath.join('test', 'mocks', 'doesnotexist')])
         .should.be.rejected()
     })
 
-    it('should update stage fields correctly', async () => {
-      let index = await repository.stage([
-        npath.join('test', 'mocks', 'test.md'),
-        npath.join('test', 'mocks', 'test-directory', 'test-1.md'),
-        'test/mocks/test-directory/test-2.md',
-        'test/mocks/test-directory/test-subdirectory/test.md'
-      ])
-
-      for (let path in cids) {
-        index[path].stage.should.be.equal(cids[path])
-      }
-    })
-
-    it("should update repository's index wdir field correctly if file has been deleted", async () => {
+    it("should update repository's index field correctly when a file has been deleted", async () => {
       utils.fs.rm(npath.join('test', 'mocks', 'test.md'))
       let index = await repository.stage([
         npath.join('test', 'mocks', 'test.md')
       ])
 
       index['test.md'].wdir.should.equal('null')
+      index['test.md'].stage.should.equal('todelete')
+      index['test.md'].repo.should.equal('null')
+      index['test-directory/test-1.md'].wdir.should.be.equal(
+        cids['test-directory/test-1.md']
+      )
+      index['test-directory/test-1.md'].stage.should.be.equal(
+        cids['test-directory/test-1.md']
+      )
+      index['test-directory/test-1.md'].repo.should.be.equal('null')
+      index['test-directory/test-2.md'].stage.should.be.equal('null')
+      index['test-directory/test-2.md'].repo.should.be.equal('null')
+      index['test-directory/test-subdirectory/test.md'].wdir.should.be.equal(
+        cids['test-directory/test-subdirectory/test.md']
+      )
+      index['test-directory/test-subdirectory/test.md'].stage.should.equal(
+        'null'
+      )
+      index['test-directory/test-subdirectory/test.md'].repo.should.equal(
+        'null'
+      )
     })
   })
 
@@ -125,6 +204,7 @@ describe('Repository', () => {
 
     after(() => {
       utils.test.cleanMocks()
+      Repository.remove(npath.join('test', 'mocks'))
     })
 
     it("should update repository's index repo fields correctly", async () => {
@@ -197,6 +277,32 @@ describe('Repository', () => {
       index = repository.index.current
 
       expect(index['test.md']).to.not.exist()
+    })
+  })
+
+  describe('#log', () => {
+    let snapshot1, snapshot2
+
+    before(async () => {
+      repository = await pando.repositories.create(npath.join('test', 'mocks'))
+      await repository.stage([npath.join('test', 'mocks', 'test.md')])
+      snapshot1 = await repository.snapshot('My first snapshot')
+      await repository.stage([
+        npath.join('test', 'mocks', 'test-directory', 'test-1.md')
+      ])
+      snapshot2 = await repository.snapshot('My decond snapshot')
+    })
+
+    after(() => {
+      Repository.remove(npath.join('test', 'mocks'))
+    })
+
+    it('should return local branch history correctly', async () => {
+      const log = await repository.log('master')
+
+      log[0].should.deep.equal(snapshot2)
+      log[1].should.deep.equal(snapshot1)
+      expect(log[2]).to.not.exist()
     })
   })
 })

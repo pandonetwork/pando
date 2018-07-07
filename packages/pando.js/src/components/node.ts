@@ -1,5 +1,7 @@
+import register from 'module-alias/register'
+
 import Repository from '@components/repository'
-import Pando from '@pando'
+import Pando from '@root'
 import * as utils from '@utils'
 import CID from 'cids'
 import IPFS from 'ipfs-api'
@@ -7,15 +9,22 @@ import DAG from 'ipld-dag-cbor'
 import npath from 'path'
 import promisify from 'promisify-event'
 import util from 'util'
+import parseURL from 'url-parse'
 
 export default class Node {
   public static async create(repository: Repository): Promise<Node> {
-    const ipfs = IPFS('localhost', '5001', { protocol: 'http' })
+    const url = parseURL(repository.config.ipfs.gateway, true)
+    const ipfs = IPFS(url.hostname, url.port, {
+      protocol: url.protocol.slice(0, -1)
+    })
     return new Node(repository, ipfs)
   }
 
   public static async load(repository: Repository): Promise<Node> {
-    const ipfs = IPFS('localhost', '5001', { protocol: 'http' })
+    const url = parseURL(repository.config.ipfs.gateway, true)
+    const ipfs = IPFS(url.hostname, url.port, {
+      protocol: url.protocol.slice(0, -1)
+    })
     return new Node(repository, ipfs)
   }
 

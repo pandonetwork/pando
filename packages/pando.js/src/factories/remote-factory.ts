@@ -1,3 +1,5 @@
+import register from 'module-alias/register'
+
 import Remote from '@components/remote'
 import Repository from '@components/repository'
 import * as utils from '@utils'

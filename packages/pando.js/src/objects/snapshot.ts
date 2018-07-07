@@ -1,3 +1,5 @@
+import register from 'module-alias/register'
+
 import Node from '@components/node'
 import IPLDNode from '@objects/ipld-node'
 import Tree from '@objects/tree'

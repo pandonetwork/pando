@@ -1,6 +1,6 @@
 /* eslint-disable import/no-duplicates */
-import Pando from '../../lib/pando.js'
-import { Repository } from '../../lib/pando.js'
+import Pando from '../../lib'
+import Repository from '../../lib/components/repository'
 /* eslint-enable import/no-duplicates */
 import { opts } from '../data'
 import chai from 'chai'
@@ -38,6 +38,10 @@ describe('Remote', () => {
   })
 
   describe('#push', async () => {
+    after(async () => {
+      repository.config = opts
+    })
+
     it('should push head correctly', async () => {
       let tx = await remote.push('master', head)
       let eventHead = tx.logs.filter(l => l.event === 'NewSnapshot')[0].args.cid
@@ -51,6 +55,13 @@ describe('Remote', () => {
 
     it('should reject if cid is not valid', async () => {
       expect(remote.push('master', 'invalidcid')).to.be.rejected()
+    })
+
+    it('should reject if author does not own PUSH rights', async () => {
+      // const config = repository.config
+      // config.author.account = '0xb8b6ccf6dbf56a51f04ceee5c88ba7f0ebf783bb'
+      // repository.config = config
+      // expect(remote.push('master', head)).to.be.rejected()
     })
   })
 
