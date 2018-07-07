@@ -45,6 +45,52 @@ Options:
   -h, --help  Show help                                                [boolean]
 ```
 
+### Initialization
+
+#### `pando init`
+
+```
+$ pando init
+```
+
+Creates a new repository in the current working directory.
+
+#### `pando config`
+
+```
+$ pando config [--global]
+```
+
+Configures pando either globally or locally. This command will allow you to choose for an ethereum node, an ethereum account and an IPFS node.
+
+### Remotes
+
+#### `pando remote deploy`
+
+```
+$ pando remote deploy <name>
+```
+
+Deploy an new aragonOS-based remote DAO named `name` in the current repository. This command also grants full administration rights over this DAO to the current user.
+
+#### `pando remote add`
+
+```
+$ pando remote add <name> <address>
+```
+
+#### `pando remote show`
+
+```
+$ pando remote show <name>
+```
+
+#### `pando remote grant`
+
+```
+$ pando remote grant <name> <role> <address>
+```
+
 ## Maintainers
 
 [@osarrouy](https://github.com/osarrouy)
