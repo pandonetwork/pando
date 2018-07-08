@@ -3,18 +3,17 @@
   <h1></h1>
 </div>
 
-Pando is distributed [versioning control system](https://en.wikipedia.org/wiki/Version_control) enforcing [DAO-based](https://en.wikipedia.org/wiki/Decentralized_autonomous_organization) versioning, contribution tracking and governance. It is built on top of [IPFS](https://ipfs.io), [ethereum](https://ethereum.org) and [aragonOS](https://aragon.on/ose).
+Pando is distributed [versioning control system](https://en.wikipedia.org/wiki/Version_control) enforcing [DAO-based](https://en.wikipedia.org/wiki/Decentralized_autonomous_organization) versioning, contribution tracking and governance. It is built on top of [IPFS](https://ipfs.io), [ethereum](https://ethereum.org) and [aragonOS](https://aragon.one/os).
 
 This repository is a monorepo including pando related smart contracts, libraries and tools. Each public sub-package is independently published to NPM.
 
 ## Published Packages
 
-| Package                                           | Description                           |
-| ------------------------------------------------- | ------------------------------------- |
-| [`@pando/cli`](/packages/cli)                     | Pando CLI tool                        |
-| [`@pando/pando.js`](/packages/pando.js)           | Pando typescript / javascript library |
-| [`@pando/core`](/packages/core)                   | Pando solidity smart contracts        |
-| [`@pando/js-ipld-pando`](/packages/js-ipld-pando) | Pando javascript IPLD resolver        |
+| Package                                 | Description                           |
+| --------------------------------------- | ------------------------------------- |
+| [`@pando/cli`](/packages/cli)           | Pando CLI tool                        |
+| [`@pando/pando.js`](/packages/pando.js) | Pando typescript / javascript library |
+| [`@pando/core`](/packages/core)         | Pando solidity smart contracts        |
 
 ## Background
 
@@ -35,7 +34,6 @@ Dedicated documentation pages:
 - [CLI](/packages/cli)
 - [Library](/packages/pando.js)
 - [Smart contracts](/packages/core)
-- [IPLD resolver](/packages/js-ipld-pando)
 
 ## Contribute
 
