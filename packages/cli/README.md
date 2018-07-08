@@ -34,11 +34,19 @@ npm install -g @pando/cli
 pando <command>
 
 Commands:
-  pando configure            Configure pando                   [aliases: config]
-  pando initialize           Initialize repository               [aliases: init]
-  pando stage <files...>     Stage modifications                  [aliases: add]
-  pando snapshot             Snapshot modifications            [aliases: commit]
-  pando branch <subcommand>  Handle branches
+  pando configure               Configure pando                [aliases: config]
+  pando initialize              Initialize repository            [aliases: init]
+  pando stage <files...>        Stage modifications               [aliases: add]
+  pando snapshot                Snapshot modifications         [aliases: commit]
+  pando fetch <remotes...>      Fetch branches from one or more other
+                                repositories
+  pando push <remote> <branch>  Push modifications to remote
+  pando pull <remote> <branch>  Pull modifications from remote branch
+  pando status                  Show working tree status
+  pando log [branch]            Show current branch history
+  pando branch <subcommand>     Handle branches
+  pando remote <subcommand>     Handle remotes
+  pando clone <address>         Clone remote repository
 
 Options:
   --version   Show version number                                      [boolean]
