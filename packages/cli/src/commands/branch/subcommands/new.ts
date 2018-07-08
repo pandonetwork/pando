@@ -12,7 +12,7 @@ const handler = async argv => {
     const pando = await Pando.load()
     const repository = await pando.repositories.load()
     await repository.branches.create(argv.name)
-    display.success('Branch ' + argv.name + ' created')
+    display.status('create', argv.name)
   } catch (err) {
     display.error(err.message)
   }

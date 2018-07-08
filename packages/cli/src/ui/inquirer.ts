@@ -1,7 +1,7 @@
 import * as display from '@ui/display'
 import * as inquirer from 'inquirer'
-import Web3 from 'web3'
 import HDWalletProvider from 'truffle-hdwallet-provider'
+import Web3 from 'web3'
 
 export const questions = {
   /* tslint:disable:object-literal-sort-keys */
@@ -90,10 +90,8 @@ export const prompt = {
     } else if (signer.type === 'HD wallet / mnemonic') {
       const mnemonic = await inquirer.prompt(await questions.mnemonic)
       ethereum.ethereum.mnemonic = mnemonic.words
-
       provider = new HDWalletProvider(mnemonic.words, ethereum.gateway)
       const web3 = new Web3(provider)
-      console.log(web3.version)
       author.author.account = (await web3.eth.getAccounts())[0]
     }
 

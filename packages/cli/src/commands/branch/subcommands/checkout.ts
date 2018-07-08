@@ -12,7 +12,7 @@ const handler = async argv => {
     const pando = await Pando.load()
     const repository = await pando.repositories.load()
     await repository.branches.checkout(argv.name)
-    display.success('Checked out to branch ' + argv.name)
+    display.status('checked out', argv.name)
   } catch (err) {
     display.error(err.message)
   }
