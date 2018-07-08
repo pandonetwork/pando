@@ -1,5 +1,5 @@
-import Web3 from 'web3'
 import HDWalletProvider from 'truffle-hdwallet-provider'
+import Web3 from 'web3'
 
 Web3.providers.HttpProvider.prototype.sendAsync =
   Web3.providers.HttpProvider.prototype.send

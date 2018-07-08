@@ -8,8 +8,8 @@ import IPFS from 'ipfs-api'
 import DAG from 'ipld-dag-cbor'
 import npath from 'path'
 import promisify from 'promisify-event'
-import util from 'util'
 import parseURL from 'url-parse'
+import util from 'util'
 
 export default class Node {
   public static async create(repository: Repository): Promise<Node> {

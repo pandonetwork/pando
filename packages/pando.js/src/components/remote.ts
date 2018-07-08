@@ -6,10 +6,10 @@ import CID from 'cids'
 import { hash } from 'eth-ens-namehash'
 import ethereumRegex from 'ethereum-regex'
 import IPFS from 'ipfs-api'
+import isIPFS from 'is-ipfs'
 import { keccak256, sha3_256 } from 'js-sha3'
 import util from 'util'
 import web3Utils from 'web3-utils'
-import isIPFS from 'is-ipfs'
 
 export default class Remote {
   public static APP_NAMESPACE = '0x' + keccak256('app')

@@ -1,8 +1,8 @@
-import register from 'module-alias/register'
 import Repository from '@components/repository'
 import Snapshot from '@objects/snapshot'
-import path from 'path'
 import * as utils from '@utils'
+import register from 'module-alias/register'
+import path from 'path'
 
 export default class Branch {
   public repository: Repository
