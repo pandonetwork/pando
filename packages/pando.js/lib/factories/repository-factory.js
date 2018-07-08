@@ -45,12 +45,12 @@ var __importStar = (this && this.__importStar) || function (mod) {
     return result;
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-var index_1 = __importDefault(require("@components/index"));
-var node_1 = __importDefault(require("@components/node"));
-var repository_1 = __importDefault(require("@components/repository"));
-var _root_1 = __importDefault(require("@root"));
-var utils = __importStar(require("@utils"));
 var path_1 = __importDefault(require("path"));
+var index_1 = __importDefault(require("../components/index"));
+var node_1 = __importDefault(require("../components/node"));
+var repository_1 = __importDefault(require("../components/repository"));
+var pando_1 = __importDefault(require("../pando"));
+var utils = __importStar(require("../utils"));
 var RepositoryFactory = /** @class */ (function () {
     function RepositoryFactory(pando) {
         this.pando = pando;
@@ -102,7 +102,7 @@ var RepositoryFactory = /** @class */ (function () {
                             throw new Error('No repository found at ' + path);
                         }
                         configuration = utils.yaml.read(path_1.default.join(path, repository_1.default.paths.config));
-                        pando = new _root_1.default(configuration);
+                        pando = new pando_1.default(configuration);
                         repository = new repository_1.default(pando, path);
                         _a = repository;
                         return [4 /*yield*/, node_1.default.load(repository)];

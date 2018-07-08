@@ -1,8 +1,3 @@
-import register from 'module-alias/register'
-
-import Repository from '@components/repository'
-import Pando from '@root'
-import * as utils from '@utils'
 import CID from 'cids'
 import IPFS from 'ipfs-api'
 import DAG from 'ipld-dag-cbor'
@@ -10,6 +5,9 @@ import npath from 'path'
 import promisify from 'promisify-event'
 import parseURL from 'url-parse'
 import util from 'util'
+import Pando from '../pando'
+import * as utils from '../utils'
+import Repository from './repository'
 
 export default class Node {
   public static async create(repository: Repository): Promise<Node> {

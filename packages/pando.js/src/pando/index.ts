@@ -1,21 +1,21 @@
-import register from 'module-alias/register'
-
-import Branch from '@components/branch'
-import Index from '@components/index'
-import Remote from '@components/remote'
-import Repository from '@components/repository'
-import RepositoryFactory from '@factories/repository-factory'
-import { IConfiguration } from '@interfaces'
-import File from '@objects/file'
-import IPLDNode from '@objects/ipld-node'
-import Snapshot from '@objects/snapshot'
-import Tree from '@objects/tree'
-import * as PandoContracts from '@root/contracts'
-import * as PandoUtils from '@root/utils'
-import * as utils from '@utils'
+// import register from 'module-alias/register'
+//
+// import Branch from '@components/branch'
+// import Index from '@components/index'
+// import Remote from '@components/remote'
 import npath from 'path'
 import HDWalletProvider from 'truffle-hdwallet-provider'
 import Web3 from 'web3'
+import Repository from '../components/repository'
+import RepositoryFactory from '../factories/repository-factory'
+import { IConfiguration } from '../interfaces'
+import * as utils from '../utils'
+// import File from '@objects/file'
+// import IPLDNode from '@objects/ipld-node'
+// import Snapshot from '@objects/snapshot'
+// import Tree from '@objects/tree'
+import * as PandoContracts from './contracts'
+import * as PandoUtils from './utils'
 
 // Web3.providers.HttpProvider.prototype.sendAsync =
 //   Web3.providers.HttpProvider.prototype.send
@@ -55,4 +55,4 @@ export default class Pando {
   }
 }
 
-export { Snapshot, Tree, File, IPLDNode, Repository, Index, Branch, Remote }
+// export { Snapshot, Tree, File, IPLDNode, Repository, Index, Branch, Remote }

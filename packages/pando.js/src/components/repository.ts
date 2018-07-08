@@ -1,17 +1,15 @@
-import register from 'module-alias/register'
-
-import Branch from '@components/branch'
-import Index from '@components/index'
-import Node from '@components/node'
-import BranchFactory from '@factories/branch-factory'
-import RemoteFactory from '@factories/remote-factory'
-import File from '@objects/file'
-import Snapshot from '@objects/snapshot'
-import Tree from '@objects/tree'
-import Pando from '@root'
-import * as utils from '@utils'
 import CID from 'cids'
 import npath from 'path'
+import BranchFactory from '../factories/branch-factory'
+import RemoteFactory from '../factories/remote-factory'
+import File from '../objects/file'
+import Snapshot from '../objects/snapshot'
+import Tree from '../objects/tree'
+import Pando from '../pando'
+import * as utils from '../utils'
+import Branch from './branch'
+import Index from './index'
+import Node from './node'
 
 export default class Repository {
   /* tslint:disable:object-literal-sort-keys */

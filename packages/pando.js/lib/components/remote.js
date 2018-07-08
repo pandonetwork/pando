@@ -38,12 +38,12 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-var remote_branch_factory_1 = __importDefault(require("@factories/remote-branch-factory"));
 var eth_ens_namehash_1 = require("eth-ens-namehash");
 var ethereum_regex_1 = __importDefault(require("ethereum-regex"));
 var is_ipfs_1 = __importDefault(require("is-ipfs"));
 var js_sha3_1 = require("js-sha3");
 var web3_utils_1 = __importDefault(require("web3-utils"));
+var remote_branch_factory_1 = __importDefault(require("../factories/remote-branch-factory"));
 var Remote = /** @class */ (function () {
     function Remote(repository, kernel, acl, tree, name) {
         this.branches = new remote_branch_factory_1.default(this);

@@ -1,12 +1,10 @@
-import register from 'module-alias/register'
-
-import Repository from '@components/repository'
-import * as utils from '@utils'
 import CID from 'cids'
 import fs from 'fs'
 import klaw from 'klaw-sync'
 import _ from 'lodash'
 import path from 'path'
+import * as utils from '../utils'
+import Repository from './repository'
 
 export default class Index {
   public static async new(repository: Repository): Promise<Index> {

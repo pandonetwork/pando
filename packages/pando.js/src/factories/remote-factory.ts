@@ -1,9 +1,7 @@
-import register from 'module-alias/register'
-
-import Remote from '@components/remote'
-import Repository from '@components/repository'
-import * as utils from '@utils'
 import npath from 'path'
+import Remote from '../components/remote'
+import Repository from '../components/repository'
+import * as utils from '../utils'
 
 export default class RemoteFactory {
   public repository: Repository

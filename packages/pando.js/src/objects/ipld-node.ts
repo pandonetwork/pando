@@ -1,5 +1,3 @@
-import register from 'module-alias/register'
-
 import DAG from 'ipld-dag-cbor'
 import { promisify } from 'util'
 

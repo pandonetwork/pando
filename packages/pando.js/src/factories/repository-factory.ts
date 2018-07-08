@@ -1,10 +1,10 @@
-import Branch from '@components/branch'
-import Index from '@components/index'
-import Node from '@components/node'
-import Repository from '@components/repository'
-import Pando from '@root'
-import * as utils from '@utils'
 import npath from 'path'
+import Branch from '../components/branch'
+import Index from '../components/index'
+import Node from '../components/node'
+import Repository from '../components/repository'
+import Pando from '../pando'
+import * as utils from '../utils'
 
 export default class RepositoryFactory {
   public pando: Pando

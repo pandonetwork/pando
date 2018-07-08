@@ -1,5 +1,3 @@
-require('module-alias/register')
-
-import Pando from '@root'
+import Pando from './pando'
 
 export default Pando

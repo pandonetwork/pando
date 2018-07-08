@@ -45,9 +45,9 @@ var __importStar = (this && this.__importStar) || function (mod) {
     return result;
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-var remote_1 = __importDefault(require("@components/remote"));
-var utils = __importStar(require("@utils"));
 var path_1 = __importDefault(require("path"));
+var remote_1 = __importDefault(require("../components/remote"));
+var utils = __importStar(require("../utils"));
 var RemoteFactory = /** @class */ (function () {
     function RemoteFactory(repository) {
         this.repository = repository;

@@ -10,27 +10,21 @@ var __importStar = (this && this.__importStar) || function (mod) {
     return result;
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-var branch_1 = __importDefault(require("@components/branch"));
-exports.Branch = branch_1.default;
-var index_1 = __importDefault(require("@components/index"));
-exports.Index = index_1.default;
-var remote_1 = __importDefault(require("@components/remote"));
-exports.Remote = remote_1.default;
-var repository_1 = __importDefault(require("@components/repository"));
-exports.Repository = repository_1.default;
-var repository_factory_1 = __importDefault(require("@factories/repository-factory"));
-var file_1 = __importDefault(require("@objects/file"));
-exports.File = file_1.default;
-var ipld_node_1 = __importDefault(require("@objects/ipld-node"));
-exports.IPLDNode = ipld_node_1.default;
-var snapshot_1 = __importDefault(require("@objects/snapshot"));
-exports.Snapshot = snapshot_1.default;
-var tree_1 = __importDefault(require("@objects/tree"));
-exports.Tree = tree_1.default;
-var PandoContracts = __importStar(require("@root/contracts"));
-var PandoUtils = __importStar(require("@root/utils"));
-var utils = __importStar(require("@utils"));
+// import register from 'module-alias/register'
+//
+// import Branch from '@components/branch'
+// import Index from '@components/index'
+// import Remote from '@components/remote'
 var path_1 = __importDefault(require("path"));
+var repository_1 = __importDefault(require("../components/repository"));
+var repository_factory_1 = __importDefault(require("../factories/repository-factory"));
+var utils = __importStar(require("../utils"));
+// import File from '@objects/file'
+// import IPLDNode from '@objects/ipld-node'
+// import Snapshot from '@objects/snapshot'
+// import Tree from '@objects/tree'
+var PandoContracts = __importStar(require("./contracts"));
+var PandoUtils = __importStar(require("./utils"));
 // Web3.providers.HttpProvider.prototype.sendAsync =
 //   Web3.providers.HttpProvider.prototype.send
 var Pando = /** @class */ (function () {
@@ -58,4 +52,5 @@ var Pando = /** @class */ (function () {
     return Pando;
 }());
 exports.default = Pando;
+// export { Snapshot, Tree, File, IPLDNode, Repository, Index, Branch, Remote }
 //# sourceMappingURL=index.js.map

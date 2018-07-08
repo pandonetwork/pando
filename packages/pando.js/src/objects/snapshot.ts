@@ -1,8 +1,6 @@
-import register from 'module-alias/register'
-
-import Node from '@components/node'
-import IPLDNode from '@objects/ipld-node'
-import Tree from '@objects/tree'
+import Node from '../components/node'
+import IPLDNode from './ipld-node'
+import Tree from './tree'
 
 class Snapshot extends IPLDNode {
   public timestamp: number

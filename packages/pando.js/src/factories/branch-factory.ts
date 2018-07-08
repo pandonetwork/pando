@@ -1,8 +1,8 @@
-import Branch from '@components/branch'
-import Repository from '@components/repository'
-import Tree from '@objects/tree'
-import * as utils from '@utils'
 import npath from 'path'
+import Branch from '../components/branch'
+import Repository from '../components/repository'
+import Tree from '../objects/tree'
+import * as utils from '../utils'
 
 export default class BranchFactory {
   public repository: Repository

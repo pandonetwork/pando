@@ -45,10 +45,10 @@ var __importStar = (this && this.__importStar) || function (mod) {
     return result;
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-var branch_1 = __importDefault(require("@components/branch"));
-var tree_1 = __importDefault(require("@objects/tree"));
-var utils = __importStar(require("@utils"));
 var path_1 = __importDefault(require("path"));
+var branch_1 = __importDefault(require("../components/branch"));
+var tree_1 = __importDefault(require("../objects/tree"));
+var utils = __importStar(require("../utils"));
 var BranchFactory = /** @class */ (function () {
     function BranchFactory(repository) {
         this.repository = repository;

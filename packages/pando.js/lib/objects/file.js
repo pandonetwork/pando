@@ -48,7 +48,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-var ipld_node_1 = __importDefault(require("@objects/ipld-node"));
+var ipld_node_1 = __importDefault(require("./ipld-node"));
 var File = /** @class */ (function (_super) {
     __extends(File, _super);
     function File(data, opts) {

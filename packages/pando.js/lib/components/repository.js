@@ -53,14 +53,14 @@ var __importStar = (this && this.__importStar) || function (mod) {
     return result;
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-var branch_factory_1 = __importDefault(require("@factories/branch-factory"));
-var remote_factory_1 = __importDefault(require("@factories/remote-factory"));
-var file_1 = __importDefault(require("@objects/file"));
-var snapshot_1 = __importDefault(require("@objects/snapshot"));
-var tree_1 = __importDefault(require("@objects/tree"));
-var utils = __importStar(require("@utils"));
 var cids_1 = __importDefault(require("cids"));
 var path_1 = __importDefault(require("path"));
+var branch_factory_1 = __importDefault(require("../factories/branch-factory"));
+var remote_factory_1 = __importDefault(require("../factories/remote-factory"));
+var file_1 = __importDefault(require("../objects/file"));
+var snapshot_1 = __importDefault(require("../objects/snapshot"));
+var tree_1 = __importDefault(require("../objects/tree"));
+var utils = __importStar(require("../utils"));
 var Repository = /** @class */ (function () {
     function Repository(pando, path, opts) {
         if (path === void 0) { path = '.'; }

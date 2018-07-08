@@ -1,8 +1,8 @@
-import Branch from '@components/branch'
-import Remote from '@components/remote'
-import Tree from '@objects/tree'
-import * as utils from '@utils'
 import npath from 'path'
+import Branch from '../components/branch'
+import Remote from '../components/remote'
+import Tree from '../objects/tree'
+import * as utils from '../utils'
 
 export default class RemoteBranchFactory {
   public remote: Remote
