@@ -22,7 +22,7 @@ export const initialize = (web3: any, account: string) => {
     if (artifacts.hasOwnProperty(artifact)) {
       contracts[artifact] = contractor(artifacts[artifact])
       contracts[artifact].setProvider(web3.currentProvider)
-      contracts[artifact].defaults({ from: account, gas: 100000000 })
+      contracts[artifact].defaults({ from: account, gas: 6100000 })
     }
   }
   return contracts

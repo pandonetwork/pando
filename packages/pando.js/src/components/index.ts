@@ -6,6 +6,7 @@ import CID from 'cids'
 import klaw from 'klaw-sync'
 import path from 'path'
 import fs from 'fs'
+import _ from 'lodash'
 
 export default class Index {
   public static async new(repository: Repository): Promise<Index> {
@@ -91,6 +92,7 @@ export default class Index {
     for (const entry in current) {
       if (
         current[entry].stage !== 'null' &&
+        current[entry].stage !== 'todelete' &&
         current[entry].wdir !== current[entry].stage
       ) {
         modified.push(entry)
@@ -205,39 +207,69 @@ export default class Index {
     const index = await this.update()
     for (let filePath of filePaths) {
       filePath = path.normalize(filePath)
-      if (fs.lstatSync(filePath).isDirectory()) {
-        const filter = item => {
-          return (
-            item.path.indexOf('.pando') < 0 &&
-            item.path.indexOf('node_modules') < 0
-          )
-        }
-        const listing = klaw(filePath, { nodir: true, filter })
+      const relativePath = path.relative(this.repository.paths.root, filePath)
 
-        for (const item of listing) {
-          const relativePath = path.relative(
-            this.repository.paths.root,
-            item.path
-          )
-          filePaths.push(relativePath)
-        }
-      } else if (fs.lstatSync(filePath).isFile()) {
-        const relativePath = path.relative(this.repository.paths.root, filePath)
+      if (utils.fs.exists(filePath)) {
+        if (fs.lstatSync(filePath).isDirectory()) {
+          const filter = item => {
+            return (
+              item.path.indexOf('.pando') < 0 &&
+              item.path.indexOf('node_modules') < 0
+            )
+          }
+          const listing = klaw(filePath, { nodir: true, filter })
+          for (const item of listing) {
+            const relativeItemPath = path.relative(
+              this.repository.paths.root,
+              item.path
+            )
+            filePaths.push(relativeItemPath)
+          }
+          // Check if files have been deleted
+          const children = _.filter(Object.keys(index), entry => {
+            return entry.indexOf(relativePath) === 0
+          })
 
-        if (utils.fs.exists(filePath)) {
+          if (children.length) {
+            for (const child of children) {
+              filePaths.push(child)
+            }
+          }
+        } else {
           const cid = await this.repository.node!.upload(filePath)
           index[relativePath].stage = cid
-        } else if (index[relativePath]) {
+        }
+      } else {
+        // file / dir does not exist in cwd
+        if (index[relativePath]) {
+          // Old file to delete
           index[relativePath].wdir = 'null'
           index[relativePath].stage = 'todelete'
         } else {
-          throw new Error(
-            filePath +
-              ' does not exist neither in current working directory nor in index'
-          )
+          const filter = item => {
+            return (
+              item.path.indexOf('.pando') < 0 &&
+              item.path.indexOf('node_modules') < 0
+            )
+          }
+          // Check if files have been deleted
+          const children = _.filter(Object.keys(index), entry => {
+            return entry.indexOf(relativePath) === 0
+          })
+
+          if (children.length) {
+            for (const child of children) {
+              filePaths.push(child)
+            }
+          } else {
+            throw new Error(
+              filePath +
+                ' does not exist neither in current working directory nor in index'
+            )
+          }
         }
       }
-    }
+    } // fin du for
 
     this.current = index
     return index
