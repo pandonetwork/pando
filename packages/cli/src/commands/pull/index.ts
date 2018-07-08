@@ -1,9 +1,9 @@
-import Pando from '@pando/pando.js'
 import * as config from '@lib/config'
+import Pando from '@pando/pando.js'
 import * as display from '@ui/display'
 import yargs from 'yargs'
 
-const builder = yargs => {
+const builder = () => {
   return yargs.help().version(false)
 }
 
@@ -12,17 +12,17 @@ const handler = async argv => {
     const pando = await Pando.load()
     const repository = await pando.repositories.load()
     await repository.pull(argv.remote, argv.branch)
-    display.success(
-      "Modifications pulled from '" + argv.remote + ':' + argv.branch + "''"
-    )
+    display.status('pulled')
   } catch (err) {
     display.error(err.message)
   }
 }
 
+/* tslint:disable:object-literal-sort-keys */
 export const pull = {
   command: 'pull <remote> <branch>',
   desc: 'Pull modifications from remote branch',
-  builder: builder,
-  handler: handler
+  builder,
+  handler
 }
+/* tslint:enable:object-literal-sort-keys */

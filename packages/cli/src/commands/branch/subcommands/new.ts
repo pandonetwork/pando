@@ -1,16 +1,16 @@
-import Pando from '@pando/pando.js'
 import * as config from '@lib/config'
+import Pando from '@pando/pando.js'
 import * as display from '@ui/display'
 import yargs from 'yargs'
 
-const builder = yargs => {
+const builder = () => {
   return yargs.help().version(false)
 }
 
 const handler = async argv => {
   try {
-    let pando = await Pando.load()
-    let repository = await pando.repositories.load()
+    const pando = await Pando.load()
+    const repository = await pando.repositories.load()
     await repository.branches.create(argv.name)
     display.success('Branch ' + argv.name + ' created')
   } catch (err) {
@@ -18,9 +18,11 @@ const handler = async argv => {
   }
 }
 
+/* tslint:disable:object-literal-sort-keys */
 export const new_ = {
   command: 'new <name>',
   desc: 'Create a new branch',
-  builder: builder,
-  handler: handler
+  builder,
+  handler
 }
+/* tslint:enable:object-literal-sort-keys */

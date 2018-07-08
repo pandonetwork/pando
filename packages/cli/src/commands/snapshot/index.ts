@@ -1,9 +1,9 @@
-import Pando from '@pando/pando.js'
 import * as config from '@lib/config'
+import Pando from '@pando/pando.js'
 import * as display from '@ui/display'
 import yargs from 'yargs'
 
-const builder = yargs => {
+const builder = () => {
   return yargs
     .option('message', {
       alias: 'm',
@@ -16,13 +16,11 @@ const builder = yargs => {
 
 const handler = async argv => {
   try {
-    let pando = await Pando.load()
-    let repository = await pando.repositories.load()
-    let snapshot = await repository.snapshot(argv.message)
-    let cid = await snapshot.cid()
-    display.success(
-      'Modifications snapshot with cid ' + cid.toBaseEncodedString()
-    )
+    const pando = await Pando.load()
+    const repository = await pando.repositories.load()
+    const snapshot = await repository.snapshot(argv.message)
+    const cid = await snapshot.cid()
+    display.status('snapshot', cid.toBaseEncodedString())
   } catch (err) {
     display.error(err.message)
   }
@@ -32,6 +30,6 @@ export const snapshot = {
   command: 'snapshot',
   aliases: ['commit'],
   desc: 'Snapshot modifications',
-  builder: builder,
-  handler: handler
+  builder,
+  handler
 }

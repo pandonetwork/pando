@@ -1,8 +1,7 @@
+import yargs from 'yargs'
 import * as subcommands from './subcommands'
-import yargs            from 'yargs'
 
-
-const builder = (yargs) => {
+const builder = () => {
   return yargs
     .usage('pando branch <subcommand>')
     .command(subcommands.new_)
@@ -13,9 +12,10 @@ const builder = (yargs) => {
     .help()
     .version(false)
 }
-
+/* tslint:disable:object-literal-sort-keys */
 export const branch = {
   command: 'branch <subcommand>',
-  desc:    'Handle branches',
-  builder: builder
+  desc: 'Handle branches',
+  builder
 }
+/* tslint:enable:object-literal-sort-keys */

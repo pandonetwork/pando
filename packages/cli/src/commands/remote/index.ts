@@ -1,7 +1,7 @@
-import * as subcommands from './subcommands'
 import yargs from 'yargs'
+import * as subcommands from './subcommands'
 
-const builder = yargs => {
+const builder = () => {
   return yargs
     .usage('pando branch <subcommand>')
     .command(subcommands.deploy)
@@ -14,8 +14,10 @@ const builder = yargs => {
     .version(false)
 }
 
+/* tslint:disable:object-literal-sort-keys */
 export const remote = {
   command: 'remote <subcommand>',
   desc: 'Handle remotes',
-  builder: builder
+  builder
 }
+/* tslint:enable:object-literal-sort-keys */

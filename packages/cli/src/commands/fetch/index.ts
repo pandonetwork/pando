@@ -1,43 +1,30 @@
-import Pando from '@pando/pando.js'
 import * as config from '@lib/config'
+import Pando from '@pando/pando.js'
 import * as display from '@ui/display'
 import Table from 'cli-table'
 import yargs from 'yargs'
 
-const builder = yargs => {
+const builder = () => {
   return yargs.help().version(false)
 }
 
 const handler = async argv => {
   try {
-    let pando = await Pando.load()
-    let repository = await pando.repositories.load()
-    let heads = await repository.fetch(argv.remotes)
+    const pando = await Pando.load()
+    const repository = await pando.repositories.load()
+    const heads = await repository.fetch(argv.remotes)
 
-    const fetched = new Table({
-      head: ['Remote', 'Branch', 'Head'],
-      colWidths: [30, 30, 30]
-    })
-
-    for (const remote in heads) {
-      if (heads.hasOwnProperty(remote)) {
-        for (const branch in heads[remote]) {
-          if (heads[remote].hasOwnProperty(branch)) {
-            fetched.push([remote, branch, heads[remote][branch]])
-          }
-        }
-      }
-    }
-
-    display.info(fetched.toString())
+    display.status('fetched')
   } catch (err) {
     display.error(err.message)
   }
 }
 
+/* tslint:disable:object-literal-sort-keys */
 export const fetch = {
   command: 'fetch <remotes...>',
   desc: 'Fetch branches from one or more other repositories',
-  builder: builder,
-  handler: handler
+  builder,
+  handler
 }
+/* tslint:enable:object-literal-sort-keys */

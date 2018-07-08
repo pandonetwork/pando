@@ -10,8 +10,12 @@ const argv = yargs
   .command(commands.fetch)
   .command(commands.push)
   .command(commands.pull)
+  .command(commands.status)
+  .command(commands.log)
   .command(commands.branch)
   .command(commands.remote)
+  .command(commands.clone)
   .demandCommand(1, 'No command provided')
+  .strict()
   .help()
   .alias('h', 'help').argv
