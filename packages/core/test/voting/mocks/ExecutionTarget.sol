@@ -1,16 +1,22 @@
 pragma solidity 0.4.18;
 
 contract ExecutionTarget {
-    uint public counter;
+    uint256 public value;
+    uint256 public counter;
 
     function execute() {
         counter += 1;
         Executed(counter);
     }
 
-    function setCounter(uint x) {
-        counter = x;
+    function setValue(uint256 _value) {
+        counter += 1;
+        value = _value;
     }
 
-    event Executed(uint x);
+    function autoThrow(uint256 _value) public {
+        require(false);
+    }
+
+    event Executed(uint256 x);
 }
