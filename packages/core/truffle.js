@@ -6,8 +6,9 @@ module.exports = {
       network_id: 15,
       // gas: 6.9e6
       gas: 0xffffffffff,
-      gasPrice: 0x01
-    },
+      gasPrice: 0x01,
+      websocket: true
+  },
     coverage: {
       host: 'localhost',
       port: 8555,
