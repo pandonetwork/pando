@@ -24,8 +24,12 @@ contract PandoApp is AragonApp {
         uint256  value;
     }
 
-    function hash(Snapshot _snapshot) pure internal returns (bytes32) {
-        return keccak256(abi.encodePacked(_snapshot.author, _snapshot.timestamp, _snapshot.parents, _snapshot.tree));
+    function tupleHash(Testt memory _snapshot) pure public {
+        /* return abi.encode(_snapshot.timestamp); */
+    }
+
+    function hash(Snapshot _snapshot) pure internal returns (bytes) {
+        return abi.encode(_snapshot.author, _snapshot.timestamp, _snapshot.parents, _snapshot.tree);
     }
 
     function cid(Snapshot _snapshot) pure internal returns (bytes32) {

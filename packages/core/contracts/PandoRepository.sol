@@ -36,8 +36,8 @@ contract PandoRepository is PandoApp {
     function _createBranch(string _name) isInitialized internal returns (uint256 branchId) {
         branchId           = branches.length++;
         branches[branchId] = PandoBranch(Kernel(kernel).newAppInstance(keccak256(abi.encodePacked('branch', branchId)), new PandoBranch()));
-        /* branches[branchId] = PandoBranch(Kernel(kernel).newAppInstance(tt, address(new PandoBranch()))); */
-        branches[branchId].initialize(_name);
+
+        branches[branchId].initialize(this, _name);
         ACL(Kernel(kernel).acl()).grantPermission(branches[branchId], this, ISSUE_REWARD_ROLE);
 
         emit CreateBranch(branchId, branches[branchId], _name);

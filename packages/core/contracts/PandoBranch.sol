@@ -2,7 +2,7 @@ pragma solidity ^0.4.24;
 pragma experimental ABIEncoderV2;
 
 import "./PandoApp.sol";
-import "./PandoRepositoty.sol";
+import "./PandoRepository.sol";
 
 
 contract PandoBranch is PandoApp {
@@ -15,10 +15,10 @@ contract PandoBranch is PandoApp {
         RequestState state;
     }
 
-    string public name;
-
-    Commit[]  history;
-    Request[] requests;
+    string          public name;
+    PandoRepository public specimen;
+    Commit[]  internal history;
+    Request[] internal requests;
 
     bytes32 constant public SUBMIT_REQUEST_ROLE  = keccak256("SUBMIT_REQUEST_ROLE");
     bytes32 constant public UPDATE_REQUEST_ROLE  = keccak256("UPDATE_REQUEST_ROLE");
@@ -36,9 +36,10 @@ contract PandoBranch is PandoApp {
     event NewCommit(uint256 indexed commitId);
 
 
-    function initialize(string _name) onlyInit external {
+    function initialize(PandoRepository _specimen, string _name) onlyInit external {
         initialized();
-        name = _name;
+        specimen = _specimen;
+        name     = _name;
     }
 
     function submitRequest(address _author, uint256 _timestamp, bytes32[] _parents, string _tree) auth(SUBMIT_REQUEST_ROLE) external returns (uint256 requestId) {
@@ -77,6 +78,10 @@ contract PandoBranch is PandoApp {
         _handleRequest(_requestId, _decision);
     }
 
+
+    function snapshotHash(uint256 _requestId) public view returns (bytes){
+        return hash(requests[_requestId].commit.snapshot);
+    }
 
     /************************************/
     /*      ACCESS CONTROL METHODS      */
