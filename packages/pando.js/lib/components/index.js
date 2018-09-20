@@ -1,4 +1,12 @@
 "use strict";
+var __assign = (this && this.__assign) || Object.assign || function(t) {
+    for (var s, i = 1, n = arguments.length; i < n; i++) {
+        s = arguments[i];
+        for (var p in s) if (Object.prototype.hasOwnProperty.call(s, p))
+            t[p] = s[p];
+    }
+    return t;
+};
 var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
     return new (P || (P = Promise))(function (resolve, reject) {
         function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
@@ -51,9 +59,16 @@ var klaw_sync_1 = __importDefault(require("klaw-sync"));
 var lodash_1 = __importDefault(require("lodash"));
 var path_1 = __importDefault(require("path"));
 var utils = __importStar(require("../utils"));
+var level_1 = __importDefault(require("level"));
+// import leveldown from 'leveldown'
+// import sub from 'subleveldown'
 var Index = /** @class */ (function () {
     function Index(repository) {
         this.repository = repository;
+        this.db = level_1.default(this.repository.paths.db, { valueEncoding: 'json' });
+        // public stage: any
+        // public specimen: any
+        // var db = levelup(leveldown('./mydb'))
     }
     Index.new = function (repository) {
         return __awaiter(this, void 0, void 0, function () {
@@ -70,6 +85,11 @@ var Index = /** @class */ (function () {
         });
     };
     Object.defineProperty(Index.prototype, "path", {
+        //     var levelup = require('levelup')
+        // var leveldown = require('leveldown')
+        //
+        // // 1) Create our store
+        // var db = levelup(leveldown('./mydb'))
         get: function () {
             return this.repository.paths.index;
         },
@@ -88,7 +108,7 @@ var Index = /** @class */ (function () {
     });
     Object.defineProperty(Index.prototype, "unsnapshot", {
         /**
-         * Returns staged but unsnaphot files
+         * Returns staged but unsnapshot files
          *
          * @returns {string[]}
          */
@@ -148,9 +168,7 @@ var Index = /** @class */ (function () {
             var current = this.current;
             var modified = [];
             for (var entry in current) {
-                if (current[entry].stage !== 'null' &&
-                    current[entry].stage !== 'todelete' &&
-                    current[entry].wdir !== current[entry].stage) {
+                if (current[entry].stage !== 'null' && current[entry].stage !== 'todelete' && current[entry].wdir !== current[entry].stage) {
                     modified.push(entry);
                 }
             }
@@ -206,6 +224,159 @@ var Index = /** @class */ (function () {
             });
         });
     };
+    Index.prototype.updateLevel = function () {
+        return __awaiter(this, void 0, void 0, function () {
+            var index, files, updates, filter;
+            var _this = this;
+            return __generator(this, function (_a) {
+                index = {};
+                files = {};
+                updates = [];
+                filter = function (item) {
+                    return item.path.indexOf('.pando') < 0 && item.path.indexOf('node_modules') < 0;
+                };
+                klaw_sync_1.default(this.repository.paths.root, { nodir: true, filter: filter }).forEach(function (file) {
+                    files[path_1.default.relative(_this.repository.paths.root, file.path)] = { mtime: file.stats.mtime };
+                });
+                // console.log(listing)
+                console.log(files);
+                return [2 /*return*/, new Promise(function (resolve, reject) {
+                        _this.db
+                            .createReadStream()
+                            .on('data', function (file) { return __awaiter(_this, void 0, void 0, function () {
+                            var _a, _b, _c, _d, _e;
+                            return __generator(this, function (_f) {
+                                switch (_f.label) {
+                                    case 0:
+                                        if (!files[file.key]) return [3 /*break*/, 5];
+                                        if (!(new Date(file.value.mtime) <= new Date(files[file.key].mtime))) return [3 /*break*/, 3];
+                                        /* file has been modified since last update */
+                                        _a = index;
+                                        _b = file.key;
+                                        _c = [{}, file.value];
+                                        _d = {};
+                                        return [4 /*yield*/, this.repository.node.cid(path_1.default.join(this.repository.paths.root, file.key), { file: true })];
+                                    case 1:
+                                        /* file has been modified since last update */
+                                        _a[_b] = __assign.apply(void 0, _c.concat([(_d.wdir = _f.sent(), _d)]));
+                                        _e = file.value;
+                                        return [4 /*yield*/, this.repository.node.cid(path_1.default.join(this.repository.paths.root, file.key), { file: true })];
+                                    case 2:
+                                        _e.wdir = _f.sent();
+                                        updates.push({ type: 'put', key: file.key, value: index[file.key] });
+                                        return [3 /*break*/, 4];
+                                    case 3:
+                                        index[file.key] = file.value;
+                                        _f.label = 4;
+                                    case 4: return [3 /*break*/, 6];
+                                    case 5:
+                                        /* file does not exist in wdir anymore */
+                                        file.value.mtime = new Date(Date.now());
+                                        file.value.wdir = 'null';
+                                        updates.push({ type: 'put', key: file.key, value: file.value });
+                                        _f.label = 6;
+                                    case 6:
+                                        /* delete from the remaining files list */
+                                        delete files[file.key];
+                                        return [2 /*return*/];
+                                }
+                            });
+                        }); })
+                            .on('error', function (err) {
+                            console.log('Oh my!', err);
+                        })
+                            .on('close', function () {
+                            console.log('Stream closed');
+                        })
+                            .on('end', function () { return __awaiter(_this, void 0, void 0, function () {
+                            var _a, _b, _i, file, cid;
+                            return __generator(this, function (_c) {
+                                switch (_c.label) {
+                                    case 0:
+                                        console.log('Stream ended');
+                                        _a = [];
+                                        for (_b in files)
+                                            _a.push(_b);
+                                        _i = 0;
+                                        _c.label = 1;
+                                    case 1:
+                                        if (!(_i < _a.length)) return [3 /*break*/, 4];
+                                        file = _a[_i];
+                                        if (!files.hasOwnProperty(file)) return [3 /*break*/, 3];
+                                        return [4 /*yield*/, this.repository.node.cid(path_1.default.join(this.repository.paths.root, file), { file: true })
+                                            // const value = {
+                                            //     mtime: files[remains].mtime,
+                                            //     repo: 'null',
+                                            //     stage: 'null',
+                                            //     wdir: cid
+                                            // }
+                                        ];
+                                    case 2:
+                                        cid = _c.sent();
+                                        // const value = {
+                                        //     mtime: files[remains].mtime,
+                                        //     repo: 'null',
+                                        //     stage: 'null',
+                                        //     wdir: cid
+                                        // }
+                                        index[file] = {
+                                            mtime: files[file].mtime,
+                                            repo: 'null',
+                                            stage: 'null',
+                                            wdir: cid
+                                        };
+                                        updates.push({ type: 'put', key: file, value: index[file] });
+                                        _c.label = 3;
+                                    case 3:
+                                        _i++;
+                                        return [3 /*break*/, 1];
+                                    case 4: return [4 /*yield*/, this.db.batch(updates)];
+                                    case 5:
+                                        _c.sent();
+                                        resolve(index);
+                                        this.db.createReadStream().on('data', function (file) {
+                                            console.log(file.key, '=', file.value);
+                                        });
+                                        return [2 /*return*/];
+                                }
+                            });
+                        }); });
+                    })
+                    // for (const relativePath in index) {
+                    //     if (index.hasOwnProperty(relativePath)) {
+                    //         if (files[relativePath]) {
+                    //             // files at _path still exists
+                    //             if (new Date(index[relativePath].mtime) <= new Date(files[relativePath].mtime)) {
+                    //                 // files at _path has been modified
+                    //                 const cid = await this.repository.node!.cid(path.join(this.repository.paths.root, relativePath), { file: true })
+                    //                 index[relativePath].mtime = files[relativePath].mtime
+                    //                 index[relativePath].wdir = cid
+                    //             }
+                    //         } else {
+                    //             // files at _path has been deleted
+                    //             index[relativePath].mtime = new Date(Date.now())
+                    //             index[relativePath].wdir = 'null'
+                    //         }
+                    //         delete newFiles[relativePath]
+                    //     }
+                    // }
+                    //
+                    // for (const relativePath in newFiles) {
+                    //     if (newFiles.hasOwnProperty(relativePath)) {
+                    //         // file at _path has been added
+                    //         const cid = await this.repository.node!.cid(path.join(this.repository.paths.root, relativePath), { file: true })
+                    //         index[relativePath] = {
+                    //             mtime: files[relativePath].mtime,
+                    //             repo: 'null',
+                    //             stage: 'null',
+                    //             wdir: cid
+                    //         }
+                    //     }
+                    // }
+                ];
+            });
+        });
+    };
     Index.prototype.update = function () {
         return __awaiter(this, void 0, void 0, function () {
             var index, files, filter, listing, _i, listing_1, item, relativePath, newFiles, _a, _b, _c, relativePath, cid, _d, _e, _f, relativePath, cid;
@@ -215,9 +386,12 @@ var Index = /** @class */ (function () {
                         index = this.current;
                         files = {};
                         filter = function (item) {
-                            return (item.path.indexOf('.pando') < 0 && item.path.indexOf('node_modules') < 0);
+                            return item.path.indexOf('.pando') < 0 && item.path.indexOf('node_modules') < 0;
                         };
-                        listing = klaw_sync_1.default(this.repository.paths.root, { nodir: true, filter: filter });
+                        listing = klaw_sync_1.default(this.repository.paths.root, {
+                            nodir: true,
+                            filter: filter
+                        });
                         for (_i = 0, listing_1 = listing; _i < listing_1.length; _i++) {
                             item = listing_1[_i];
                             relativePath = path_1.default.relative(this.repository.paths.root, item.path);
@@ -234,8 +408,7 @@ var Index = /** @class */ (function () {
                         relativePath = _a[_c];
                         if (!index.hasOwnProperty(relativePath)) return [3 /*break*/, 6];
                         if (!files[relativePath]) return [3 /*break*/, 4];
-                        if (!(new Date(index[relativePath].mtime) <=
-                            new Date(files[relativePath].mtime))) return [3 /*break*/, 3];
+                        if (!(new Date(index[relativePath].mtime) <= new Date(files[relativePath].mtime))) return [3 /*break*/, 3];
                         return [4 /*yield*/, this.repository.node.cid(path_1.default.join(this.repository.paths.root, relativePath), { file: true })];
                     case 2:
                         cid = _g.sent();
@@ -307,8 +480,7 @@ var Index = /** @class */ (function () {
                                         if (!utils.fs.exists(filePath)) return [3 /*break*/, 4];
                                         if (!fs_1.default.lstatSync(filePath).isDirectory()) return [3 /*break*/, 1];
                                         filter = function (item) {
-                                            return (item.path.indexOf('.pando') < 0 &&
-                                                item.path.indexOf('node_modules') < 0);
+                                            return item.path.indexOf('.pando') < 0 && item.path.indexOf('node_modules') < 0;
                                         };
                                         listing = klaw_sync_1.default(filePath, { nodir: true, filter: filter });
                                         for (_i = 0, listing_2 = listing; _i < listing_2.length; _i++) {
@@ -341,8 +513,7 @@ var Index = /** @class */ (function () {
                                         }
                                         else {
                                             filter = function (item) {
-                                                return (item.path.indexOf('.pando') < 0 &&
-                                                    item.path.indexOf('node_modules') < 0);
+                                                return item.path.indexOf('.pando') < 0 && item.path.indexOf('node_modules') < 0;
                                             };
                                             children = lodash_1.default.filter(Object.keys(index), function (entry) {
                                                 return entry.indexOf(relativePath) === 0;
@@ -354,8 +525,7 @@ var Index = /** @class */ (function () {
                                                 }
                                             }
                                             else {
-                                                throw new Error(filePath +
-                                                    ' does not exist neither in current working directory nor in index');
+                                                throw new Error(filePath + ' does not exist neither in current working directory nor in index');
                                             }
                                         }
                                         _c.label = 5;

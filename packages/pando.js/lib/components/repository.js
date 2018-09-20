@@ -207,11 +207,7 @@ var Repository = /** @class */ (function () {
                             throw new Error('Nothing to push');
                         }
                         if (remoteHead === head) {
-                            throw new Error("Branch '" +
-                                branch +
-                                "' of remote '" +
-                                remoteName +
-                                "' is already up to date");
+                            throw new Error("Branch '" + branch + "' of remote '" + remoteName + "' is already up to date");
                         }
                         return [4 /*yield*/, this.fromCID(head)];
                     case 4:
@@ -562,6 +558,7 @@ var Repository = /** @class */ (function () {
         pando: '.pando',
         ipfs: '.pando/ipfs',
         index: '.pando/index',
+        db: '.pando/db',
         current: '.pando/current',
         config: '.pando/config',
         branches: '.pando/branches',
