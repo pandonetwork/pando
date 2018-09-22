@@ -5,34 +5,40 @@ import "@aragon/os/contracts/apps/AragonApp.sol";
 
 
 contract PandoApp is AragonApp {
+
     /**
-    * @notice Structure identifying and describing a snapshot
-    * @param origin The address the snapshot origins from: it can be a wallet address, a branch address or a DAO address, etc.
+    * @notice Commit.
+    * @param origin Address the commit origins from: can be a wallet address, a branch address, a DAO address, etc.
+    * @param origin Address the commit origins from: can be a wallet address, a branch address, a DAO address, etc.
     */
-    struct Snapshot {
-        uint256[3] version;
-        address    author;
-        uint256    timestamp;
-        bytes32[]  parents;
-        string     tree;
-    }
 
     struct Commit {
-        Snapshot snapshot;
         address  origin;
         uint256  block;
+        string   tree;
+        string   message;
+        bytes    parents;
         uint256  value;
     }
 
-    function tupleHash(Testt memory _snapshot) pure public {
-        /* return abi.encode(_snapshot.timestamp); */
+
+    /**
+    * @notice Structure describing a Commit IDentifier.
+    * @param version Version of the identified commit datastructure.
+    * @param branch
+    */
+    struct CID {
+        address    branch;
+        bytes32    hash;
     }
 
-    function hash(Snapshot _snapshot) pure internal returns (bytes) {
-        return abi.encode(_snapshot.author, _snapshot.timestamp, _snapshot.parents, _snapshot.tree);
+    function hash(Commit _commit) pure internal returns (bytes32) {
+        return keccak256(abi.encodePacked(_commit.origin, _commit.block, _commit.tree, _commit.message, _commit.parents, _commit.value));
     }
 
-    function cid(Snapshot _snapshot) pure internal returns (bytes32) {
-        return keccak256(abi.encodePacked(_snapshot.author, _snapshot.timestamp, _snapshot.parents, _snapshot.tree));
-    }
+    /* function bytesToParent(bytes _parents) pure internal returns (CID[]) {
+
+        parents[0] = CID(address(0x0), bytes32(0x0));
+
+    } */
 }
