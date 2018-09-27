@@ -13,8 +13,8 @@ contract ShareVoting is IForwarder, AragonApp {
     using SafeMath64 for uint64;
 
     MiniMeToken public token;
-    uint256 public minParticipationPct;
-    uint64 public voteTime;
+    uint256     public minParticipationPct;
+    uint64      public voteTime;
 
     uint256 constant public PCT_BASE = 10 ** 18; // 0% = 0; 1% = 10^16; 100% = 10^18
 
@@ -24,15 +24,15 @@ contract ShareVoting is IForwarder, AragonApp {
 
     struct Vote {
         address creator;
-        uint64 startDate;
+        uint64  startDate;
         uint256 snapshotBlock;
         uint256 minParticipationPct;
-        uint256 totalValue;
+        uint256 addedValue;
+        uint256 addedWeight;
         uint256 totalWeight;
-        uint256 totalVoters;
-        string metadata;
-        bytes executionScript;
-        bool executed;
+        string  metadata;
+        bytes   executionScript;
+        bool    executed;
         mapping (address => uint256) voters;
     }
 
@@ -44,25 +44,25 @@ contract ShareVoting is IForwarder, AragonApp {
     event ExecuteVote(uint256 indexed voteId);
     event ChangeMinParticipation(uint256 minParticipationPct);
 
+
+    /******************************/
+    /*      EXTERNAL METHODS      */
+    /******************************/
+
     /**
     * @notice Initializes ShareVoting app with `_token.symbol(): string` for governance, minimum participation of `(_minParticipationPct - _minParticipationPct % 10^14) / 10^16` and vote durations of `(_voteTime - _voteTime % 86400) / 86400` day `_voteTime >= 172800 ? 's' : ''`
     * @param _token MiniMeToken Address that will be used as governance token
     * @param _minParticipationPct Percentage of voters that must participate in a vote for it to succeed (expressed as a 10^18 percentage, eg 10^16 = 1%, 10^18 = 100%)
     * @param _voteTime Seconds that a vote will be open for token holders to vote (unless enough yeas or nays have been cast to make an early decision)
     */
-    function initialize(
-        MiniMeToken _token,
-        uint256 _minParticipationPct,
-        uint64 _voteTime
-    ) onlyInit external
-    {
+    function initialize(MiniMeToken _token, uint256 _minParticipationPct, uint64 _voteTime) onlyInit external {
         initialized();
 
         require(_minParticipationPct > 0);
 
-        token = _token;
+        token               = _token;
         minParticipationPct = _minParticipationPct;
-        voteTime = _voteTime;
+        voteTime            = _voteTime;
 
         votes.length += 1;
     }
@@ -88,16 +88,6 @@ contract ShareVoting is IForwarder, AragonApp {
         return _newVote(_executionScript, _metadata);
     }
 
-    /**
-     * @notice Create a new vote about "`_metadata`"
-     * @param _executionScript EVM script to be executed on approval
-     * @param _metadata Vote metadata
-     * @param _castVote Whether to also cast newly created vote
-     * @return voteId id for newly created vote
-     */
-    /* function newVote(bytes _executionScript, string _metadata, bool _castVote) auth(CREATE_VOTES_ROLE) external returns (uint256 voteId) {
-        return _newVote(_executionScript, _metadata, _castVote);
-    } */
 
     /**
     * @notice Grant a value of `value` in vote #`_voteId`
@@ -108,12 +98,7 @@ contract ShareVoting is IForwarder, AragonApp {
     function vote(uint256 _voteId, uint256 _value, bool _executesIfDecided) isInitialized external {
         require(canVote(_voteId, msg.sender));
 
-        _vote(
-            _voteId,
-            _value,
-            msg.sender,
-            _executesIfDecided
-        );
+        _vote(_voteId, _value, msg.sender, _executesIfDecided);
     }
 
     /**
@@ -124,6 +109,10 @@ contract ShareVoting is IForwarder, AragonApp {
         require(canExecute(_voteId));
         _executeVote(_voteId);
     }
+
+    /*******************************/
+    /*      FORWARDER METHODS      */
+    /*******************************/
 
     function isForwarder() public pure returns (bool) {
         return true;
@@ -138,6 +127,10 @@ contract ShareVoting is IForwarder, AragonApp {
         require(canForward(msg.sender, _evmScript));
         _newVote(_evmScript, "");
     }
+
+    /************************************/
+    /*      ACCESS CONTROL METHODS      */
+    /************************************/
 
     function canForward(address _sender, bytes _evmCallScript) public view returns (bool) {
         return canPerform(_sender, CREATE_VOTES_ROLE, arr());
@@ -155,7 +148,7 @@ contract ShareVoting is IForwarder, AragonApp {
             return false;
 
         // vote is already decided
-        if (_isValuePct(vote.totalWeight, vote.totalVoters, vote.minParticipationPct))
+        if (_isValuePct(vote.addedWeight, vote.totalWeight, vote.minParticipationPct))
             return true;
 
         // vote ended?
@@ -163,25 +156,29 @@ contract ShareVoting is IForwarder, AragonApp {
             return false;
 
         // has minimun participation percentage?
-        if (!_isValuePct(vote.totalWeight, vote.totalVoters, vote.minParticipationPct))
+        if (!_isValuePct(vote.addedWeight, vote.totalWeight, vote.minParticipationPct))
             return false;
 
         return true;
     }
 
-    function getVote(uint256 _voteId) public view returns (bool open, bool executed, address creator, uint64 startDate, uint256 snapshotBlock, uint256 minParticipation, uint256 totalValue, uint256 totalWeight, uint256 totalVoters, bytes script) {
+    /****************************/
+    /*      GETTER METHODS      */
+    /****************************/
+
+    function getVote(uint256 _voteId) public view returns (bool open, bool executed, address creator, uint64 startDate, uint256 snapshotBlock, uint256 minParticipation, uint256 addedValue, uint256 addedWeight, uint256 totalWeight, bytes script) {
         Vote storage vote = votes[_voteId];
 
-        open = _isVoteOpen(vote);
-        executed = vote.executed;
-        creator = vote.creator;
-        startDate = vote.startDate;
-        snapshotBlock = vote.snapshotBlock;
+        open             = _isVoteOpen(vote);
+        executed         = vote.executed;
+        creator          = vote.creator;
+        startDate        = vote.startDate;
+        snapshotBlock    = vote.snapshotBlock;
         minParticipation = vote.minParticipationPct;
-        totalValue = vote.totalValue;
-        totalWeight = vote.totalWeight;
-        totalVoters = vote.totalVoters;
-        script = vote.executionScript;
+        addedValue       = vote.addedValue;
+        addedWeight      = vote.addedWeight;
+        totalWeight      = vote.totalWeight;
+        script           = vote.executionScript;
     }
 
     /**
@@ -204,42 +201,39 @@ contract ShareVoting is IForwarder, AragonApp {
         return votes[_voteId].voters[_voter];
     }
 
+    /******************************/
+    /*      INTERNAL METHODS      */
+    /******************************/
 
     function _newVote(bytes _executionScript, string _metadata) isInitialized internal returns (uint256 voteId) {
-        voteId = votes.length++;
+        voteId            = votes.length++;
         Vote storage vote = votes[voteId];
-        vote.executionScript = _executionScript;
-        vote.creator = msg.sender;
-        vote.startDate = uint64(now);
-        vote.metadata = _metadata;
-        vote.snapshotBlock = getBlockNumber() - 1; // avoid double voting in this very block
-        vote.totalVoters = token.totalSupplyAt(vote.snapshotBlock);
+
+        vote.executionScript     = _executionScript;
+        vote.creator             = msg.sender;
+        vote.startDate           = uint64(now);
+        vote.metadata            = _metadata;
+        vote.snapshotBlock       = getBlockNumber() - 1; // avoid double voting in this very block
+        vote.totalWeight         = token.totalSupplyAt(vote.snapshotBlock);
         vote.minParticipationPct = minParticipationPct;
 
         StartVote(voteId);
     }
 
-    function _vote(
-        uint256 _voteId,
-        uint256 _value,
-        address _voter,
-        bool _executesIfDecided
-    ) internal
-    {
+    function _vote(uint256 _voteId, uint256 _value, address _voter, bool _executesIfDecided) internal {
         Vote storage vote = votes[_voteId];
 
-        // this could re-enter, though we can assume the governance token is not malicious
         uint256 voterWeight = token.balanceOfAt(_voter, vote.snapshotBlock);
-        uint256 voterValue = vote.voters[_voter];
+        uint256 voterValue  = vote.voters[_voter];
 
         // if voter had previously voted, decrease count
         if (voterValue != 0) {
-          vote.totalValue = vote.totalValue.sub(voterValue.mul(voterWeight));
-          vote.totalWeight = vote.totalWeight.sub(voterWeight);
+          vote.addedValue = vote.addedValue.sub(voterValue.mul(voterWeight));
+          vote.addedWeight = vote.addedWeight.sub(voterWeight);
         }
 
-        vote.totalValue = vote.totalValue.add(_value.mul(voterWeight));
-        vote.totalWeight = vote.totalWeight.add(voterWeight);
+        vote.addedValue = vote.addedValue.add(_value.mul(voterWeight));
+        vote.addedWeight = vote.addedWeight.add(voterWeight);
         vote.voters[_voter] = _value;
 
         CastVote(
@@ -256,7 +250,7 @@ contract ShareVoting is IForwarder, AragonApp {
     function _executeVote(uint256 _voteId) internal {
         Vote storage vote = votes[_voteId];
         uint256 scriptLength = 64; // 4 (spec) + 20 (address) + 4 (calldataLength) +  32 (input) + 4 (padding from 60 to 64)
-        uint256 value = vote.totalValue.div(vote.totalWeight);
+        uint256 value = vote.addedValue.div(vote.addedWeight);
         bytes memory executionScript = new bytes(scriptLength);
 
         vote.executed = true;
@@ -270,6 +264,10 @@ contract ShareVoting is IForwarder, AragonApp {
 
         ExecuteVote(_voteId);
     }
+
+    /*****************************/
+    /*      UTILITY METHODS      */
+    /*****************************/
 
     function _isVoteOpen(Vote storage vote) internal view returns (bool) {
         return uint64(now) < vote.startDate.add(voteTime) && !vote.executed;

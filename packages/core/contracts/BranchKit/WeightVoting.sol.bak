@@ -1,0 +1,299 @@
+pragma solidity ^0.4.24;
+
+import "@aragon/os/contracts/apps/AragonApp.sol";
+import "@aragon/os/contracts/common/IForwarder.sol";
+import "@aragon/os/contracts/lib/minime/MiniMeToken.sol";
+import "@aragon/os/contracts/lib/zeppelin/math/SafeMath.sol";
+import "@aragon/os/contracts/lib/zeppelin/math/SafeMath64.sol";
+import "@aragon/os/contracts/lib/misc/Migrations.sol";
+import "./Branch.sol";
+
+contract WeightVoting is AragonApp {
+    using SafeMath for uint256;
+    using SafeMath64 for uint64;
+
+    Branch      public branch;
+    MiniMeToken public token;
+    uint256     public minParticipationPct;
+    uint256     public minSupportPct;
+    uint64      public voteDuration;
+
+    uint256 constant public PCT_BASE = 10 ** 18;
+
+    bytes32 constant public CREATE_VOTES_ROLE = keccak256("CREATE_VOTES_ROLE");
+    bytes32 constant public INIT_PROCESS_ROLE = keccak256("INIT_PROCESS_ROLE");
+
+    enum VoterAction { Absent, Yea, Nay }
+
+    struct VoterBallot {
+        uint256     value;
+        VoterAction action;
+    }
+
+    struct Vote {
+        address creator;
+        uint256 requestId;
+        uint64  startDate;
+        uint256 snapshotBlock;
+        uint256 minParticipationPct;
+        uint256 minSupportPct;
+        uint256 accumulatedValue;
+        uint256 accumulatedWeight;
+        uint256 yea;
+        uint256 nay;
+        uint256 totalWeight;
+        bool    executed;
+        mapping (address => VoterBallot) ballots;
+    }
+
+    /* Vote[] internal votes; // first index is 1 */
+
+    mapping(uint256 => Votes) votes;
+
+    event StartVote(uint256 indexed voteId);
+    event CastVote(uint256 indexed voteId, address indexed voter, uint256 value, uint256 weight);
+    event ExecuteVote(uint256 indexed voteId);
+
+
+    /******************************/
+    /*      EXTERNAL METHODS      */
+    /******************************/
+
+    function initialize(Branch _branch, uint256 _minParticipationPct, uint256 _minSupportPct, uint64 _voteDuration) onlyInit external {
+        initialized();
+
+        require(_minParticipationPct > 0);
+        require(_minSupportPct > 0);
+
+        branch              = _branch;
+        minParticipationPct = _minParticipationPct;
+        minSupportPct       = _minSupportPct;
+        voteDuration        = _voteDuration;
+    }
+
+    function handleRFC(uint256 _rfcId) onlyBranch external {
+        return _newVote(_requestId);
+    }
+
+    function processRFC(uint256 _rfcId) external {
+        require(canExecute(_requestId));
+        _executeVote(_requestId);
+    }
+
+
+    /* pando branches requests list
+
+    pando branches requests valuate <specimen:branch> <id> <value>
+    pando branches requests sort <specimen:branch> <id> <action>
+    pando branches requests  */
+
+    /**
+    * @notice Execute the result of vote #`_voteId`
+    * @param _voteId Id for vote
+    */
+    function executeProcess(uint256 _rfcId) isInitialized external {
+        require(canExecute(_voteId));
+        _executeVote(_voteId);
+    }
+
+
+    function valuateRFC(uint256 _rfcId, uint256 _value) external {
+
+    }
+
+
+    function vote(uint256 _rfcId, uint256 _value, bool _executesIfDecided) isInitialized external {
+        require(canVote(_voteId, msg.sender));
+
+        _vote(_voteId, _value, msg.sender, _executesIfDecided);
+    }
+
+
+
+    /************************************/
+    /*      ACCESS CONTROL METHODS      */
+    /************************************/
+
+    function canForward(address _sender, bytes _evmCallScript) public view returns (bool) {
+        return canPerform(_sender, CREATE_VOTES_ROLE, arr());
+    }
+
+    function canVote(uint256 _voteId, address _voter) public view returns (bool) {
+        Vote storage vote = votes[_voteId];
+
+        return _isVoteOpen(vote) && token.balanceOfAt(_voter, vote.snapshotBlock) > 0;
+    }
+
+    function canExecute(uint256 _voteId) public view returns (bool) {
+        Vote storage vote = votes[_voteId];
+        if (vote.executed)
+            return false;
+
+        // vote is already decided
+        if (_isValuePct(vote.addedWeight, vote.totalWeight, vote.minParticipationPct))
+            return true;
+
+        // vote ended?
+        if (_isVoteOpen(vote))
+            return false;
+
+        // has minimun participation percentage?
+        if (!_isValuePct(vote.addedWeight, vote.totalWeight, vote.minParticipationPct))
+            return false;
+
+        return true;
+    }
+
+    /****************************/
+    /*      GETTER METHODS      */
+    /****************************/
+
+    /* function getVote(uint256 _voteId) public view returns (bool open, bool executed, address creator, uint64 startDate, uint256 snapshotBlock, uint256 minParticipation, uint256 addedValue, uint256 addedWeight, uint256 totalWeight, bytes script) {
+        Vote storage vote = votes[_voteId];
+
+        open             = _isVoteOpen(vote);
+        executed         = vote.executed;
+        creator          = vote.creator;
+        startDate        = vote.startDate;
+        snapshotBlock    = vote.snapshotBlock;
+        minParticipation = vote.minParticipationPct;
+        addedValue       = vote.addedValue;
+        addedWeight      = vote.addedWeight;
+        totalWeight      = vote.totalWeight;
+        script           = vote.executionScript;
+    }
+
+    function getVoterState(uint256 _voteId, address _voter) public view returns (uint256) {
+        return votes[_voteId].voters[_voter];
+    } */
+
+    /******************************/
+    /*      INTERNAL METHODS      */
+    /******************************/
+
+    function _newVote(uint256 _requestId) isInitialized internal returns (uint256 voteId) {
+        Vote storage vote        = votes[_requestId];
+
+        vote.creator             = msg.sender;
+        vote.requestId           = _requestId;
+        vote.startDate           = uint64(now);
+        vote.snapshotBlock       = getBlockNumber() - 1; // avoid double voting in this very block
+        vote.minParticipationPct = minParticipationPct;
+        vote.minSupportPct       = minSupportPct;
+        vote.totalWeight         = token.totalSupplyAt(vote.snapshotBlock);
+
+        StartVote(voteId);
+    }
+
+
+    function _valuateRFC(uint256 _rfcId, address _voter, uint256 _value) internal {
+        Vote storage vote = votes[_rfcId];
+
+        uint256 voterValue  = vote.ballots[_voter].value;
+        uint256 voterWeight = token.balanceOfAt(_voter, vote.snapshotBlock);
+
+        // if voter had previously voted, decrease count
+        if (voterValue != 0) {
+          vote.addedValue  = vote.addedValue.sub(voterValue.mul(voterWeight));
+          vote.addedWeight = vote.addedWeight.sub(voterWeight);
+        }
+
+        vote.addedValue            = vote.addedValue.add(_value.mul(voterWeight));
+        vote.addedWeight           = vote.addedWeight.add(voterWeight);
+        vote.ballots[_voter].value = _value;
+
+        ValuateRFC(_rfcId, _voter, _value, voterWeight);
+
+        if (canProcess(_rfcId))
+            _processRFC(_rfcId);
+    }
+
+    function _sortRFC(uint256 _rfcId, address _voter, uint256 _value) internal {
+        Vote storage vote = votes[_rfcId];
+
+        uint256 voterValue  = vote.ballots[_voter].value;
+        uint256 voterWeight = token.balanceOfAt(_voter, vote.snapshotBlock);
+
+        // if voter had previously voted, decrease count
+        if (voterValue != 0) {
+          vote.addedValue  = vote.addedValue.sub(voterValue.mul(voterWeight));
+          vote.addedWeight = vote.addedWeight.sub(voterWeight);
+        }
+
+        vote.addedValue            = vote.addedValue.add(_value.mul(voterWeight));
+        vote.addedWeight           = vote.addedWeight.add(voterWeight);
+        vote.ballots[_voter].value = _value;
+
+        ValuateRFC(_rfcId, _voter, _value, voterWeight);
+
+        if (canProcess(_rfcId))
+            _processRFC(_rfcId);
+    }
+
+    function _vote(uint256 _voteId, uint256 _value, address _voter, bool _executesIfDecided) internal {
+        Vote storage vote = votes[_voteId];
+
+        uint256 voterWeight = token.balanceOfAt(_voter, vote.snapshotBlock);
+        uint256 voterValue  = vote.voters[_voter];
+
+        // if voter had previously voted, decrease count
+        if (voterValue != 0) {
+          vote.addedValue = vote.addedValue.sub(voterValue.mul(voterWeight));
+          vote.addedWeight = vote.addedWeight.sub(voterWeight);
+        }
+
+        vote.addedValue = vote.addedValue.add(_value.mul(voterWeight));
+        vote.addedWeight = vote.addedWeight.add(voterWeight);
+        vote.voters[_voter] = _value;
+
+        CastVote(
+            _voteId,
+            _voter,
+            _value,
+            voterWeight
+        );
+
+        if (_executesIfDecided && canExecute(_voteId))
+            _executeVote(_voteId);
+    }
+
+    function _executeVote(uint256 _voteId) internal {
+        Vote storage vote = votes[_voteId];
+        uint256 scriptLength = 64; // 4 (spec) + 20 (address) + 4 (calldataLength) +  32 (input) + 4 (padding from 60 to 64)
+        uint256 value = vote.addedValue.div(vote.addedWeight);
+        bytes memory executionScript = new bytes(scriptLength);
+
+        vote.executed = true;
+        executionScript = vote.executionScript;
+
+        assembly {
+            mstore(add(executionScript, 0x40), value)
+        }
+
+        runScript(executionScript, new bytes(0), new address[](0));
+
+        ExecuteVote(_voteId);
+    }
+
+    /*****************************/
+    /*      UTILITY METHODS      */
+    /*****************************/
+
+    function _isVoteOpen(Vote storage vote) internal view returns (bool) {
+        return uint64(now) < vote.startDate.add(voteTime) && !vote.executed;
+    }
+
+    /**
+    * @dev Calculates whether `_value` is at least a percentage `_pct` of `_total`
+    */
+    function _isValuePct(uint256 _value, uint256 _total, uint256 _pct) internal pure returns (bool) {
+        if (_total == 0) {
+            return false;
+        }
+        uint256 computedPct = _value.mul(PCT_BASE) / _total;
+
+        return computedPct >= _pct;
+    }
+
+    // Remettre pure sur isValuePct
+}

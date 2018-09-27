@@ -40,21 +40,13 @@ contract Branch is PandoApp {
 
     event MergeCommit(bytes32 hash);
 
-
-    modifier onlyKit() {
-       require(msg.sender == address(kit));
-       _;
-   }
-
-
     /******************************/
     /*      EXTERNAL METHODS      */
     /******************************/
 
-    function initialize(Specimen _specimen, BranchKit _kit, string _name) onlyInit external {
+    function initialize(Specimen _specimen, string _name) onlyInit external {
         initialized();
         specimen = _specimen;
-        kit      = _kit;
         name     = _name;
     }
 
@@ -62,13 +54,13 @@ contract Branch is PandoApp {
         return _submitRFC(_tree, _message, _parents);
     }
 
-    function valuateRFC(uint256 _rfcId, uint256 _value) onlyKit external {
-        /* require(canValuate(msg.sender, _rfcId, _value)); */
+    function valuateRFC(uint256 _rfcId, uint256 _value) external {
+        require(canValuate(msg.sender, _rfcId, _value));
         _valuateRFC(_rfcId, _value);
     }
 
-    function sortRFC(uint256 _rfcId, RFCSorting _sorting) onlyKit external {
-        /* require(canSort(msg.sender, _rfcId, _sorting)); */
+    function sortRFC(uint256 _rfcId, RFCSorting _sorting) external {
+        require(canSort(msg.sender, _rfcId, _sorting));
         _sortRFC(_rfcId, _sorting);
     }
 
@@ -133,14 +125,12 @@ contract Branch is PandoApp {
     /******************************/
 
     function _submitRFC(string _tree, string _message, bytes _parents) isInitialized internal returns (uint256 rfcId)  {
-        rfcId           = rfcs.length++;
+        rfcId               = rfcs.length++;
         RFC storage rfc = rfcs[rfcId];
 
         rfc.status = RFCStatus.Open;
         rfc.state  = RFCState.Pending;
         rfc.commit = Commit(msg.sender, 0, _tree, _message, _parents, 0);
-
-        kit.handleRFC(rfcId);
 
         emit SubmitRFC(rfcId);
     }
