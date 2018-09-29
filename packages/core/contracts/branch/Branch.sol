@@ -1,50 +1,51 @@
 pragma solidity ^0.4.24;
 pragma experimental ABIEncoderV2;
 
-import "./PandoApp.sol";
-import "./Specimen.sol";
-import "./BranchKit/BranchKit.sol";
+import "../apps/PandoApp.sol";
+import "../specimen/Specimen.sol";
+import "./kits/BranchKit.sol";
 
 
 contract Branch is PandoApp {
-
-
-    string    public name;
     Specimen  public specimen;
     BranchKit public kit;
+    string    public name;
     bytes32   public head;
 
     RFC[] internal rfcs;
-    mapping(bytes32 => Commit) internal commits;
+    mapping(bytes32 => Commit) public commits;
 
 
-    bytes32 constant public SUBMIT_RFC_ROLE  = keccak256("SUBMIT_RFC_ROLE");
+    /* bytes32 constant public SUBMIT_RFC_ROLE  = keccak256("SUBMIT_RFC_ROLE");
     bytes32 constant public UPDATE_RFC_ROLE  = keccak256("UPDATE_RFC_ROLE");
     bytes32 constant public CANCEL_RFC_ROLE  = keccak256("VALUATE_RFC_ROLE");
     bytes32 constant public VALUATE_RFC_ROLE = keccak256("VALUATE_RFC_ROLE");
-    bytes32 constant public SORT_RFC_ROLE    = keccak256("HANDLE_RFC_ROLE");
+    bytes32 constant public SORT_RFC_ROLE    = keccak256("HANDLE_RFC_ROLE"); */
 
 
-
-    // Governance hooks
-    /* uint256 RFC_STAKE = 0;
-    bool    ORIGIN_CAN_CANCEL = true; */
-
-
-    event SubmitRFC(uint256  indexed rfcId);
-    event UpdateRFC(uint256  indexed rfcId);
+    event SubmitRFC (uint256 indexed rfcId);
+    event UpdateRFC (uint256 indexed rfcId);
     event ValuateRFC(uint256 indexed rfcId, uint256 value);
-    event MergeRFC(uint256   indexed rfcId);
-    event RejectRFC(uint256  indexed rfcId);
-    event CancelRFC(uint256  indexed rfcId);
+    event MergeRFC  (uint256 indexed rfcId);
+    event RejectRFC (uint256 indexed rfcId);
+    event CancelRFC (uint256 indexed rfcId);
 
     event MergeCommit(bytes32 hash);
 
 
     modifier onlyKit() {
-       require(msg.sender == address(kit));
-       _;
-   }
+        require(msg.sender == address(kit));
+        _;
+    }
+
+    modifier isOpen(uint256 _rfcId) {
+        require(rfcs[_rfcId].status == RFCStatus.Open);
+        _;
+    }
+
+    /* modifier isValuated(uint256 _rfcId) {
+
+    } */
 
 
     /******************************/
@@ -58,16 +59,20 @@ contract Branch is PandoApp {
         name     = _name;
     }
 
-    function submitRFC(string _tree, string _message, bytes _parents) auth(SUBMIT_RFC_ROLE) external returns (uint256 rfcId) {
-        return _submitRFC(_tree, _message, _parents);
+    function submitRFC(address _origin, string _tree, string _message, bytes _parents) isInitialized onlyKit external returns (uint256 rfcId) {
+        return _submitRFC(_origin, _tree, _message, _parents);
     }
 
-    function valuateRFC(uint256 _rfcId, uint256 _value) onlyKit external {
-        /* require(canValuate(msg.sender, _rfcId, _value)); */
+
+    function updateRFC(string _tree, string _message, bytes _parents) isInitialized onlyKit external {
+
+    }
+
+    function valuateRFC(uint256 _rfcId, uint256 _value) isInitialized onlyKit isOpen(_rfcId) external {
         _valuateRFC(_rfcId, _value);
     }
 
-    function sortRFC(uint256 _rfcId, RFCSorting _sorting) onlyKit external {
+    function sortRFC(uint256 _rfcId, RFCSorting _sorting) isInitialized onlyKit isOpen(_rfcId) external {
         /* require(canSort(msg.sender, _rfcId, _sorting)); */
         _sortRFC(_rfcId, _sorting);
     }
@@ -77,7 +82,7 @@ contract Branch is PandoApp {
     /************************************/
 
 
-    function canUpdate(address _sender, uint256 _rfcId) public view returns (bool) {
+    /* function canUpdate(address _sender, uint256 _rfcId) public view returns (bool) {
         return _isRFCOpen(_rfcId) && rfcs[_rfcId].commit.origin == _sender;
     }
 
@@ -94,7 +99,7 @@ contract Branch is PandoApp {
             return true;
 
         return false;
-    }
+    } */
 
     /****************************/
     /*      GETTER METHODS      */
@@ -132,15 +137,13 @@ contract Branch is PandoApp {
     /*      INTERNAL METHODS      */
     /******************************/
 
-    function _submitRFC(string _tree, string _message, bytes _parents) isInitialized internal returns (uint256 rfcId)  {
+    function _submitRFC(address _origin, string _tree, string _message, bytes _parents) isInitialized internal returns (uint256 rfcId)  {
         rfcId           = rfcs.length++;
         RFC storage rfc = rfcs[rfcId];
 
         rfc.status = RFCStatus.Open;
         rfc.state  = RFCState.Pending;
-        rfc.commit = Commit(msg.sender, 0, _tree, _message, _parents, 0);
-
-        kit.handleRFC(rfcId);
+        rfc.commit = Commit(_origin, 0, _tree, _message, _parents, 0);
 
         emit SubmitRFC(rfcId);
     }

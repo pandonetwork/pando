@@ -20,6 +20,9 @@ const NULL_ADDR = '0x0000000000000000000000000000000000000000'
 const hash_1 = '0x11111111111111111111111111111111'
 const hash_2 = '0x22222222222222222222222222222222'
 
+
+
+
 const submittedRFCId = receipt => receipt.logs.filter(x => x.event == 'SubmitRFC')[0].args.rfcId
 
 const sortdRFCCommitId = receipt => {
@@ -30,22 +33,12 @@ const sortdRFCCommitId = receipt => {
     }
 }
 
-const RFC_STATUS = ['OPEN', 'MERGED', 'REJECTED', 'CANCELLED'].reduce((state, key, index) => {
-    state[key] = index
-    return state
-}, {})
 
-const RFC_STATE = ['PENDING', 'VALUATED', 'SORTED'].reduce((state, key, index) => {
-    state[key] = index
-    return state
-}, {})
 
-const RFC_SORTING = ['MERGE', 'REJECT'].reduce((state, key, index) => {
-    state[key] = index
-    return state
-}, {})
+const { RFC_STATUS, RFC_STATE, RFC_SORTING } = require('../helpers')
 
-contract('Branch App', accounts => {
+
+contract('Branch', accounts => {
     let factory, token, dao, specimen, master
 
     const root = accounts[0]
@@ -54,6 +47,9 @@ contract('Branch App', accounts => {
     const authorized = accounts[3]
     const unauthorized = accounts[4]
     const parents = web3.eth.abi.encodeParameters(['address', 'bytes32', 'address', 'bytes32'], [authorized, hash_1, author, hash_2])
+
+    const parameters = web3.eth.abi.encodeParameters(['address'], [dummy])
+
 
     const deploy = async () => {
         // MiniMeToken

@@ -8,7 +8,7 @@ contract PandoApp is AragonApp {
 
     enum RFCState   { Pending, Valuated, Sorted }
     enum RFCStatus  { Open, Merged, Rejected, Cancelled }
-    enum RFCSorting { Merge, Reject }
+    enum RFCSorting { Merge, Reject, Cancel }
 
     struct Commit {
         address  origin;

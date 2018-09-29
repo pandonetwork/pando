@@ -3,9 +3,10 @@ pragma solidity ^0.4.18;
 import "@aragon/os/contracts/kernel/Kernel.sol";
 import "@aragon/os/contracts/acl/ACL.sol";
 import "@aragon/apps-token-manager/contracts/TokenManager.sol";
-import "./PandoApp.sol";
-import "./Branch.sol";
-import "./BranchKit/BranchKit.sol";
+
+import "../apps/PandoApp.sol";
+import "../branch/Branch.sol";
+import "../branch/kits/BranchKit.sol";
 
 
 contract Specimen is PandoApp {
@@ -29,9 +30,9 @@ contract Specimen is PandoApp {
         tokenManager = _tokenManager;
     }
 
-    function createBranch(string _name, BranchKit _kit) external returns (uint256 branchId) {
+    function createBranch(string _name, BranchKit _kit, bytes _parameters) external returns (uint256 branchId) {
         require(canCreateBranch(msg.sender, _name));
-        return _createBranch(_name, _kit);
+        return _createBranch(_name, _kit, _parameters);
     }
 
     function issueReward(address _receiver, uint256 _amount) external {
@@ -72,12 +73,12 @@ contract Specimen is PandoApp {
     /*      INTERNAL METHODS      */
     /******************************/
 
-    function _createBranch(string _name, BranchKit _kit) isInitialized internal returns (uint256 branchId) {
+    function _createBranch(string _name, BranchKit _kit, bytes _parameters) isInitialized internal returns (uint256 branchId) {
         branchId           = branches.length++;
         branches[branchId] = Branch(Kernel(kernel).newAppInstance(keccak256(abi.encodePacked('branch', branchId)), new Branch()));
 
 
-        _kit.initialize(branches[branchId]);
+        _kit.initialize(branches[branchId], _parameters);
 
         branches[branchId].initialize(this, _kit, _name);
         ACL(Kernel(kernel).acl()).grantPermission(branches[branchId], this, ISSUE_REWARD_ROLE);
