@@ -1,33 +1,34 @@
-const Branch    = artifacts.require('Branch')
-const BranchKit = artifacts.require('BranchKit')
-const DummyKit  = artifacts.require('DummyKit')
+const Branch       = artifacts.require('Branch')
+const BranchKit    = artifacts.require('BranchKit')
+const Dictatorship = artifacts.require('Dictatorship')
 
 const { assertRevert }   = require('@aragon/test-helpers/assertThrow')
 const getBlockNumber     = require('@aragon/test-helpers/blockNumber')(web3)
-const { NULL_ADDR }      = require('../helpers/address')
-const { deploySpecimen } = require('../helpers/specimen')
+const { NULL_ADDR }      = require('../../helpers/address')
+const { deploySpecimen } = require('../../helpers/specimen')
 const {
     RFC_STATUS,
     RFC_STATE,
     RFC_SORTING,
     submittedRFCId,
-    sortedRFCCommitId }  = require('../helpers/rfc')
+    sortedRFCCommitId }  = require('../../helpers/rfc')
 
-contract('DummyKit', accounts => {
+contract('Dictatorship Kit', accounts => {
     let token, dao, specimen, kit, master
 
     const root         = accounts[0]
     const origin       = accounts[1]
-    const dummy        = accounts[2]
-    const unauthorized = accounts[3]
+    const dictator_1   = accounts[2]
+    const dictator_2   = accounts[3]
+    const unauthorized = accounts[4]
     const parents      = web3.eth.abi.encodeParameters(['address'], [NULL_ADDR])
-    const parameters   = web3.eth.abi.encodeParameters(['address'], [dummy])
+    const parameters   = web3.eth.abi.encodeParameters(['address[]'], [[dictator_1, dictator_2]])
 
     const deploy = async () => {
         ;({ token, dao, specimen } = await deploySpecimen(root))
 
-        const receipt_1 = await dao.newAppInstance('0x0003', (await DummyKit.new()).address, { from: root })
-        const kit       = await DummyKit.at(receipt_1.logs.filter(l => l.event == 'NewAppProxy')[0].args.proxy)
+        const receipt_1 = await dao.newAppInstance('0x0003', (await Dictatorship.new()).address, { from: root })
+        const kit       = await Dictatorship.at(receipt_1.logs.filter(l => l.event == 'NewAppProxy')[0].args.proxy)
 
         const receipt_2 = await specimen.createBranch('master', kit.address, parameters, { from: root })
         const master    = await Branch.at(receipt_2.logs.filter(l => l.event == 'CreateBranch')[0].args.proxy)
@@ -47,10 +48,12 @@ contract('DummyKit', accounts => {
         })
 
         it('should set parameters correctly', async () => {
-            const bytes  = await kit.getParameters()
-            const params = web3.eth.abi.decodeParameters(['address'], bytes)
+            const bytes = await kit.getParameters()
+            const params = web3.eth.abi.decodeParameters(['address[]'], bytes)
+            const dictators = params['0']
 
-            assert.equal(params[0], dummy)
+            assert.equal(dictators[0], dictator_1)
+            assert.equal(dictators[1], dictator_2)
         })
 
         it('should revert on reinitialization', async () => {
@@ -67,9 +70,9 @@ contract('DummyKit', accounts => {
             rfcId = submittedRFCId(await kit.submitRFC('awesomeIpfsHash', 'First commit', parents, { from: origin }))
         })
 
-        context('address is dummy', () => {
+        context('address is dictator', () => {
             it('should succeed to valuate RFC', async () => {
-                await kit.valuateRFC(rfcId, 50, { from: dummy })
+                await kit.valuateRFC(rfcId, 50, { from: dictator_1 })
                 const rfc = await master.getRFC(rfcId)
 
                 assert.equal(rfc.state, RFC_STATE.VALUATED)
@@ -77,7 +80,7 @@ contract('DummyKit', accounts => {
             })
         })
 
-        context('address is not dummy', () => {
+        context('address is not dictator', () => {
             it('should fail to valuate RFC', async () => {
                 return assertRevert(async () => {
                     await kit.valuateRFC(rfcId, 50, { from: unauthorized })
@@ -94,10 +97,10 @@ contract('DummyKit', accounts => {
         })
 
         context('Merge', () => {
-            context('address is dummy', () => {
+            context('address is dictator', () => {
                 it('should succeed to merge RFC', async () => {
-                    await kit.valuateRFC(rfcId, 50, { from: dummy })
-                    await kit.sortRFC(rfcId, RFC_SORTING.MERGE, { from: dummy })
+                    await kit.valuateRFC(rfcId, 50, { from: dictator_1 })
+                    await kit.sortRFC(rfcId, RFC_SORTING.MERGE, { from: dictator_1 })
                     const rfc = await master.getRFC(rfcId)
 
                     assert.equal(rfc.state, RFC_STATE.SORTED)
@@ -106,8 +109,8 @@ contract('DummyKit', accounts => {
                 })
 
                 it('should update head', async () => {
-                    await kit.valuateRFC(rfcId, 50, { from: dummy })
-                    await kit.sortRFC(rfcId, RFC_SORTING.MERGE, { from: dummy })
+                    await kit.valuateRFC(rfcId, 50, { from: dictator_1 })
+                    await kit.sortRFC(rfcId, RFC_SORTING.MERGE, { from: dictator_1 })
                     const rfc = await master.getRFC(rfcId)
 
                     const hash = web3.utils.soliditySha3(
@@ -130,9 +133,9 @@ contract('DummyKit', accounts => {
                 })
             })
 
-            context('address is not dummy', () => {
+            context('address is not dictator', () => {
                 it('should fail to merge RFC', async () => {
-                    await kit.valuateRFC(rfcId, 50, { from: dummy })
+                    await kit.valuateRFC(rfcId, 50, { from: dictator_1 })
                     return assertRevert(async () => {
                         await kit.sortRFC(rfcId, RFC_SORTING.MERGE, { from: unauthorized })
                     })
@@ -141,9 +144,9 @@ contract('DummyKit', accounts => {
         })
 
         context('Reject', () => {
-            context('address is dummy', () => {
-                it('should succeed to merge RFC', async () => {
-                    await kit.sortRFC(rfcId, RFC_SORTING.REJECT, { from: dummy })
+            context('address is dictator', () => {
+                it('should succeed to reject RFC', async () => {
+                    await kit.sortRFC(rfcId, RFC_SORTING.REJECT, { from: dictator_1 })
                     const rfc = await master.getRFC(rfcId)
 
                     assert.equal(rfc.state, RFC_STATE.SORTED)
@@ -152,7 +155,7 @@ contract('DummyKit', accounts => {
                 })
             })
 
-            context('address is not dummy', () => {
+            context('address is not dictator', () => {
                 it('should fail to reject RFC', async () => {
                     return assertRevert(async () => {
                         await kit.sortRFC(rfcId, RFC_SORTING.REJECT, { from: unauthorized })

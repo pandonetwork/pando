@@ -13,7 +13,7 @@ const {
     submittedRFCId,
     sortedRFCCommitId }  = require('../helpers/rfc')
 
-contract('Dictatorship Kit', accounts => {
+contract('Policy Radspec', accounts => {
     let token, dao, specimen, kit, master
 
     const root         = accounts[0]

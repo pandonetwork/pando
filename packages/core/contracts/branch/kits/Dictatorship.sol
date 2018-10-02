@@ -66,19 +66,18 @@ contract Dictatorship is BranchKit{
     /****** INTERNAL METHODS ******/
 
     function _submitRFC(string _tree, string _message, bytes _parents) internal {
-        /* emit SubmitRFC(msg.sender, _tree, _message, _parents); */
         uint256 rfcId = branch.submitRFC(msg.sender, _tree, _message, _parents);
         emit SubmitRFC(rfcId);
     }
 
     function _valuateRFC(uint256 _rfcId, uint256 _value) internal {
-        emit ValuateRFC(_rfcId, msg.sender, _value);
         branch.valuateRFC(_rfcId, _value);
+        emit ValuateRFC(_rfcId, msg.sender, _value);
     }
 
     function _sortRFC(uint256 _rfcId, RFCSorting _sorting) internal {
-        emit SortRFC(_rfcId, msg.sender, _sorting);
         branch.sortRFC(_rfcId, _sorting);
+        emit SortRFC(_rfcId, msg.sender, _sorting);
     }
 
 
