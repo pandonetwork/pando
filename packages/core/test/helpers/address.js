@@ -1,7 +1,4 @@
-const ANY_ADDR  = '0xffffffffffffffffffffffffffffffffffffffff'
-const NULL_ADDR = '0x0000000000000000000000000000000000000000'
+const ADDR_ANY  = '0xffffffffffffffffffffffffffffffffffffffff'
+const ADDR_NULL = '0x0000000000000000000000000000000000000000'
 
-module.exports = {
-    ANY_ADDR,
-    NULL_ADDR
-}
+module.exports = { ADDR_ANY, ADDR_NULL }

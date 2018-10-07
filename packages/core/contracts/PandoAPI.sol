@@ -10,7 +10,7 @@ import "./PandoLineage.sol";
 // Public function are abstract
 // actual implementations refers to internal methods like _sort _ valuate, etc. which actually enforces state machine checks
 // The pando interface version is tied to the library which can be deployed only once;
-// If I send for instance a valuate RFA to a voting app the app must be aware of the internal logic like: to execute it it need to know that RFA are accepted.
+// If I send for instance a valuate RFL to a voting app the app must be aware of the internal logic like: to execute it it need to know that RFL are accepted.
 // So the voting app needs to have access to the internal state of the Kit. The best idea is to actually turn kit into decision engine which can be aware of the state of the kit.
 
 // Pando app: three smart contracts on top of which one can build actual apps thorugh the exposed API of the PandoEngine contract. The PandoEngine is the source of thrust storing state and enforcing basic stuff about how that state can be modified
@@ -33,21 +33,22 @@ import "./PandoLineage.sol";
 contract PandoAPI is AragonApp {
     using Pando for Pando.Individuation;
     using Pando for Pando.RFI;
-    using Pando for Pando.RFA;
+    using Pando for Pando.RFL;
 
     bytes32 constant public CREATE_RFI_ROLE  = keccak256("CREATE_RFI_ROLE");
     bytes32 constant public SORT_RFI_ROLE    = keccak256("SORT_RFI_ROLE");
     bytes32 constant public CREATE_RFL_ROLE  = keccak256("CREATE_RFL_ROLE");
-    bytes32 constant public VALUATE_RFL_ROLE = keccak256("VALUATE_RFL_ROLE");
-    bytes32 constant public SORT_RFL_ROLE    = keccak256("SORT_RFL_ROLE");
+    bytes32 constant public VALUATE_RFL_ROLE = keccak256("VALUATE_RFL_ROLE"); // RENAME VALUATE AS ACCEPT
+    bytes32 constant public REJECT_RFL_ROLE  = keccak256("REJECT_RFL_ROLE");
 
     event CreateRFI(uint256 id);
-    event CreateRFA(uint256 id);
+    event CreateRFL(uint256 id);
     event SortRFI(uint256 id, Pando.RFISorting sorting);
-    event SortRFL(uint256 id, Pando.RFASorting sorting);
     event CancelRFI(uint256 id);
     event CancelRFL(uint256 id);
     event ValuateRFL(uint256 id, uint256 amount);
+    event RejectRFL(uint256 id);
+
     event MintRFL(uint256 id, address destination, uint256 amount);
 
     PandoHistory public history;
@@ -57,10 +58,10 @@ contract PandoAPI is AragonApp {
     // See https://github.com/aragon/aragon-apps/pull/428
     // See https://youtu.be/sJ7VECqHFAg?t=9m27s
     mapping (uint256 => Pando.RFI) internal RFIs;
-    mapping (uint256 => Pando.RFA) internal RFAs;
+    mapping (uint256 => Pando.RFL) internal RFLs;
 
     uint256 public RFIsLength = 0;
-    uint256 public RFAsLength = 0;
+    uint256 public RFLsLength = 0;
 
     /*
     * @group
@@ -75,45 +76,41 @@ contract PandoAPI is AragonApp {
         lineage = _lineage;
     }
 
-    function createRFI(Pando.IIndividuation _individuation, Pando.IAlliance[] _alliances) isInitialized auth(CREATE_RFI_ROLE) public returns (uint256 RFIid)  {
-        RFIid = _createRFI(_individuation, _alliances);
+    function createRFI(Pando.IIndividuation _individuation, Pando.ILineage[] _lineages) isInitialized auth(CREATE_RFI_ROLE) public returns (uint256 RFIid)  {
+        RFIid = _createRFI(_individuation, _lineages);
     }
 
+
+    // Separate between merge and reject; it's more clear;
     function sortRFI(uint256 _RFIid, Pando.RFISorting _sorting) isInitialized auth(CREATE_RFI_ROLE) public {
         Pando.RFI storage RFI = RFIs[_RFIid];
 
+        require(RFI.isPending());
+
         if (_sorting == Pando.RFISorting.Merge) {
-            for(uint256 i = 0; i < RFI.RFAids.length; i++) {
-                require(RFAs[RFI.RFAids[i]].isValuated());
+            for(uint256 i = 0; i < RFI.RFLids.length; i++) {
+                require(RFLs[RFI.RFLids[i]].isValuated());
             }
         }
 
         _sortRFI(_RFIid, _sorting);
     }
 
-    function sortRFA(uint256 _id, Pando.RFASorting _sorting) isInitialized auth(SORT_RFL_ROLE) public {
-        Pando.RFA storage RFA = RFAs[_id];
+    function valuateRFL(uint256 _RFLid, uint256 _amount) isInitialized auth(VALUATE_RFL_ROLE) public {
+        Pando.RFL storage RFL = RFLs[_RFLid];
 
-        require(RFA.isValuated()); // No: on peut acncel avant
+        require(RFL.isPending());
+        require(_amount >= RFL.lineage.minimum);
 
-        /* if(_sorting == Pando.RFASorting.Accept) {
-            RFA.state = Pando.RFAState.Accepted;
-        }  */
-
-
-        if(_sorting == Pando.RFASorting.Reject) {
-            Pando.RFI storage RFI = RFIs[RFA.RFIid];
-
-            RFA.state = Pando.RFAState.Rejected;
-            RFI.state = Pando.RFIState.Cancelled;
-        }
+        _valuateRFL(_RFLid, _amount);
     }
 
-    function valuateRFA(uint256 _RFAid, uint256 _amount) isInitialized auth(VALUATE_RFL_ROLE) public {
-        require(RFAs[_RFAid].isPending());
-        require(_amount >= RFAs[_RFAid].alliance.minimum);
+    function rejectRFL(uint256 _RFLid) isInitialized auth(REJECT_RFL_ROLE) public {
+        Pando.RFL storage RFL = RFLs[_RFLid];
 
-        _valuateRFA(_RFAid, _amount);
+        require(RFL.isPending());
+
+        _rejectRFL(_RFLid);
     }
 
     /*
@@ -127,8 +124,8 @@ contract PandoAPI is AragonApp {
         return RFIs[_RFIid];
     }
 
-    function getRFA(uint256 _RFAid) public view returns (Pando.RFA) {
-        return RFAs[_RFAid];
+    function getRFL(uint256 _RFLid) public view returns (Pando.RFL) {
+        return RFLs[_RFLid];
     }
 
     function head() public view returns (bytes32) {
@@ -150,7 +147,7 @@ contract PandoAPI is AragonApp {
     * internal
     */
 
-    function _createRFI(Pando.IIndividuation _individuation, Pando.IAlliance[] _alliances) internal returns (uint256 RFIid)  {
+    function _createRFI(Pando.IIndividuation _individuation, Pando.ILineage[] _lineages) internal returns (uint256 RFIid)  {
         // msg.sender is gonna be the address of a kit contract built on top of the API
         // Do you we wanna to make sure that the transaction is actually initialized by _individuation.origin ?
         // If this is the case then we're gonna need to ask for a proof of identity through a ECDSA signature
@@ -175,32 +172,32 @@ contract PandoAPI is AragonApp {
             RFI.individuation.parents[i] = _individuation.parents[i];
         }
 
-        for(uint256 j = 0; j < _alliances.length; j++) {
-            uint256 RFAid = _createRFA(_alliances[j], RFIid);
-            uint256 index = RFI.RFAids.length++;
-            RFI.RFAids[index] = RFAid;
+        for(uint256 j = 0; j < _lineages.length; j++) {
+            uint256 RFLid = _createRFL(_lineages[j], RFIid);
+            uint256 index = RFI.RFLids.length++;
+            RFI.RFLids[index] = RFLid;
         }
 
         emit CreateRFI(RFIid);
     }
 
-    function _createRFA(Pando.IAlliance _alliance, uint256 _RFIid) internal returns (uint256 RFAid) {
+    function _createRFL(Pando.ILineage _lineage, uint256 _RFIid) internal returns (uint256 RFLid) {
         require(RFIs[_RFIid].individuation.origin != address(0));
 
-        RFAsLength            = RFAsLength + 1;
-        RFAid                 = RFAsLength;
-        Pando.RFA storage RFA = RFAs[RFAid];
+        RFLsLength            = RFLsLength + 1;
+        RFLid                 = RFLsLength;
+        Pando.RFL storage RFL = RFLs[RFLid];
 
-        RFA.alliance.destination = _alliance.destination;
-        RFA.alliance.minimum     = _alliance.minimum;
-        RFA.alliance.metadata    = _alliance.metadata;
+        RFL.lineage.destination = _lineage.destination;
+        RFL.lineage.minimum     = _lineage.minimum;
+        RFL.lineage.metadata    = _lineage.metadata;
 
-        RFA.blockstamp = block.number;
-        RFA.amount     = 0;
-        RFA.state      = Pando.RFAState.Pending;
-        RFA.RFIid      = _RFIid;
+        RFL.blockstamp = block.number;
+        RFL.amount     = 0;
+        RFL.state      = Pando.RFLState.Pending;
+        RFL.RFIid      = _RFIid;
 
-        emit CreateRFA(RFAid);
+        emit CreateRFL(RFLid);
     }
 
     function _sortRFI(uint256 _RFIid, Pando.RFISorting _sorting) internal {
@@ -211,14 +208,14 @@ contract PandoAPI is AragonApp {
 
             history.individuate(RFI.individuation);
 
-            for (uint256 i = 0; i < RFI.RFAids.length; i++) {
-                _mintRFA(RFI.RFAids[i]);
+            for (uint256 i = 0; i < RFI.RFLids.length; i++) {
+                _mintRFL(RFI.RFLids[i]);
             }
         } else if (_sorting == Pando.RFISorting.Reject) {
             RFI.state = Pando.RFIState.Rejected;
 
-            for (uint256 j = 0; j < RFI.RFAids.length; j++) {
-                _cancelRFA(RFI.RFAids[j]);
+            for (uint256 j = 0; j < RFI.RFLids.length; j++) {
+                _cancelRFL(RFI.RFLids[j]);
             }
         } else {
             revert("Unknown sorting for RFI");
@@ -227,29 +224,53 @@ contract PandoAPI is AragonApp {
         emit SortRFI(_RFIid, _sorting);
     }
 
-    function _valuateRFA(uint256 _RFAid, uint256 _amount) internal {
-        Pando.RFA storage RFA = RFAs[_RFAid];
+    function _valuateRFL(uint256 _RFLid, uint256 _amount) internal {
+        Pando.RFL storage RFL = RFLs[_RFLid];
 
-        RFA.state  = Pando.RFAState.Valuated;
-        RFA.amount = _amount;
+        RFL.state  = Pando.RFLState.Valuated;
+        RFL.amount = _amount;
 
-        emit ValuateRFL(_RFAid, _amount);
+        emit ValuateRFL(_RFLid, _amount);
     }
 
-    function _cancelRFA(uint256 _RFAid) internal {
-        Pando.RFA storage RFA = RFAs[_RFAid];
+    function _rejectRFL(uint256 _RFLid) internal {
+        Pando.RFL storage RFL = RFLs[_RFLid];
 
-        RFA.state = Pando.RFAState.Cancelled;
+        RFL.state = Pando.RFLState.Rejected;
+        _cancelRFI(RFL.RFIid);
 
-        emit CancelRFL(_RFAid);
+        emit RejectRFL(_RFLid);
     }
 
-    function _mintRFA(uint256 _RFAid) internal {
-        Pando.RFA storage RFA = RFAs[_RFAid];
+    function _cancelRFI(uint256 _RFIid) internal {
+        Pando.RFI storage RFI = RFIs[_RFIid];
 
-        RFA.state = Pando.RFAState.Issued;
-        lineage.mint(RFA.alliance.destination, RFA.amount);
+        RFI.state = Pando.RFIState.Cancelled;
 
-        emit MintRFL(_RFAid, RFA.alliance.destination, RFA.amount);
+        for (uint256 i = 0; i < RFI.RFLids.length; i++) {
+            Pando.RFL storage RFL = RFLs[RFI.RFLids[i]];
+
+            if (RFL.state != Pando.RFLState.Rejected)
+                _cancelRFL(RFI.RFLids[i]);
+        }
+
+        emit CancelRFI(_RFIid);
+    }
+
+    function _cancelRFL(uint256 _RFLid) internal {
+        Pando.RFL storage RFL = RFLs[_RFLid];
+
+        RFL.state = Pando.RFLState.Cancelled;
+
+        emit CancelRFL(_RFLid);
+    }
+
+    function _mintRFL(uint256 _RFLid) internal {
+        Pando.RFL storage RFL = RFLs[_RFLid];
+
+        RFL.state = Pando.RFLState.Issued;
+        lineage.mint(RFL.lineage.destination, RFL.amount);
+
+        emit MintRFL(_RFLid, RFL.lineage.destination, RFL.amount);
     }
 }

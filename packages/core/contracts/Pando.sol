@@ -5,9 +5,7 @@ pragma experimental ABIEncoderV2;
 // Une 'origine' produit des individuations en créant des déscendants d'autres individuation. Se sont des individuations - des gestes - qui produisent d'autres gestes par l'entremise de l'origine.
 
 library Pando {
-    enum RFAState   { Pending, Valuated, Issued, Rejected, Cancelled }
-    enum RFASorting { Reject } // In case DAO don't wanna pay the minimum
-
+    enum RFLState   { Pending, Valuated, Issued, Rejected, Cancelled }
     enum RFIState   { Pending, Merged, Rejected, Cancelled }
     enum RFISorting { Merge, Reject }
 
@@ -37,7 +35,7 @@ library Pando {
         IID[]   parents;
     }
 
-    struct IAlliance {
+    struct ILineage {
         address  destination;
         uint256  minimum;
         string   metadata;
@@ -48,16 +46,16 @@ library Pando {
         IIndividuation individuation;
         uint256        blockstamp;
         RFIState       state;
-        uint256[]      RFAids;
+        uint256[]      RFLids;
     }
 
 
-    struct RFA {
-        IAlliance alliance;
-        uint256   blockstamp;
-        uint256   amount;
-        RFAState  state;
-        uint256   RFIid;
+    struct RFL {
+        ILineage lineage;
+        uint256  blockstamp;
+        uint256  amount;
+        RFLState state;
+        uint256  RFIid;
     }
 
 
@@ -66,12 +64,12 @@ library Pando {
     }
 
 
-    function isPending(RFA _RFA) pure public returns (bool) {
-        return _RFA.state == RFAState.Pending;
+    function isPending(RFL _RFL) pure public returns (bool) {
+        return _RFL.state == RFLState.Pending;
     }
 
-    function isValuated(RFA _RFA) pure public returns (bool) {
-        return _RFA.state == RFAState.Valuated;
+    function isValuated(RFL _RFL) pure public returns (bool) {
+        return _RFL.state == RFLState.Valuated;
     }
 
     function hash(Individuation _individuation) pure public returns (bytes32) {
