@@ -72,7 +72,7 @@ contract PandoHistory is AragonApp {
         emit Commit(hash);
     }
 
-    function getHead() isInitialized public returns (Pando.Individuation) {
+    function getHead() isInitialized public view returns (Pando.Individuation) {
         return individuations[head];
     }
 

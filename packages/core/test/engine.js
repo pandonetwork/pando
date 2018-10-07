@@ -1,13 +1,12 @@
-const Kernel = artifacts.require('@aragon/os/contracts/kernel/Kernel')
-const ACL = artifacts.require('@aragon/os/contracts/acl/ACL')
+const Kernel = artifacts.require('@aragon/os/contracts/kernel/Kernel.sol')
+const ACL = artifacts.require('@aragon/core/contracts/acl/ACL')
 const EVMScriptRegistryFactory = artifacts.require('@aragon/os/contracts/factory/EVMScriptRegistryFactory')
-const DAOFactory = artifacts.require('@aragon/os/contracts/factory/DAOFactory')
-const MiniMeToken = artifacts.require('@aragon/os/contracts/lib/minime/MiniMeToken')
-const LineageVoting = artifacts.require('LineageVoting')
-const ExecutionTarget = artifacts.require('ExecutionTarget')
+const DAOFactory = artifacts.require('@aragon/core/contracts/factory/DAOFactory')
+const MiniMeToken = artifacts.require('@aragon/core/contracts/lib/minime/MiniMeToken')
+
+
 const Pando = artifacts.require('Pando')
 const PandoHistory = artifacts.require('PandoHistory')
-const PandoKit = artifacts.require('PandoKit')
 const PandoAPI = artifacts.require('PandoAPI')
 const PandoLineage = artifacts.require('PandoLineage')
 
@@ -93,16 +92,19 @@ const createdRFIid = receipt => receipt.logs.filter(x => x.event == 'CreateRFI')
 //     uint256  RFIid;
 // }
 
+const getContract = name => artifacts.require(name)
 
 
 
-contract('PandoEngine', accounts => {
-    let factory, token, app, executionTarget, history, engine
+contract('PandoAPI', accounts => {
+    let factory, token, history, lineage, engine
 
-    const votingTime = 1000
-    const root = accounts[0]
-    const origin = accounts[1]
-    const dependency = accounts[2]
+    const root         = accounts[0]
+    const origin       = accounts[1]
+    const dependency   = accounts[2]
+    const authorized   = accounts[3]
+    const unauthorized = accounts[4]
+
 
 
     const iid_0 = { api: NULL_ADDR, hash: HASH_NULL}
@@ -118,92 +120,97 @@ contract('PandoEngine', accounts => {
     const alliance_1_abi = [ dependency, 15, '0x1987' ]
 
     const deploy = async () => {
+
+
         // MiniMeToken
         const token = await MiniMeToken.new(NULL_ADDR, NULL_ADDR, 0, 'Native Lineage Token', 0, 'NLT', true)
         // DAO
         const receipt_1 = await factory.newDAO(root)
-        const dao = await Kernel.at(receipt_1.logs.filter(l => l.event == 'DeployDAO')[0].args.dao)
-        const acl = await ACL.at(await dao.acl())
+        const dao       = await Kernel.at(receipt_1.logs.filter(l => l.event == 'DeployDAO')[0].args.dao)
+        const acl       = await ACL.at(await dao.acl())
         await acl.createPermission(root, dao.address, await dao.APP_MANAGER_ROLE(), root, { from: root })
 
 
-        // TokenManager
-        const receipt_2    = await dao.newAppInstance('0x0001', (await TokenManager.new()).address, { from: root })
-        const tokenManager = await TokenManager.at(receipt_2.logs.filter(l => l.event == 'NewAppProxy')[0].args.proxy)
-        await acl.createPermission(root, tokenManager.address, await tokenManager.MINT_ROLE(), root, { from: root })
-        await acl.createPermission(root, tokenManager.address, await tokenManager.ISSUE_ROLE(), root, { from: root })
-        await acl.createPermission(root, tokenManager.address, await tokenManager.ASSIGN_ROLE(), root, { from: root })
-        await acl.createPermission(root, tokenManager.address, await tokenManager.REVOKE_VESTINGS_ROLE(), root, { from: root })
-        await acl.createPermission(root, tokenManager.address, await tokenManager.BURN_ROLE(), root, { from: root })
-        await token.changeController(tokenManager.address)
-        await tokenManager.initialize(token.address, false, 0, false)
 
-        const receipt_4 = await dao.newAppInstance('0x0002', (await PandoHistory.new(_)).address, { from: root })
+
+        // Genesis
+        const receipt_4 = await dao.newAppInstance('0x0002', (await PandoHistory.new()).address, { from: root })
         const history   = await PandoHistory.at(receipt_4.logs.filter(l => l.event == 'NewAppProxy')[0].args.proxy)
         await history.initialize()
 
-        const receipt_5 = await dao.newAppInstance('0x4321', (await PandoAPI.new(_)).address, { from: root })
+        // Lineage
+        const receipt_2    = await dao.newAppInstance('0x0001', (await PandoLineage.new()).address, { from: root })
+        const lineage      = await PandoLineage.at(receipt_2.logs.filter(l => l.event == 'NewAppProxy')[0].args.proxy)
+        await token.changeController(lineage.address)
+        await lineage.initialize(token.address)
+        //
+
+        // API
+        const receipt_5 = await dao.newAppInstance('0x4321', (await PandoAPI.new()).address, { from: root })
         const engine       = await PandoAPI.at(receipt_5.logs.filter(l => l.event == 'NewAppProxy')[0].args.proxy)
-        await engine.initialize(history.address, { from: root })
+        await engine.initialize(history.address, lineage.address, { from: root })
+
+        await acl.createPermission(authorized, engine.address, await engine.CREATE_RFI_ROLE(), root, { from: root })
+        await acl.createPermission(authorized, engine.address, await engine.SORT_RFI_ROLE(), root, { from: root })
+        await acl.createPermission(authorized, engine.address, await engine.CREATE_RFL_ROLE(), root, { from: root })
+        await acl.createPermission(authorized, engine.address, await engine.VALUATE_RFL_ROLE(), root, { from: root })
+        await acl.createPermission(authorized, engine.address, await engine.SORT_RFL_ROLE(), root, { from: root })
+
+        await acl.createPermission(engine.address, lineage.address, await lineage.MINT_ROLE(), root, { from: root })
+        await acl.createPermission(engine.address, lineage.address, await lineage.BURN_ROLE(), root, { from: root })
 
 
-        executionTarget = await ExecutionTarget.new()
 
-        return { token, app, executionTarget, history, engine }
+
+        return { token, history, lineage, engine }
     }
 
     before(async () => {
-        const kernelBase = await Kernel.new()
-        const aclBase = await ACL.new()
+        // const kernelBase = await Kernel.new()
+        // const aclBase = await ACL.new()
+        // const regFact = await EVMScriptRegistryFactory.new()
+        // factory = await DAOFactory.new(kernelBase.address, aclBase.address, regFact.address)
+
+        const kernelBase = await getContract('Kernel').new(true) // petrify immediately
+        const aclBase = await getContract('ACL').new()
         const regFact = await EVMScriptRegistryFactory.new()
         factory = await DAOFactory.new(kernelBase.address, aclBase.address, regFact.address)
+
     })
 
     beforeEach(async () => {
-        ;({ token, app, executionTarget, history, engine } = await deploy())
+        ;({ token, history, lineage, engine } = await deploy())
     })
 
     context('#initialize', () => {
-        const holder19 = accounts[0]
-        const holder31 = accounts[1]
-        const holder50 = accounts[2]
-        const nonHolder = accounts[4]
+        it('should initialize genesis and lineage addresses correctly', async () => {
+            const genesis_address = await engine.history()
+            const lineage_address = await engine.lineage()
 
-        const minimumParticipationPct = pct16(20)
-
-        beforeEach(async () => {
-            // token = await MiniMeToken.new(NULL_ADDRESS, NULL_ADDRESS, 0, 'n', 0, 'n', true) // empty parameters minime
-
-            await token.generateTokens(holder19, 19)
-            await token.generateTokens(holder31, 31)
-            await token.generateTokens(holder50, 50)
-
-            await app.initialize()
+            assert.equal(genesis_address, history.address)
+            assert.equal(lineage_address, lineage.address)
         })
-
 
         it('should fail on reinitialization', async () => {
             return assertRevert(async () => {
-                await engine.initialize(history.address, { from: root })
+                await engine.initialize(history.address, lineage.address, { from: root })
             })
         })
-
     })
 
     context('#createRFI', () => {
-
-        context('address has CREATE_RFI_ROLE', () => {
-            it('should succeed to create RFI', async () => {
-                const receipt = await engine.createRFI(individuation_abi, [alliance_0_abi])
+        context('sender has CREATE_RFI_ROLE', () => {
+            it('should succeed to create Request For Individuation', async () => {
+                const receipt = await engine.createRFI(individuation_abi, [alliance_0_abi], { from: authorized })
                 const RFIid   = createdRFIid(receipt)
 
                 assert.equal(RFIid, 1)
             })
 
-            it('should initialize RFI correctly', async () => {
-                const receipt = await engine.createRFI(individuation_abi, [alliance_0_abi, alliance_1_abi])
-                const RFIid   = createdRFIid(receipt)
-                const RFI     = await engine.getRFI(RFIid)
+            it('should initialize Request For Individuation correctly', async () => {
+                await engine.createRFI(individuation_abi, [alliance_0_abi, alliance_1_abi], { from: authorized })
+
+                const RFI = await engine.getRFI(1)
 
                 assert.equal(RFI.individuation.origin, individuation.origin)
                 assert.equal(RFI.individuation.tree, individuation.tree)
@@ -217,12 +224,12 @@ contract('PandoEngine', accounts => {
                 assert.equal(RFI.RFAids[1], 2)
             })
 
-            it('should initialize related RFAs correctly', async () => {
-                await engine.createRFI(individuation_abi, [alliance_0_abi])
-                await engine.createRFI(individuation_abi, [alliance_1_abi])
+            it('should initialize related Requests For Lineage correctly', async () => {
+                await engine.createRFI(individuation_abi, [alliance_0_abi], { from: authorized })
+                await engine.createRFI(individuation_abi, [alliance_1_abi], { from: authorized })
 
-                const RFA_1   = await engine.getRFA(1)
-                const RFA_2   = await engine.getRFA(2)
+                const RFA_1 = await engine.getRFA(1)
+                const RFA_2 = await engine.getRFA(2)
 
                 assert.equal(RFA_1.alliance.destination, alliance_0.destination)
                 assert.equal(RFA_1.alliance.minimum, alliance_0.minimum)
@@ -240,18 +247,123 @@ contract('PandoEngine', accounts => {
             })
         })
 
-
-
+        context('sender does not have CREATE_RFI_ROLE', () => {
+            it('should revert', async () => {
+                return assertRevert(async () => {
+                    await engine.createRFI(individuation_abi, [alliance_0_abi], { from: unauthorized })
+                })
+            })
+        })
     })
 
+    context('#sortRFI', () => {
+        context('sender has SORT_RFI_ROLE', () => {
+            context('and Request For Individuation is pending', () => {
+                context('and sorting instruction is to merge', () => {
+                    context('all related Requests For Lineage are valuated', () => {
+                        it('should succeed to merge Request For Individuation', async () => {
+                            await engine.createRFI(individuation_abi, [alliance_0_abi], { from: authorized })
+                            await engine.valuateRFA(1, alliance_0.minimum, { from: authorized })
+                            await engine.sortRFI(1, RFI_SORTING.MERGE, { from: authorized })
+
+                            const RFI = await engine.getRFI(1)
+
+                            assert.equal(RFI.state, RFI_STATE.MERGED)
+                        })
+
+                        it('should update genesis head', async () => {
+                            await engine.createRFI(individuation_abi, [alliance_0_abi], { from: authorized })
+                            await engine.valuateRFA(1, alliance_0.minimum, { from: authorized })
+                            await engine.sortRFI(1, RFI_SORTING.MERGE, { from: authorized })
+
+                            const head = await engine.head()
+                            const hash = await engine.getIndividuationHash([origin, await getBlockNumber(), 'QwAwesomeIPFSHash', 'First individuation', '0x1987', [iid_0_abi]])
+
+                            assert.equal(head, hash)
+                        })
+
+                        it('should mint and assign related lineage', async () => {
+                            await engine.createRFI(individuation_abi, [alliance_0_abi, alliance_1_abi], { from: authorized })
+                            await engine.valuateRFA(1, 25, { from: authorized })
+                            await engine.valuateRFA(2, 45, { from: authorized })
+                            await engine.sortRFI(1, RFI_SORTING.MERGE, { from: authorized })
+                            await engine.sortRFI(2, RFI_SORTING.MERGE, { from: authorized })
+
+                            const balance_origin     = await token.balanceOf(origin)
+                            const balance_dependency = await token.balanceOf(dependency)
+
+                            assert.equal(balance_origin, 25)
+                            assert.equal(balance_dependency, 45)
+                        })
+                    })
+
+                    context('and at least one of the related Requests For Lineage is not valuated', () => {
+                        it('should revert', async () => {
+                            const receipt = await engine.createRFI(individuation_abi, [alliance_0_abi], { from: authorized })
+
+                            return assertRevert(async () => {
+                                await engine.sortRFI(1, RFI_SORTING.MERGE, { from: authorized })
+                            })
+                        })
+                    })
+                })
+
+                context('and sorting instruction is to reject', () => {
+                    it('should succeed to reject Request For Individuation', async () => {
+                        await engine.createRFI(individuation_abi, [alliance_0_abi], { from: authorized })
+                        await engine.sortRFI(1, RFI_SORTING.REJECT, { from: authorized })
+
+                        const RFI = await engine.getRFI(1)
+
+                        assert.equal(RFI.state, RFI_STATE.REJECTED)
+                    })
+
+                    it('should cancel related Requests For Lineage', async () => {
+                        await engine.createRFI(individuation_abi, [alliance_0_abi, alliance_1_abi], { from: authorized })
+                        await engine.sortRFI(1, RFI_SORTING.REJECT, { from: authorized })
+
+                        const RFA_1 = await engine.getRFA(1)
+                        const RFA_2 = await engine.getRFA(2)
+
+                        assert.equal(RFA_1.state, RFA_STATE.CANCELLED)
+                        assert.equal(RFA_2.state, RFA_STATE.CANCELLED)
+                    })
+                })
+            })
+
+            context('and Request For Individuation is not pending anymore', () => {
+                it('should revert', async () => {
+                    await engine.createRFI(individuation_abi, [alliance_0_abi], { from: authorized })
+                    await engine.valuateRFA(1, alliance_0.minimum, { from: authorized })
+                    await engine.sortRFI(1, RFI_SORTING.MERGE, { from: authorized })
+
+                    // RFI is already merged and thus not pending anymore
+                    return assertRevert(async () => {
+                        await engine.sortRFI(1, RFI_SORTING.MERGE, { from: authorized })
+                    })
+                })
+            })
+        })
+
+        context('sender does not have SORT_RFI_ROLE', () => {
+            it('should revert', async () => {
+                await engine.createRFI(individuation_abi, [alliance_0_abi], { from: authorized })
+                await engine.valuateRFA(1, alliance_0.minimum, { from: authorized })
+
+                return assertRevert(async () => {
+                    await engine.sortRFI(1, RFI_SORTING.MERGE, { from: unauthorized })
+                })
+            })
+        })
+    })
 
     context('#valuateRFA', () => {
         context('sender has VALUATE_RFA_ROLE', () => {
             context('RFA is pending', () => {
                 context('amount is superior or equal to minimum', () => {
                     it('should succeed to valuate RFA', async () => {
-                        await engine.createRFI(individuation_abi, [alliance_0_abi])
-                        await engine.valuateRFA(1, alliance_0.minimum)
+                        await engine.createRFI(individuation_abi, [alliance_0_abi], { from: authorized })
+                        await engine.valuateRFA(1, alliance_0.minimum, { from: authorized })
 
                         const RFA = await engine.getRFA(1)
 
@@ -262,7 +374,7 @@ contract('PandoEngine', accounts => {
 
                 context('amount is inferior to minimum', () => {
                     it('should revert', async () => {
-                        await engine.createRFI(individuation_abi, [alliance_1_abi])
+                        await engine.createRFI(individuation_abi, [alliance_1_abi], { from: authorized })
 
                         return assertRevert(async () => {
                             await engine.valuateRFA(1, alliance_1.minimum - 1)
@@ -273,12 +385,12 @@ contract('PandoEngine', accounts => {
 
             context('RFA is not pending anymore', () => {
                 it('should revert', async () => {
-                    await engine.createRFI(individuation_abi, [alliance_0_abi])
-                    await engine.valuateRFA(1, alliance_0.minimum)
+                    await engine.createRFI(individuation_abi, [alliance_0_abi], { from: authorized })
+                    await engine.valuateRFA(1, alliance_0.minimum, { from: authorized })
 
                     // RFA is already valuated and thus not pending anymore
                     return assertRevert(async () => {
-                        await engine.valuateRFA(1, alliance_0.minimum)
+                        await engine.valuateRFA(1, alliance_0.minimum, { from: authorized })
                     })
                 })
             })
@@ -289,127 +401,5 @@ contract('PandoEngine', accounts => {
         })
     })
 
-    context('#sortRFI', () => {
-        context('sender has SORT_RFI_ROLE', () => {
-            context('RFI is pending', () => {
-                context('Merge', () => {
-                    context('all related RFAs are valuated', () => {
-                        it('should sort RFI', async () => {
-                            const receipt = await engine.createRFI(individuation_abi, [alliance_0_abi])
 
-                            await engine.valuateRFA(1, alliance_0.minimum)
-                            await engine.sortRFI(1, RFI_SORTING.MERGE)
-
-                            const RFI  = await engine.getRFI(1)
-
-                            assert.equal(RFI.state, RFI_STATE.MERGED)
-                        })
-
-                        it('should update head', async () => {
-                            const receipt = await engine.createRFI(individuation_abi, [alliance_0_abi])
-
-                            await engine.valuateRFA(1, alliance_0.minimum)
-                            await engine.sortRFI(1, RFI_SORTING.MERGE)
-
-                            const RFI  = await engine.getRFI(1)
-                            const head = await engine.head()
-
-
-                            // struct Individuation {
-                            //     address origin;
-                            //     uint256 blockstamp;
-                            //     string  tree;
-                            //     string  message;
-                            //     string  metadata;
-                            //     IID[]   parents;
-                            // }
-
-                            const hash = await engine.getIndividuationHash([origin, await getBlockNumber(), 'QwAwesomeIPFSHash', 'First individuation', '0x1987', [iid_0_abi]])
-
-
-
-                            assert.equal(head, hash)
-                        })
-
-                        it('should issue alliances', async () => {
-                            const receipt = await engine.createRFI(individuation_abi, [alliance_0_abi])
-
-                            await engine.valuateRFA(1, alliance_0.minimum)
-                            await engine.sortRFI(1, RFI_SORTING.MERGE)
-
-                            const RFI  = await engine.getRFI(1)
-
-
-                            const balance = await token.balanceOf(origin)
-
-
-                            assert.equal(RFI.state, RFI_STATE.MERGED)
-
-                            console.log(head)
-
-
-                            // vérifier aussi que les thunes ont été versées
-
-
-                            // const hash = web3.utils.soliditySha3(
-                            //     { t: 'address', v: origin },
-                            //     { t: 'uint256', v: (await getBlockNumber()) - 1 },
-                            //     { t: 'string', v: 'awesomeIpfsHash' },
-                            //     { t: 'string', v: 'First commit' },
-                            //     { t: 'bytes', v: parents },
-                            //     { t: 'uint256', v: 50 }
-
-                            // calculer le hash de RFI pour vérifier que head est à jour
-
-                        })
-                    })
-
-                    context('at least one of the related RFAs is not valuated yet', () => {
-                        it('should revert', async () => {
-                            const receipt = await engine.createRFI(individuation_abi, [alliance_0_abi])
-
-                            return assertRevert(async () => {
-                                await engine.sortRFI(1, RFI_SORTING.MERGE)
-                            })
-                        })
-                    })
-                })
-                context('Merge', () => {
-                })
-                context('Cancel', () => {
-                })
-
-            })
-
-            context('RFI is not pending anymore', () => {
-                it('should revert', async () => {})
-            })
-        })
-
-        context('sender does not have SORT_RFI_ROLE', () => {
-            it('should revert', async () => {})
-        })
-    })
-
-    // context('isValuePct unit test', async () => {
-    //     let votingMock
-    //
-    //     before(async () => {
-    //         votingMock = await getContract('VotingMock').new()
-    //     })
-    //
-    //     it('tests total = 0', async () => {
-    //         const result1 = await votingMock.isValuePct(0, 0, pct16(50))
-    //         assert.equal(result1, false, 'total 0 should always return false')
-    //         const result2 = await votingMock.isValuePct(1, 0, pct16(50))
-    //         assert.equal(result2, false, 'total 0 should always return false')
-    //     })
-    //
-    //     it('tests value = 0', async () => {
-    //         const result1 = await votingMock.isValuePct(0, 10, pct16(50))
-    //         assert.equal(result1, false, 'value 0 should false if pct is non-zero')
-    //         const result2 = await votingMock.isValuePct(0, 10, 0)
-    //         assert.equal(result2, true, 'value 0 should return true if pct is zero')
-    //     })
-    // })
 })

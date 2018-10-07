@@ -6,10 +6,13 @@ pragma experimental ABIEncoderV2;
 
 library Pando {
     enum RFAState   { Pending, Valuated, Issued, Rejected, Cancelled }
-    enum RFASorting { Reject, Cancel }
+    enum RFASorting { Reject } // In case DAO don't wanna pay the minimum
 
     enum RFIState   { Pending, Merged, Rejected, Cancelled }
-    enum RFISorting { Merge, Reject, Cancel }
+    enum RFISorting { Merge, Reject }
+
+     // merge or reject can be actionned by the kits
+     // cancel is called from internal function in case a RFI or a RFL becomes useless due to a related RFI or RFL being rejected
 
     struct IID {
         address api;

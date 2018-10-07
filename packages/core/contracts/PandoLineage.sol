@@ -52,6 +52,9 @@ contract PandoLineage is ITokenController, AragonApp {
         return false;
     }
 
+    function onTransfer(address _from, address _to, uint _amount) external returns(bool) {
+        return true;
+    }
 
     function onApprove(address, address, uint) public returns (bool) {
         return true;
