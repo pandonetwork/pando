@@ -3,7 +3,7 @@ const RFI_STATE = ['PENDING', 'MERGED', 'REJECTED', 'CANCELLED'].reduce((state, 
     return state
 }, {})
 
-const RFL_STATE = ['PENDING', 'VALUATED', 'ACCEPTED', 'REJECTED', 'CANCELLED', 'ISSUED'].reduce((state, key, index) => {
+const RFL_STATE = ['PENDING', 'ACCEPTED', 'ISSUED', 'REJECTED', 'CANCELLED', ].reduce((state, key, index) => {
     state[key] = index
     return state
 }, {})

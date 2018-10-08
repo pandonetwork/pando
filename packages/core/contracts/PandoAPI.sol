@@ -8,9 +8,9 @@ import "./PandoLineage.sol";
 
 
 // Public function are abstract
-// actual implementations refers to internal methods like _sort _ valuate, etc. which actually enforces state machine checks
+// actual implementations refers to internal methods like _sort _ accept, etc. which actually enforces state machine checks
 // The pando interface version is tied to the library which can be deployed only once;
-// If I send for instance a valuate RFL to a voting app the app must be aware of the internal logic like: to execute it it need to know that RFL are accepted.
+// If I send for instance a accept RFL to a voting app the app must be aware of the internal logic like: to execute it it need to know that RFL are accepted.
 // So the voting app needs to have access to the internal state of the Kit. The best idea is to actually turn kit into decision engine which can be aware of the state of the kit.
 
 // Pando app: three smart contracts on top of which one can build actual apps thorugh the exposed API of the PandoEngine contract. The PandoEngine is the source of thrust storing state and enforcing basic stuff about how that state can be modified
@@ -35,21 +35,24 @@ contract PandoAPI is AragonApp {
     using Pando for Pando.RFI;
     using Pando for Pando.RFL;
 
-    bytes32 constant public CREATE_RFI_ROLE  = keccak256("CREATE_RFI_ROLE");
-    bytes32 constant public SORT_RFI_ROLE    = keccak256("SORT_RFI_ROLE");
-    bytes32 constant public CREATE_RFL_ROLE  = keccak256("CREATE_RFL_ROLE");
-    bytes32 constant public VALUATE_RFL_ROLE = keccak256("VALUATE_RFL_ROLE"); // RENAME VALUATE AS ACCEPT
-    bytes32 constant public REJECT_RFL_ROLE  = keccak256("REJECT_RFL_ROLE");
+    bytes32 constant public CREATE_RFI_ROLE = keccak256("CREATE_RFI_ROLE");
+    bytes32 constant public MERGE_RFI_ROLE  = keccak256("MERGE_RFI_ROLE");
+    bytes32 constant public REJECT_RFI_ROLE = keccak256("REJECT_RFI_ROLE");
+    bytes32 constant public ACCEPT_RFL_ROLE = keccak256("ACCEPT_RFL_ROLE");
+    bytes32 constant public REJECT_RFL_ROLE = keccak256("REJECT_RFL_ROLE");
 
     event CreateRFI(uint256 id);
-    event CreateRFL(uint256 id);
-    event SortRFI(uint256 id, Pando.RFISorting sorting);
+    event MergeRFI(uint256 id);
+    event RejectRFI(uint256 id);
     event CancelRFI(uint256 id);
-    event CancelRFL(uint256 id);
-    event ValuateRFL(uint256 id, uint256 amount);
-    event RejectRFL(uint256 id);
 
-    event MintRFL(uint256 id, address destination, uint256 amount);
+    event CreateRFL(uint256 id);
+    event AcceptRFL(uint256 id, uint256 value);
+    event RejectRFL(uint256 id);
+    event CancelRFL(uint256 id);
+
+
+    event MintRFL(uint256 id, address destination, uint256 value);
 
     PandoHistory public history;
     PandoLineage public lineage;
@@ -81,31 +84,39 @@ contract PandoAPI is AragonApp {
     }
 
 
-    // Separate between merge and reject; it's more clear;
-    function sortRFI(uint256 _RFIid, Pando.RFISorting _sorting) isInitialized auth(CREATE_RFI_ROLE) public {
+    function mergeRFI(uint256 _RFIid) isInitialized auth(MERGE_RFI_ROLE) public {
+        require(_RFIid <= RFIsLength && RFIs[_RFIid].isPending());
+
         Pando.RFI storage RFI = RFIs[_RFIid];
 
-        require(RFI.isPending());
 
-        if (_sorting == Pando.RFISorting.Merge) {
-            for(uint256 i = 0; i < RFI.RFLids.length; i++) {
-                require(RFLs[RFI.RFLids[i]].isValuated());
-            }
+        for(uint256 i = 0; i < RFI.RFLids.length; i++) {
+            require(RFLs[RFI.RFLids[i]].isAccepted());
         }
 
-        _sortRFI(_RFIid, _sorting);
+        _mergeRFI(_RFIid);
     }
 
-    function valuateRFL(uint256 _RFLid, uint256 _amount) isInitialized auth(VALUATE_RFL_ROLE) public {
+    function rejectRFI(uint256 _RFIid) isInitialized auth(REJECT_RFI_ROLE) public {
+        require(_RFIid <= RFIsLength && RFIs[_RFIid].isPending());
+
+        _rejectRFI(_RFIid);
+    }
+
+    function acceptRFL(uint256 _RFLid, uint256 _value) isInitialized auth(ACCEPT_RFL_ROLE) public {
+        require(_RFLid <= RFLsLength);
+
         Pando.RFL storage RFL = RFLs[_RFLid];
 
         require(RFL.isPending());
-        require(_amount >= RFL.lineage.minimum);
+        require(_value >= RFL.lineage.minimum);
 
-        _valuateRFL(_RFLid, _amount);
+        _acceptRFL(_RFLid, _value);
     }
 
     function rejectRFL(uint256 _RFLid) isInitialized auth(REJECT_RFL_ROLE) public {
+        require(_RFLid <= RFLsLength);
+
         Pando.RFL storage RFL = RFLs[_RFLid];
 
         require(RFL.isPending());
@@ -121,10 +132,16 @@ contract PandoAPI is AragonApp {
     */
 
     function getRFI(uint256 _RFIid) public view returns (Pando.RFI) {
+        require(_RFIid <= RFIsLength);
+
+
         return RFIs[_RFIid];
     }
 
     function getRFL(uint256 _RFLid) public view returns (Pando.RFL) {
+        require(_RFLid <= RFLsLength);
+
+
         return RFLs[_RFLid];
     }
 
@@ -193,44 +210,46 @@ contract PandoAPI is AragonApp {
         RFL.lineage.metadata    = _lineage.metadata;
 
         RFL.blockstamp = block.number;
-        RFL.amount     = 0;
+        RFL.value     = 0;
         RFL.state      = Pando.RFLState.Pending;
         RFL.RFIid      = _RFIid;
 
         emit CreateRFL(RFLid);
     }
 
-    function _sortRFI(uint256 _RFIid, Pando.RFISorting _sorting) internal {
+    function _mergeRFI(uint256 _RFIid) internal {
         Pando.RFI storage RFI = RFIs[_RFIid];
 
-        if (_sorting == Pando.RFISorting.Merge) {
-            RFI.state = Pando.RFIState.Merged;
+        RFI.state = Pando.RFIState.Merged;
 
-            history.individuate(RFI.individuation);
+        history.individuate(RFI.individuation);
 
-            for (uint256 i = 0; i < RFI.RFLids.length; i++) {
-                _mintRFL(RFI.RFLids[i]);
-            }
-        } else if (_sorting == Pando.RFISorting.Reject) {
-            RFI.state = Pando.RFIState.Rejected;
-
-            for (uint256 j = 0; j < RFI.RFLids.length; j++) {
-                _cancelRFL(RFI.RFLids[j]);
-            }
-        } else {
-            revert("Unknown sorting for RFI");
+        for (uint256 i = 0; i < RFI.RFLids.length; i++) {
+            _mintRFL(RFI.RFLids[i]);
         }
 
-        emit SortRFI(_RFIid, _sorting);
+        emit MergeRFI(_RFIid);
     }
 
-    function _valuateRFL(uint256 _RFLid, uint256 _amount) internal {
+    function _rejectRFI(uint256 _RFIid) internal {
+        Pando.RFI storage RFI = RFIs[_RFIid];
+
+        RFI.state = Pando.RFIState.Rejected;
+
+        for (uint256 j = 0; j < RFI.RFLids.length; j++) {
+            _cancelRFL(RFI.RFLids[j]);
+        }
+
+        emit RejectRFI(_RFIid);
+    }
+
+    function _acceptRFL(uint256 _RFLid, uint256 _value) internal {
         Pando.RFL storage RFL = RFLs[_RFLid];
 
-        RFL.state  = Pando.RFLState.Valuated;
-        RFL.amount = _amount;
+        RFL.state  = Pando.RFLState.Accepted;
+        RFL.value = _value;
 
-        emit ValuateRFL(_RFLid, _amount);
+        emit AcceptRFL(_RFLid, _value);
     }
 
     function _rejectRFL(uint256 _RFLid) internal {
@@ -269,8 +288,8 @@ contract PandoAPI is AragonApp {
         Pando.RFL storage RFL = RFLs[_RFLid];
 
         RFL.state = Pando.RFLState.Issued;
-        lineage.mint(RFL.lineage.destination, RFL.amount);
+        lineage.mint(RFL.lineage.destination, RFL.value);
 
-        emit MintRFL(_RFLid, RFL.lineage.destination, RFL.amount);
+        emit MintRFL(_RFLid, RFL.lineage.destination, RFL.value);
     }
 }

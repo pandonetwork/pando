@@ -5,7 +5,7 @@ pragma experimental ABIEncoderV2;
 // Une 'origine' produit des individuations en créant des déscendants d'autres individuation. Se sont des individuations - des gestes - qui produisent d'autres gestes par l'entremise de l'origine.
 
 library Pando {
-    enum RFLState   { Pending, Valuated, Issued, Rejected, Cancelled }
+    enum RFLState   { Pending, Accepted, Issued, Rejected, Cancelled }
     enum RFIState   { Pending, Merged, Rejected, Cancelled }
     enum RFISorting { Merge, Reject }
 
@@ -35,12 +35,6 @@ library Pando {
         IID[]   parents;
     }
 
-    struct ILineage {
-        address  destination;
-        uint256  minimum;
-        string   metadata;
-    }
-
     // Request for individuation
     struct RFI {
         IIndividuation individuation;
@@ -50,10 +44,16 @@ library Pando {
     }
 
 
+    struct ILineage {
+        address  destination;
+        uint256  minimum;
+        string   metadata;
+    }
+
     struct RFL {
         ILineage lineage;
         uint256  blockstamp;
-        uint256  amount;
+        uint256  value;
         RFLState state;
         uint256  RFIid;
     }
@@ -68,8 +68,9 @@ library Pando {
         return _RFL.state == RFLState.Pending;
     }
 
-    function isValuated(RFL _RFL) pure public returns (bool) {
-        return _RFL.state == RFLState.Valuated;
+    // rename: is accepted
+    function isAccepted(RFL _RFL) pure public returns (bool) {
+        return _RFL.state == RFLState.Accepted;
     }
 
     function hash(Individuation _individuation) pure public returns (bytes32) {

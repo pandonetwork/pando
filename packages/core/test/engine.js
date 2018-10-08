@@ -14,17 +14,6 @@ const { RFL_STATE }    = require('./helpers/state')
 const { assertRevert } = require('@aragon/test-helpers/assertThrow')
 const blocknumber      = require('@aragon/test-helpers/blockNumber')(web3)
 
-const createdVoteId = receipt => receipt.logs.filter(x => x.event == 'StartVote')[0].args.voteId
-
-
-const RFI_SORTING = ['MERGE', 'REJECT', 'CANCEL'].reduce((state, key, index) => {
-    state[key] = index
-    return state
-}, {})
-
-
-const createdRFIid = receipt => receipt.logs.filter(x => x.event == 'CreateRFI')[0].args.id.toNumber()
-
 contract('PandoAPI', accounts => {
     let factory, token, history, lineage, api
 
@@ -66,9 +55,9 @@ contract('PandoAPI', accounts => {
         await api.initialize(history.address, lineage.address, { from: root })
 
         await acl.createPermission(authorized, api.address, await api.CREATE_RFI_ROLE(), root, { from: root })
-        await acl.createPermission(authorized, api.address, await api.SORT_RFI_ROLE(), root, { from: root })
-        await acl.createPermission(authorized, api.address, await api.CREATE_RFL_ROLE(), root, { from: root })
-        await acl.createPermission(authorized, api.address, await api.VALUATE_RFL_ROLE(), root, { from: root })
+        await acl.createPermission(authorized, api.address, await api.MERGE_RFI_ROLE(), root, { from: root })
+        await acl.createPermission(authorized, api.address, await api.REJECT_RFI_ROLE(), root, { from: root })
+        await acl.createPermission(authorized, api.address, await api.ACCEPT_RFL_ROLE(), root, { from: root })
         await acl.createPermission(authorized, api.address, await api.REJECT_RFL_ROLE(), root, { from: root })
 
         await acl.createPermission(api.address, lineage.address, await lineage.MINT_ROLE(), root, { from: root })
@@ -90,7 +79,7 @@ contract('PandoAPI', accounts => {
     })
 
     context('#initialize', () => {
-        it('should initialize genesis and lineage addresses correctly', async () => {
+        it('should initialize genesis and lineage addresses', async () => {
             const genesis_address = await api.history()
             const lineage_address = await api.lineage()
 
@@ -105,17 +94,17 @@ contract('PandoAPI', accounts => {
         })
     })
 
-    context('Requests For Commit | RFC', () => {
+    context('Requests For Individuation | RFI', () => {
         context('#create', () => {
             context('sender has CREATE_RFI_ROLE', () => {
-                it('should succeed to create Request For Individuation', async () => {
+                it('should create Request For Individuation', async () => {
                     const receipt = await api.createRFI(individuation_abi, [lineage_0_abi], { from: authorized })
-                    const RFIid   = createdRFIid(receipt)
+                    const RFIid   = receipt.logs.filter(x => x.event == 'CreateRFI')[0].args.id.toNumber()
 
                     assert.equal(RFIid, 1)
                 })
 
-                it('should initialize Request For Individuation correctly', async () => {
+                it('should initialize Request For Individuation', async () => {
                     await api.createRFI(individuation_abi, [lineage_0_abi, lineage_1_abi], { from: authorized })
 
                     const RFI = await api.getRFI(1)
@@ -132,7 +121,7 @@ contract('PandoAPI', accounts => {
                     assert.equal(RFI.RFLids[1], 2)
                 })
 
-                it('should initialize related Requests For Lineage correctly', async () => {
+                it('should initialize related Requests For Lineage', async () => {
                     await api.createRFI(individuation_abi, [lineage_0_abi], { from: authorized })
                     await api.createRFI(individuation_abi, [lineage_1_abi], { from: authorized })
 
@@ -164,77 +153,57 @@ contract('PandoAPI', accounts => {
             })
         })
 
-        context('#sort', () => {
-            context('sender has SORT_RFI_ROLE', () => {
+        context('#merge', () => {
+            context('sender has MERGE_RFI_ROLE', () => {
                 context('and Request For Individuation is pending', () => {
-                    context('and sorting instruction is to merge', () => {
-                        context('and all related Requests For Lineage are valuated', () => {
-                            it('should succeed to merge Request For Individuation', async () => {
-                                await api.createRFI(individuation_abi, [lineage_0_abi], { from: authorized })
-                                await api.valuateRFL(1, lineage_0.minimum, { from: authorized })
-                                await api.sortRFI(1, RFI_SORTING.MERGE, { from: authorized })
-
-                                const RFI = await api.getRFI(1)
-
-                                assert.equal(RFI.state, RFI_STATE.MERGED)
-                            })
-
-                            it('should update genesis head', async () => {
-                                await api.createRFI(individuation_abi, [lineage_0_abi], { from: authorized })
-                                await api.valuateRFL(1, lineage_0.minimum, { from: authorized })
-                                await api.sortRFI(1, RFI_SORTING.MERGE, { from: authorized })
-
-                                const head = await api.head()
-                                const hash = await api.getIndividuationHash([origin, await blocknumber(), 'QwAwesomeIPFSHash', 'First individuation', '0x1987', [iid_0_abi]])
-
-                                assert.equal(head, hash)
-                            })
-
-                            it('should mint and assign related lineage', async () => {
-                                await api.createRFI(individuation_abi, [lineage_0_abi, lineage_1_abi], { from: authorized })
-                                await api.valuateRFL(1, 25, { from: authorized })
-                                await api.valuateRFL(2, 45, { from: authorized })
-                                await api.sortRFI(1, RFI_SORTING.MERGE, { from: authorized })
-                                await api.sortRFI(2, RFI_SORTING.MERGE, { from: authorized })
-
-                                const balance_origin     = await token.balanceOf(origin)
-                                const balance_dependency = await token.balanceOf(dependency)
-
-                                assert.equal(balance_origin, 25)
-                                assert.equal(balance_dependency, 45)
-                            })
-                        })
-
-                        context('but at least one of the related Requests For Lineage is not valuated', () => {
-                            it('should revert', async () => {
-                                const receipt = await api.createRFI(individuation_abi, [lineage_0_abi], { from: authorized })
-
-                                return assertRevert(async () => {
-                                    await api.sortRFI(1, RFI_SORTING.MERGE, { from: authorized })
-                                })
-                            })
-                        })
-                    })
-
-                    context('and sorting instruction is to reject', () => {
-                        it('should succeed to reject Request For Individuation', async () => {
+                    context('and all related Requests For Lineage are accepted', () => {
+                        it('should merge Request For Individuation', async () => {
                             await api.createRFI(individuation_abi, [lineage_0_abi], { from: authorized })
-                            await api.sortRFI(1, RFI_SORTING.REJECT, { from: authorized })
+                            await api.acceptRFL(1, lineage_0.minimum, { from: authorized })
+                            await api.mergeRFI(1, { from: authorized })
 
                             const RFI = await api.getRFI(1)
 
-                            assert.equal(RFI.state, RFI_STATE.REJECTED)
+                            assert.equal(RFI.state, RFI_STATE.MERGED)
                         })
 
-                        it('should cancel related Requests For Lineage', async () => {
+                        it('should update genesis head', async () => {
+                            await api.createRFI(individuation_abi, [lineage_0_abi], { from: authorized })
+                            await api.acceptRFL(1, lineage_0.minimum, { from: authorized })
+                            await api.mergeRFI(1, { from: authorized })
+
+                            const head = await api.head()
+                            const hash = await api.getIndividuationHash([origin, await blocknumber(), 'QwAwesomeIPFSHash', 'First individuation', '0x1987', [iid_0_abi]])
+
+                            assert.equal(head, hash)
+                        })
+
+                        it('should issue related Requests For Lineage', async () => {
                             await api.createRFI(individuation_abi, [lineage_0_abi, lineage_1_abi], { from: authorized })
-                            await api.sortRFI(1, RFI_SORTING.REJECT, { from: authorized })
+                            await api.acceptRFL(1, 25, { from: authorized })
+                            await api.acceptRFL(2, 45, { from: authorized })
+                            await api.mergeRFI(1, { from: authorized })
 
                             const RFL_1 = await api.getRFL(1)
                             const RFL_2 = await api.getRFL(2)
 
-                            assert.equal(RFL_1.state, RFL_STATE.CANCELLED)
-                            assert.equal(RFL_2.state, RFL_STATE.CANCELLED)
+                            const balance_origin     = await token.balanceOf(origin)
+                            const balance_dependency = await token.balanceOf(dependency)
+
+                            assert.equal(RFL_1.state, RFL_STATE.ISSUED)
+                            assert.equal(RFL_2.state, RFL_STATE.ISSUED)
+                            assert.equal(balance_origin, 25)
+                            assert.equal(balance_dependency, 45)
+                        })
+                    })
+
+                    context('but at least one of the related Requests For Lineage is not accepted', () => {
+                        it('should revert', async () => {
+                            const receipt = await api.createRFI(individuation_abi, [lineage_0_abi], { from: authorized })
+
+                            return assertRevert(async () => {
+                                await api.mergeRFI(1, { from: authorized })
+                            })
                         })
                     })
                 })
@@ -242,12 +211,12 @@ contract('PandoAPI', accounts => {
                 context('but Request For Individuation is not pending anymore', () => {
                     it('should revert', async () => {
                         await api.createRFI(individuation_abi, [lineage_0_abi], { from: authorized })
-                        await api.valuateRFL(1, lineage_0.minimum, { from: authorized })
-                        await api.sortRFI(1, RFI_SORTING.MERGE, { from: authorized })
+                        await api.acceptRFL(1, lineage_0.minimum, { from: authorized })
+                        await api.mergeRFI(1, { from: authorized })
 
                         // RFI is already merged and thus not pending anymore
                         return assertRevert(async () => {
-                            await api.sortRFI(1, RFI_SORTING.REJECT, { from: authorized })
+                            await api.mergeRFI(1, { from: authorized })
                         })
                     })
                 })
@@ -256,10 +225,59 @@ contract('PandoAPI', accounts => {
             context('sender does not have SORT_RFI_ROLE', () => {
                 it('should revert', async () => {
                     await api.createRFI(individuation_abi, [lineage_0_abi], { from: authorized })
-                    await api.valuateRFL(1, lineage_0.minimum, { from: authorized })
+                    await api.acceptRFL(1, lineage_0.minimum, { from: authorized })
 
                     return assertRevert(async () => {
-                        await api.sortRFI(1, RFI_SORTING.MERGE, { from: unauthorized })
+                        await api.mergeRFI(1, { from: unauthorized })
+                    })
+                })
+            })
+        })
+
+        context('#reject', () => {
+            context('sender has REJECT_RFI_ROLE', () => {
+                context('and Request For Individuation is pending', () => {
+                    it('should reject Request For Individuation', async () => {
+                        await api.createRFI(individuation_abi, [lineage_0_abi], { from: authorized })
+                        await api.rejectRFI(1, { from: authorized })
+
+                        const RFI = await api.getRFI(1)
+
+                        assert.equal(RFI.state, RFI_STATE.REJECTED)
+                    })
+
+                    it('should cancel all related Requests For Lineage', async () => {
+                        await api.createRFI(individuation_abi, [lineage_0_abi, lineage_1_abi], { from: authorized })
+                        await api.rejectRFI(1, { from: authorized })
+
+                        const RFL_1 = await api.getRFL(1)
+                        const RFL_2 = await api.getRFL(2)
+
+                        assert.equal(RFL_1.state, RFL_STATE.CANCELLED)
+                        assert.equal(RFL_2.state, RFL_STATE.CANCELLED)
+                    })
+                })
+
+                context('but Request For Individuation is not pending anymore', () => {
+                    it('should revert', async () => {
+                        await api.createRFI(individuation_abi, [lineage_0_abi], { from: authorized })
+                        await api.acceptRFL(1, lineage_0.minimum, { from: authorized })
+                        await api.mergeRFI(1, { from: authorized })
+
+                        // RFI is already merged and thus not pending anymore
+                        return assertRevert(async () => {
+                            await api.rejectRFI(1, { from: authorized })
+                        })
+                    })
+                })
+            })
+
+            context('sender does not have REJECT_RFI_ROLE', () => {
+                it('should revert', async () => {
+                    await api.createRFI(individuation_abi, [lineage_0_abi], { from: authorized })
+
+                    return assertRevert(async () => {
+                        await api.rejectRFI(1, { from: unauthorized })
                     })
                 })
             })
@@ -268,26 +286,34 @@ contract('PandoAPI', accounts => {
 
     context('Requests For Lineage | RFL', () => {
         context('#accept', () => {
-            context('sender has VALUATE_RFL_ROLE', () => {
+            context('sender has ACCEPT_RFL_ROLE', () => {
                 context('and Request For Lineage is pending', () => {
-                    context('and amount is superior or equal to minimum', () => {
-                        it('should succeed to valuate Request For Lineage', async () => {
+                    context('and value is superior or equal to minimum', () => {
+                        it('should accept Request For Lineage', async () => {
                             await api.createRFI(individuation_abi, [lineage_0_abi], { from: authorized })
-                            await api.valuateRFL(1, lineage_0.minimum, { from: authorized })
+                            await api.acceptRFL(1, lineage_0.minimum, { from: authorized })
 
                             const RFL = await api.getRFL(1)
 
-                            assert.equal(RFL.amount, lineage_0.minimum)
-                            assert.equal(RFL.state, RFL_STATE.VALUATED)
+                            assert.equal(RFL.state, RFL_STATE.ACCEPTED)
+                        })
+
+                        it('should update Request For Lineage value', async () => {
+                            await api.createRFI(individuation_abi, [lineage_0_abi], { from: authorized })
+                            await api.acceptRFL(1, 15, { from: authorized })
+
+                            const RFL = await api.getRFL(1)
+
+                            assert.equal(RFL.value, 15)
                         })
                     })
 
-                    context('but amount is inferior to minimum', () => {
+                    context('but value is inferior to minimum', () => {
                         it('should revert', async () => {
                             await api.createRFI(individuation_abi, [lineage_1_abi], { from: authorized })
 
                             return assertRevert(async () => {
-                                await api.valuateRFL(1, lineage_1.minimum - 1)
+                                await api.acceptRFL(1, lineage_1.minimum - 1)
                             })
                         })
                     })
@@ -296,22 +322,22 @@ contract('PandoAPI', accounts => {
                 context('but Request For Lineage is not pending anymore', () => {
                     it('should revert', async () => {
                         await api.createRFI(individuation_abi, [lineage_0_abi], { from: authorized })
-                        await api.valuateRFL(1, lineage_0.minimum, { from: authorized })
+                        await api.acceptRFL(1, lineage_0.minimum, { from: authorized })
 
-                        // RFL is already valuated and thus not pending anymore
+                        // RFL is already accepted and thus not pending anymore
                         return assertRevert(async () => {
-                            await api.valuateRFL(1, lineage_0.minimum, { from: authorized })
+                            await api.acceptRFL(1, lineage_0.minimum, { from: authorized })
                         })
                     })
                 })
             })
 
-            context('sender does not have VALUATE_RFL_ROLE', () => {
+            context('sender does not have ACCEPT_RFL_ROLE', () => {
                 it('should revert', async () => {
                     await api.createRFI(individuation_abi, [lineage_0_abi], { from: authorized })
 
                     return assertRevert(async () => {
-                        await api.valuateRFL(1, lineage_0.minimum, { from: unauthorized })
+                        await api.acceptRFL(1, lineage_0.minimum, { from: unauthorized })
                     })
                 })
             })
@@ -320,7 +346,7 @@ contract('PandoAPI', accounts => {
         context('#reject', () => {
             context('sender has REJECT_RFL_ROLE', () => {
                 context('and Request For Lineage is pending', () => {
-                    it('should succeed to reject Request For Lineage', async () => {
+                    it('should reject Request For Lineage', async () => {
                         await api.createRFI(individuation_abi, [lineage_0_abi], { from: authorized })
                         await api.rejectRFL(1,{ from: authorized })
 
@@ -351,9 +377,9 @@ contract('PandoAPI', accounts => {
                 context('but Request For Lineage is not pending anymore', () => {
                     it('should revert', async () => {
                         await api.createRFI(individuation_abi, [lineage_0_abi], { from: authorized })
-                        await api.valuateRFL(1, lineage_0.minimum, { from: authorized })
+                        await api.acceptRFL(1, lineage_0.minimum, { from: authorized })
 
-                        // RFL is already valuated and thus not pending anymore
+                        // RFL is already accepted and thus not pending anymore
                         return assertRevert(async () => {
                             await api.rejectRFL(1, { from: authorized })
                         })
