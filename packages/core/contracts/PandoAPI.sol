@@ -60,8 +60,8 @@ contract PandoAPI is AragonApp {
     // Use a mapping instead of an array to ease app upgrade
     // See https://github.com/aragon/aragon-apps/pull/428
     // See https://youtu.be/sJ7VECqHFAg?t=9m27s
-    mapping (uint256 => Pando.RFI) internal RFIs;
-    mapping (uint256 => Pando.RFL) internal RFLs;
+    mapping (uint256 => Pando.RFI) public RFIs;
+    mapping (uint256 => Pando.RFL) public RFLs;
 
     uint256 public RFIsLength = 0;
     uint256 public RFLsLength = 0;
@@ -198,6 +198,47 @@ contract PandoAPI is AragonApp {
         emit CreateRFI(RFIid);
     }
 
+    function _mergeRFI(uint256 _RFIid) internal {
+        Pando.RFI storage RFI = RFIs[_RFIid];
+
+        RFI.state = Pando.RFIState.Merged;
+
+        history.individuate(RFI.individuation);
+
+        for (uint256 i = 0; i < RFI.RFLids.length; i++) {
+            _issueRFL(RFI.RFLids[i]);
+        }
+
+        emit MergeRFI(_RFIid);
+    }
+
+    function _rejectRFI(uint256 _RFIid) internal {
+        Pando.RFI storage RFI = RFIs[_RFIid];
+
+        RFI.state = Pando.RFIState.Rejected;
+
+        for (uint256 j = 0; j < RFI.RFLids.length; j++) {
+            _cancelRFL(RFI.RFLids[j]);
+        }
+
+        emit RejectRFI(_RFIid);
+    }
+
+    function _cancelRFI(uint256 _RFIid) internal {
+        Pando.RFI storage RFI = RFIs[_RFIid];
+
+        RFI.state = Pando.RFIState.Cancelled;
+
+        for (uint256 i = 0; i < RFI.RFLids.length; i++) {
+            Pando.RFL storage RFL = RFLs[RFI.RFLids[i]];
+
+            if (RFL.state != Pando.RFLState.Rejected)
+                _cancelRFL(RFI.RFLids[i]);
+        }
+
+        emit CancelRFI(_RFIid);
+    }
+
     function _createRFL(Pando.ILineage _lineage, uint256 _RFIid) internal returns (uint256 RFLid) {
         require(RFIs[_RFIid].individuation.origin != address(0));
 
@@ -215,32 +256,6 @@ contract PandoAPI is AragonApp {
         RFL.RFIid      = _RFIid;
 
         emit CreateRFL(RFLid);
-    }
-
-    function _mergeRFI(uint256 _RFIid) internal {
-        Pando.RFI storage RFI = RFIs[_RFIid];
-
-        RFI.state = Pando.RFIState.Merged;
-
-        history.individuate(RFI.individuation);
-
-        for (uint256 i = 0; i < RFI.RFLids.length; i++) {
-            _mintRFL(RFI.RFLids[i]);
-        }
-
-        emit MergeRFI(_RFIid);
-    }
-
-    function _rejectRFI(uint256 _RFIid) internal {
-        Pando.RFI storage RFI = RFIs[_RFIid];
-
-        RFI.state = Pando.RFIState.Rejected;
-
-        for (uint256 j = 0; j < RFI.RFLids.length; j++) {
-            _cancelRFL(RFI.RFLids[j]);
-        }
-
-        emit RejectRFI(_RFIid);
     }
 
     function _acceptRFL(uint256 _RFLid, uint256 _value) internal {
@@ -261,21 +276,6 @@ contract PandoAPI is AragonApp {
         emit RejectRFL(_RFLid);
     }
 
-    function _cancelRFI(uint256 _RFIid) internal {
-        Pando.RFI storage RFI = RFIs[_RFIid];
-
-        RFI.state = Pando.RFIState.Cancelled;
-
-        for (uint256 i = 0; i < RFI.RFLids.length; i++) {
-            Pando.RFL storage RFL = RFLs[RFI.RFLids[i]];
-
-            if (RFL.state != Pando.RFLState.Rejected)
-                _cancelRFL(RFI.RFLids[i]);
-        }
-
-        emit CancelRFI(_RFIid);
-    }
-
     function _cancelRFL(uint256 _RFLid) internal {
         Pando.RFL storage RFL = RFLs[_RFLid];
 
@@ -284,7 +284,7 @@ contract PandoAPI is AragonApp {
         emit CancelRFL(_RFLid);
     }
 
-    function _mintRFL(uint256 _RFLid) internal {
+    function _issueRFL(uint256 _RFLid) internal {
         Pando.RFL storage RFL = RFLs[_RFLid];
 
         RFL.state = Pando.RFLState.Issued;

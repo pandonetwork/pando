@@ -41,17 +41,17 @@ contract('PandoAPI', accounts => {
         const acl       = await ACL.at(await dao.acl())
         await acl.createPermission(root, dao.address, await dao.APP_MANAGER_ROLE(), root, { from: root })
         // Genesis
-        const receipt_4 = await dao.newAppInstance('0x0002', (await PandoHistory.new()).address, { from: root })
-        const history   = await PandoHistory.at(receipt_4.logs.filter(l => l.event == 'NewAppProxy')[0].args.proxy)
+        const receipt_2 = await dao.newAppInstance('0x0001', (await PandoHistory.new()).address, { from: root })
+        const history   = await PandoHistory.at(receipt_2.logs.filter(l => l.event == 'NewAppProxy')[0].args.proxy)
         await history.initialize()
         // Lineage
-        const receipt_2    = await dao.newAppInstance('0x0001', (await PandoLineage.new()).address, { from: root })
-        const lineage      = await PandoLineage.at(receipt_2.logs.filter(l => l.event == 'NewAppProxy')[0].args.proxy)
+        const receipt_3 = await dao.newAppInstance('0x0002', (await PandoLineage.new()).address, { from: root })
+        const lineage   = await PandoLineage.at(receipt_3.logs.filter(l => l.event == 'NewAppProxy')[0].args.proxy)
         await token.changeController(lineage.address)
         await lineage.initialize(token.address)
         // API
-        const receipt_5 = await dao.newAppInstance('0x4321', (await PandoAPI.new()).address, { from: root })
-        const api       = await PandoAPI.at(receipt_5.logs.filter(l => l.event == 'NewAppProxy')[0].args.proxy)
+        const receipt_4 = await dao.newAppInstance('0x0003', (await PandoAPI.new()).address, { from: root })
+        const api       = await PandoAPI.at(receipt_4.logs.filter(l => l.event == 'NewAppProxy')[0].args.proxy)
         await api.initialize(history.address, lineage.address, { from: root })
 
         await acl.createPermission(authorized, api.address, await api.CREATE_RFI_ROLE(), root, { from: root })

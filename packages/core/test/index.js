@@ -1,5 +1,2 @@
-// require('./policy/index.js')
-// require('./branch/kits/DummyKit')
-// require('./branch/kits/DictatorKit')
-// require('./voting/callscript.js')
-require('./engine.js')
+// require('./api.js')
+require('./kits/dictator.js')
