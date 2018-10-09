@@ -50,9 +50,9 @@ contract PandoAPI is AragonApp {
     event AcceptRFL(uint256 id, uint256 value);
     event RejectRFL(uint256 id);
     event CancelRFL(uint256 id);
+    event MintRFL(uint256 id, address destination, uint256 value); // ISSUE RFL PLUTOT
 
-
-    event MintRFL(uint256 id, address destination, uint256 value);
+    // ADD MODIFIER FOR RFIExist(_RFIid) and RFLExists(_RFLid)
 
     PandoHistory public history;
     PandoLineage public lineage;
@@ -155,6 +155,10 @@ contract PandoAPI is AragonApp {
 
     function getIndividuationHash(Pando.Individuation _individuation) public pure returns (bytes32) {
         return _individuation.hash();
+    }
+
+    function getLineageToken() public view returns (address) {
+        return address(lineage.token());
     }
 
     /*

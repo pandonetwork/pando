@@ -11,8 +11,8 @@ contract DictatorKit is PandoKit {
         api = _api;
     }
 
-    function createRFI(Pando.IIndividuation _individuation, Pando.ILineage[] _lineages) isInitialized public returns (uint256 RFIid)  {
-        RFIid = api.createRFI(_individuation, _lineages);
+    function createRFI(Pando.IIndividuation _individuation, Pando.ILineage[] _lineages) isInitialized public {
+        uint256 RFIid = api.createRFI(_individuation, _lineages);
         emit CreateRFI(RFIid, msg.sender);
     }
 
