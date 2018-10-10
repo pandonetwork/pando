@@ -48,7 +48,7 @@ contract('PandoGenesis', accounts => {
     })
 
     context('#initialize', () => {
-        it('should fail on reinitialization', async () => {
+        it('should revert on reinitialization', async () => {
             return assertRevert(async () => {
                 await genesis.initialize({ from: root })
             })

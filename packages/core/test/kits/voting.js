@@ -8,7 +8,6 @@ const PandoLineage    = artifacts.require('PandoLineage')
 const PandoAPI        = artifacts.require('PandoAPI')
 const VotingKit       = artifacts.require('VotingKit')
 
-
 const { ADDR_NULL }    = require('../helpers/address')
 const { HASH_NULL }    = require('../helpers/hash')
 const { RFI_STATE }    = require('../helpers/state')
@@ -16,7 +15,7 @@ const { RFL_STATE }    = require('../helpers/state')
 const { assertRevert } = require('@aragon/test-helpers/assertThrow')
 const blocknumber      = require('@aragon/test-helpers/blockNumber')(web3)
 
-const RFI_VOTER_STATE = ['ABSENT', 'YEA', 'NAY'].reduce((state, key, index) => {
+const VOTER_STATE = ['ABSENT', 'YEA', 'NAY'].reduce((state, key, index) => {
     state[key] = index
     return state
 }, {})
@@ -27,6 +26,7 @@ const VOTE_STATE = ['PENDING', 'EXECUTED', 'CANCELLED'].reduce((state, key, inde
 }, {})
 
 const pct16 = x => web3.utils.toBN(x).mul(web3.utils.toBN(10).pow(web3.utils.toBN(16)))
+
 
 contract('VotingKit', accounts => {
     let factory, dao, token, genesis, lineage, api, kit
@@ -73,22 +73,18 @@ contract('VotingKit', accounts => {
         // API
         const receipt_4 = await dao.newAppInstance('0x0003', (await PandoAPI.new()).address, { from: root })
         const api       = await PandoAPI.at(receipt_4.logs.filter(l => l.event == 'NewAppProxy')[0].args.proxy)
-
         await acl.createPermission(api.address, genesis.address, await genesis.INDIVIDUATE_ROLE(), root, { from: root })
         await acl.createPermission(api.address, lineage.address, await lineage.MINT_ROLE(), root, { from: root })
         await acl.createPermission(api.address, lineage.address, await lineage.BURN_ROLE(), root, { from: root })
-
         await api.initialize(genesis.address, lineage.address, { from: root })
         // Kit
         const receipt_5 = await dao.newAppInstance('0x0004', (await VotingKit.new()).address, { from: root })
         const kit       = await VotingKit.at(receipt_5.logs.filter(l => l.event == 'NewAppProxy')[0].args.proxy)
-
         await acl.createPermission(kit.address, api.address, await api.CREATE_RFI_ROLE(), root, { from: root })
         await acl.createPermission(kit.address, api.address, await api.MERGE_RFI_ROLE(), root, { from: root })
         await acl.createPermission(kit.address, api.address, await api.REJECT_RFI_ROLE(), root, { from: root })
         await acl.createPermission(kit.address, api.address, await api.ACCEPT_RFL_ROLE(), root, { from: root })
         await acl.createPermission(kit.address, api.address, await api.REJECT_RFL_ROLE(), root, { from: root })
-
         await kit.initialize(api.address, parameters.quorum, parameters.required, { from: root })
 
         return { dao, token, genesis, lineage, api, kit }
@@ -118,7 +114,7 @@ contract('VotingKit', accounts => {
                 assert.equal(required, parameters.required)
             })
 
-            it('should fail on reinitialization', async () => {
+            it('should revert on reinitialization', async () => {
                 return assertRevert(async () => {
                     await kit.initialize(api.address, parameters.quorum, parameters.required, { from: root })
                 })
@@ -223,7 +219,7 @@ contract('VotingKit', accounts => {
 
                     assert.equal(vote.yea, 20)
                     assert.equal(vote.participation, 20)
-                    assert.equal(ballot, RFI_VOTER_STATE.YEA)
+                    assert.equal(ballot, VOTER_STATE.YEA)
                 })
 
                 context("and sender's stake is superior or equal to quorum", () => {
@@ -276,7 +272,7 @@ contract('VotingKit', accounts => {
 
                     assert.equal(vote.yea, 0)
                     assert.equal(vote.participation, 0)
-                    assert.equal(ballot, RFI_VOTER_STATE.ABSENT)
+                    assert.equal(ballot, VOTER_STATE.ABSENT)
                 })
             })
         })
@@ -294,7 +290,7 @@ contract('VotingKit', accounts => {
 
                             assert.equal(vote.yea, 29)
                             assert.equal(vote.participation, 29)
-                            assert.equal(ballot, RFI_VOTER_STATE.YEA)
+                            assert.equal(ballot, VOTER_STATE.YEA)
                         })
 
                         context("and participation is superior or equal to quorum", () => {
@@ -391,7 +387,7 @@ contract('VotingKit', accounts => {
 
                             assert.equal(vote.nay, 29)
                             assert.equal(vote.participation, 29)
-                            assert.equal(ballot, RFI_VOTER_STATE.NAY)
+                            assert.equal(ballot, VOTER_STATE.NAY)
                         })
 
                         context("and participation is superior or equal to quorum", () => {
@@ -475,7 +471,7 @@ contract('VotingKit', accounts => {
                                 assert.equal(vote.yea, 29)
                                 assert.equal(vote.participation, 29)
                                 assert.equal(vote.total, 29*20)
-                                assert.equal(ballot.state, RFI_VOTER_STATE.YEA)
+                                assert.equal(ballot.state, VOTER_STATE.YEA)
                                 assert.equal(ballot.value, 20)
                             })
 
@@ -578,7 +574,7 @@ contract('VotingKit', accounts => {
                             assert.equal(vote.nay, 29)
                             assert.equal(vote.participation, 29)
                             assert.equal(vote.total, 0)
-                            assert.equal(ballot.state, RFI_VOTER_STATE.NAY)
+                            assert.equal(ballot.state, VOTER_STATE.NAY)
                             assert.equal(ballot.value, 0)
                         })
 
