@@ -62,7 +62,6 @@ contract('DictatorKit', accounts => {
         await acl.createPermission(kit.address, api.address, await api.REJECT_RFI_ROLE(), root, { from: root })
         await acl.createPermission(kit.address, api.address, await api.ACCEPT_RFL_ROLE(), root, { from: root })
         await acl.createPermission(kit.address, api.address, await api.REJECT_RFL_ROLE(), root, { from: root })
-
         await kit.initialize(api.address, { from: root })
 
         return { dao, token, genesis, lineage, api, kit }
@@ -72,7 +71,6 @@ contract('DictatorKit', accounts => {
         const kernel_base = await Kernel.new(true) // petrify immediately
         const acl_base    = await ACL.new()
         const reg_factory = await RegistryFactory.new()
-
         factory           = await DAOFactory.new(kernel_base.address, acl_base.address, reg_factory.address)
     })
 

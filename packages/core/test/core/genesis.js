@@ -4,11 +4,11 @@ const RegistryFactory = artifacts.require('@aragon/os/contracts/factory/EVMScrip
 const DAOFactory      = artifacts.require('@aragon/core/contracts/factory/DAOFactory')
 const PandoGenesis    = artifacts.require('PandoGenesis')
 
-
 const { ADDR_NULL }    = require('../helpers/address')
 const { HASH_NULL }    = require('../helpers/hash')
 const { assertRevert } = require('@aragon/test-helpers/assertThrow')
 const blocknumber      = require('@aragon/test-helpers/blockNumber')(web3)
+
 
 contract('PandoGenesis', accounts => {
     let factory, dao, genesis
