@@ -15,6 +15,7 @@ contract PandoGenesis is AragonApp {
 
     event Individuate(bytes32 hash);
 
+
     function initialize() external onlyInit {
         initialized();
     }

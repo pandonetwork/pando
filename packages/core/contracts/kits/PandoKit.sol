@@ -9,13 +9,12 @@ import "../core/PandoAPI.sol";
 contract PandoKit is AragonApp {
     PandoAPI public api;
 
-    event CreateRFI(uint256 id, address sender);
-    event MergeRFI(uint256 id, address sender);
-    event RejectRFI(uint256 id, address sender);
-
-    event CreateRFL(uint256 id, address sender);
-    event AcceptRFL(uint256 id, uint256 value, address sender);
-    event RejectRFL(uint256 id, address sender);
+    event CreateRFI(uint256 indexed id, address sender);
+    event MergeRFI(uint256 indexed id, address sender);
+    event RejectRFI(uint256 indexed id, address sender);
+    event CreateRFL(uint256 indexed id, address sender);
+    event AcceptRFL(uint256 indexed id, uint256 value, address sender);
+    event RejectRFL(uint256 indexed id, address sender);
 
     function createRFI(Pando.IIndividuation _individuation, Pando.ILineage[] _lineages) public;
     function mergeRFI(uint256 _RFIid) public;
