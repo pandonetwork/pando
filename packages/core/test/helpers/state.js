@@ -8,4 +8,5 @@ const RFL_STATE = ['PENDING', 'ACCEPTED', 'ISSUED', 'REJECTED', 'CANCELLED', ].r
     return state
 }, {})
 
+
 module.exports = { RFI_STATE, RFL_STATE}
