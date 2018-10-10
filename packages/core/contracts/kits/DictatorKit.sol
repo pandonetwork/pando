@@ -3,6 +3,7 @@ pragma experimental ABIEncoderV2;
 
 import "./PandoKit.sol";
 
+
 contract DictatorKit is PandoKit {
     bytes32 constant public DICTATOR_ROLE = keccak256("DICTATOR_ROLE");
 

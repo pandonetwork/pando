@@ -3,9 +3,9 @@ const ACL             = artifacts.require('@aragon/core/contracts/acl/ACL')
 const RegistryFactory = artifacts.require('@aragon/os/contracts/factory/EVMScriptRegistryFactory')
 const DAOFactory      = artifacts.require('@aragon/core/contracts/factory/DAOFactory')
 const MiniMeToken     = artifacts.require('@aragon/core/contracts/lib/minime/MiniMeToken')
-const PandoHistory    = artifacts.require('PandoHistory')
-const PandoAPI        = artifacts.require('PandoAPI')
+const PandoGenesis    = artifacts.require('PandoGenesis')
 const PandoLineage    = artifacts.require('PandoLineage')
+const PandoAPI        = artifacts.require('PandoAPI')
 const VotingKit       = artifacts.require('VotingKit')
 
 
@@ -29,7 +29,7 @@ const VOTE_STATE = ['PENDING', 'EXECUTED', 'CANCELLED'].reduce((state, key, inde
 const pct16 = x => web3.utils.toBN(x).mul(web3.utils.toBN(10).pow(web3.utils.toBN(16)))
 
 contract('VotingKit', accounts => {
-    let factory, dao, token, history, lineage, api, kit
+    let factory, dao, token, genesis, lineage, api, kit
 
     const root       = accounts[0]
     const origin     = accounts[1]
@@ -62,9 +62,9 @@ contract('VotingKit', accounts => {
         const acl       = await ACL.at(await dao.acl())
         await acl.createPermission(root, dao.address, await dao.APP_MANAGER_ROLE(), root, { from: root })
         // Genesis
-        const receipt_2 = await dao.newAppInstance('0x0001', (await PandoHistory.new()).address, { from: root })
-        const history   = await PandoHistory.at(receipt_2.logs.filter(l => l.event == 'NewAppProxy')[0].args.proxy)
-        await history.initialize()
+        const receipt_2 = await dao.newAppInstance('0x0001', (await PandoGenesis.new()).address, { from: root })
+        const genesis   = await PandoGenesis.at(receipt_2.logs.filter(l => l.event == 'NewAppProxy')[0].args.proxy)
+        await genesis.initialize()
         // Lineage
         const receipt_3 = await dao.newAppInstance('0x0002', (await PandoLineage.new()).address, { from: root })
         const lineage   = await PandoLineage.at(receipt_3.logs.filter(l => l.event == 'NewAppProxy')[0].args.proxy)
@@ -73,11 +73,15 @@ contract('VotingKit', accounts => {
         // API
         const receipt_4 = await dao.newAppInstance('0x0003', (await PandoAPI.new()).address, { from: root })
         const api       = await PandoAPI.at(receipt_4.logs.filter(l => l.event == 'NewAppProxy')[0].args.proxy)
-        await api.initialize(history.address, lineage.address, { from: root })
+
+        await acl.createPermission(api.address, genesis.address, await genesis.INDIVIDUATE_ROLE(), root, { from: root })
+        await acl.createPermission(api.address, lineage.address, await lineage.MINT_ROLE(), root, { from: root })
+        await acl.createPermission(api.address, lineage.address, await lineage.BURN_ROLE(), root, { from: root })
+
+        await api.initialize(genesis.address, lineage.address, { from: root })
         // Kit
         const receipt_5 = await dao.newAppInstance('0x0004', (await VotingKit.new()).address, { from: root })
         const kit       = await VotingKit.at(receipt_5.logs.filter(l => l.event == 'NewAppProxy')[0].args.proxy)
-        await kit.initialize(api.address, parameters.quorum, parameters.required, { from: root })
 
         await acl.createPermission(kit.address, api.address, await api.CREATE_RFI_ROLE(), root, { from: root })
         await acl.createPermission(kit.address, api.address, await api.MERGE_RFI_ROLE(), root, { from: root })
@@ -85,10 +89,9 @@ contract('VotingKit', accounts => {
         await acl.createPermission(kit.address, api.address, await api.ACCEPT_RFL_ROLE(), root, { from: root })
         await acl.createPermission(kit.address, api.address, await api.REJECT_RFL_ROLE(), root, { from: root })
 
-        await acl.createPermission(api.address, lineage.address, await lineage.MINT_ROLE(), root, { from: root })
-        await acl.createPermission(api.address, lineage.address, await lineage.BURN_ROLE(), root, { from: root })
+        await kit.initialize(api.address, parameters.quorum, parameters.required, { from: root })
 
-        return { dao, token, history, lineage, api, kit }
+        return { dao, token, genesis, lineage, api, kit }
     }
 
     before(async () => {
@@ -100,7 +103,7 @@ contract('VotingKit', accounts => {
     })
 
     beforeEach(async () => {
-        ;({ dao, token, history, lineage, api, kit } = await deploy())
+        ;({ dao, token, genesis, lineage, api, kit } = await deploy())
     })
 
     context('#initialize', () => {
@@ -223,7 +226,7 @@ contract('VotingKit', accounts => {
                     assert.equal(ballot, RFI_VOTER_STATE.YEA)
                 })
 
-                context("and sender'stake is superior or equal to quorum", () => {
+                context("and sender's stake is superior or equal to quorum", () => {
                     context("and all related RFL are accepted", () => {
                         it('should execute vote', async () => {
                             await kit.createRFI(individuation_abi, [], { from: holder51 })
@@ -253,7 +256,7 @@ contract('VotingKit', accounts => {
                     })
                 })
 
-                context("but sender'stake is inferior to quorum", () => {
+                context("but sender's stake is inferior to quorum", () => {
                     it('should not execute vote', async () => {
                         await kit.createRFI(individuation_abi, [], { from: holder20 })
 
@@ -281,7 +284,7 @@ contract('VotingKit', accounts => {
         context('#merge', () => {
             context('RFI exists', () => {
                 context('and sender is holder', () => {
-                    context('and Request For Individuation is pending', () => {
+                    context('and RFI is pending', () => {
                         it('should cast vote', async () => {
                             await kit.createRFI(individuation_abi, [], { from: nonHolder })
                             await kit.mergeRFI(1, { from: holder29 })
@@ -295,7 +298,7 @@ contract('VotingKit', accounts => {
                         })
 
                         context("and participation is superior or equal to quorum", () => {
-                            context("and all related Request For Lineage are accepted", () => {
+                            context("and all related RFL are accepted", () => {
                                 it('should execute vote', async () => {
                                     await kit.createRFI(individuation_abi, [], { from: nonHolder })
                                     await kit.mergeRFI(1, { from: holder51 })
@@ -305,7 +308,7 @@ contract('VotingKit', accounts => {
                                     assert.equal(vote.state, VOTE_STATE.EXECUTED)
                                 })
 
-                                it('should merge Request For Individuation', async () => {
+                                it('should merge RFI', async () => {
                                     await kit.createRFI(individuation_abi, [], { from: nonHolder })
                                     await kit.mergeRFI(1, { from: holder51 })
 
@@ -315,7 +318,7 @@ contract('VotingKit', accounts => {
                                 })
                             })
 
-                            context("and at least one related Request For Lineage is not accepted yet", () => {
+                            context("and at least one related RFL is not accepted yet", () => {
                                 it('should not execute vote', async () => {
                                     await kit.createRFI(individuation_abi, [lineage_0_abi], { from: nonHolder })
                                     await kit.mergeRFI(1, { from: holder51 })
@@ -339,7 +342,7 @@ contract('VotingKit', accounts => {
                         })
                     })
 
-                    context('but Request For Individuation is not pending anymore', () => {
+                    context('but RFI is not pending anymore', () => {
                         it('should revert', async () => {
                             await kit.createRFI(individuation_abi, [], { from: nonHolder })
                             await kit.mergeRFI(1, { from: holder51 })
@@ -378,7 +381,7 @@ contract('VotingKit', accounts => {
         context('#reject', () => {
             context('RFI exists', () => {
                 context('and sender is holder', () => {
-                    context('and Request For Individuation is pending', () => {
+                    context('and RFI is pending', () => {
                         it('should cast vote', async () => {
                             await kit.createRFI(individuation_abi, [], { from: nonHolder })
                             await kit.rejectRFI(1, { from: holder29 })
@@ -401,7 +404,7 @@ contract('VotingKit', accounts => {
                                 assert.equal(vote.state, VOTE_STATE.EXECUTED)
                             })
 
-                            it('should reject Request For Individuation', async () => {
+                            it('should reject RFI', async () => {
                                 await kit.createRFI(individuation_abi, [], { from: nonHolder })
                                 await kit.rejectRFI(1, { from: holder51 })
 
@@ -421,7 +424,7 @@ contract('VotingKit', accounts => {
                         })
                     })
 
-                    context('but Request For Individuation is not pending anymore', () => {
+                    context('but RFI is not pending anymore', () => {
                         it('should revert', async () => {
                             await kit.createRFI(individuation_abi, [], { from: nonHolder })
                             await kit.mergeRFI(1, { from: holder51 })
@@ -460,7 +463,7 @@ contract('VotingKit', accounts => {
         context('#accept', () => {
             context('RFL exists', () => {
                 context('and sender is holder', () => {
-                    context('and Request For Lineage is pending', () => {
+                    context('and RFL is pending', () => {
                         context('and value is superior or equal to minimum', () => {
                             it('should cast vote', async () => {
                                 await kit.createRFI(individuation_abi, [lineage_0], { from: nonHolder })
@@ -486,7 +489,7 @@ contract('VotingKit', accounts => {
                                     assert.equal(vote.state, VOTE_STATE.EXECUTED)
                                 })
 
-                                it('should accept Request For Lineage', async () => {
+                                it('should accept RFL', async () => {
                                     await kit.createRFI(individuation_abi, [lineage_0], { from: nonHolder })
                                     await kit.acceptRFL(1, 20, { from: holder51 })
 
@@ -495,7 +498,7 @@ contract('VotingKit', accounts => {
                                     assert.equal(RFL.state, RFL_STATE.ACCEPTED)
                                 })
 
-                                it("should update Request For Lineage's value", async () => {
+                                it("should update RFL's value", async () => {
                                     await kit.createRFI(individuation_abi, [lineage_0], { from: nonHolder })
                                     await kit.acceptRFL(1, 20, { from: holder51 })
 
@@ -528,7 +531,7 @@ contract('VotingKit', accounts => {
                         })
                     })
 
-                    context('but Request For Lineage is not pending anymore', () => {
+                    context('but RFL is not pending anymore', () => {
                         it('should revert', async () => {
                             await kit.createRFI(individuation_abi, [lineage_0_abi], { from: nonHolder })
                             await kit.acceptRFL(1, lineage_0.minimum, { from: holder51 })
@@ -564,7 +567,7 @@ contract('VotingKit', accounts => {
         context('#reject', () => {
             context('RFL exists', () => {
                 context('and sender is holder', () => {
-                    context('and Request For Lineage is pending', () => {
+                    context('and RFL is pending', () => {
                         it('should cast vote', async () => {
                             await kit.createRFI(individuation_abi, [lineage_0], { from: nonHolder })
                             await kit.rejectRFL(1, { from: holder29 })
@@ -589,7 +592,7 @@ contract('VotingKit', accounts => {
                                 assert.equal(vote.state, VOTE_STATE.EXECUTED)
                             })
 
-                            it('should reject Request For Lineage', async () => {
+                            it('should reject RFL', async () => {
                                 await kit.createRFI(individuation_abi, [lineage_0], { from: nonHolder })
                                 await kit.rejectRFL(1, { from: holder51 })
 
@@ -598,7 +601,7 @@ contract('VotingKit', accounts => {
                                 assert.equal(RFL.state, RFL_STATE.REJECTED)
                             })
 
-                            it("should cancel related Request For Individuation's vote", async () => {
+                            it("should cancel related RFI's vote", async () => {
                                 await kit.createRFI(individuation_abi, [lineage_0], { from: nonHolder })
                                 await kit.rejectRFL(1, { from: holder51 })
 
@@ -629,7 +632,7 @@ contract('VotingKit', accounts => {
                         })
                     })
 
-                    context('but Request For Lineage is not pending anymore', () => {
+                    context('but RFL is not pending anymore', () => {
                         it('should revert', async () => {
                             await kit.createRFI(individuation_abi, [lineage_0], { from: nonHolder })
                             await kit.rejectRFL(1, { from: holder51 })

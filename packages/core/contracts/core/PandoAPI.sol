@@ -2,32 +2,9 @@ pragma solidity ^0.4.24;
 pragma experimental ABIEncoderV2;
 
 import "@aragon/os/contracts/apps/AragonApp.sol";
-import "./Pando.sol";
-import "./PandoHistory.sol";
+import "../lib/Pando.sol";
+import "./PandoGenesis.sol";
 import "./PandoLineage.sol";
-
-
-// Public function are abstract
-// actual implementations refers to internal methods like _sort _ accept, etc. which actually enforces state machine checks
-// The pando interface version is tied to the library which can be deployed only once;
-// If I send for instance a accept RFL to a voting app the app must be aware of the internal logic like: to execute it it need to know that RFL are accepted.
-// So the voting app needs to have access to the internal state of the Kit. The best idea is to actually turn kit into decision engine which can be aware of the state of the kit.
-
-// Pando app: three smart contracts on top of which one can build actual apps thorugh the exposed API of the PandoEngine contract. The PandoEngine is the source of thrust storing state and enforcing basic stuff about how that state can be modified
-
-// The PandoLineage and PandoHistory permissions are set one for all and can't be modified. Only the PandoEngine can access it. This is set at DAO deployement and cannot be changed.
-
-// This apps built on top of the pandoengine contract are supposed to propose governance and stuff and map between the state of the engine and the apps (for instance map a RFI id with a vote ID). They fetch data from the Engine and transact to the engine (Necessity to extend the sandboxing policy)
-
-// For instance a dictator kit will have an auth(DICTATOR_ROLE) for function call
-
-// It's this kit which are actually work as app in the AragonFrontEnd
-
-// It's up to the kit to define more fine-grained stuff - such as the requirement for staking and all - on top of PandoEngine API. Thes kits you wanna be used by tge must just enfoce a minimum API to provide CLI interoperability with different KITs
-
-// All the apps need to rely on the same version of the pando library defining shared data structures and helpers function on top of these datastructures;
-
-// The kits have no direct access neither to the lineage token nor to the history graph - thanks to the ACL and role enforcement. The only way for kits to update token and history is to go trhough the PandoEngine API.
 
 
 contract PandoAPI is AragonApp {
@@ -54,7 +31,7 @@ contract PandoAPI is AragonApp {
 
     // ADD MODIFIER FOR RFIExist(_RFIid) and RFLExists(_RFLid)
 
-    PandoHistory public history;
+    PandoGenesis public genesis;
     PandoLineage public lineage;
 
     // Use a mapping instead of an array to ease app upgrade
@@ -66,26 +43,26 @@ contract PandoAPI is AragonApp {
     uint256 public RFIsLength = 0;
     uint256 public RFLsLength = 0;
 
-    /*
-    * @group
-    *
-    * transactions
-    * public or external
-    */
+    /*--------------------*/
 
-    function initialize(PandoHistory _history, PandoLineage _lineage) onlyInit external {
+    function initialize(PandoGenesis _genesis, PandoLineage _lineage) external onlyInit {
         initialized();
-        history = _history;
+        genesis = _genesis;
         lineage = _lineage;
     }
 
-    function createRFI(Pando.IIndividuation _individuation, Pando.ILineage[] _lineages) isInitialized auth(CREATE_RFI_ROLE) public returns (uint256 RFIid)  {
+    function createRFI(Pando.IIndividuation _individuation, Pando.ILineage[] _lineages)
+        public
+        isInitialized
+        auth(CREATE_RFI_ROLE)
+        returns (uint256 RFIid)
+    {
         RFIid = _createRFI(_individuation, _lineages);
     }
 
 
-    function mergeRFI(uint256 _RFIid) isInitialized auth(MERGE_RFI_ROLE) public {
-        require(_RFIid <= RFIsLength && RFIs[_RFIid].isPending());
+    function mergeRFI(uint256 _RFIid) public isInitialized auth(MERGE_RFI_ROLE) {
+        require(_RFIid <= RFIsLength && RFIs[_RFIid].isPending(), "RFI is not pending anymore");
 
         Pando.RFI storage RFI = RFIs[_RFIid];
 
@@ -97,13 +74,13 @@ contract PandoAPI is AragonApp {
         _mergeRFI(_RFIid);
     }
 
-    function rejectRFI(uint256 _RFIid) isInitialized auth(REJECT_RFI_ROLE) public {
+    function rejectRFI(uint256 _RFIid) public isInitialized auth(REJECT_RFI_ROLE) {
         require(_RFIid <= RFIsLength && RFIs[_RFIid].isPending());
 
         _rejectRFI(_RFIid);
     }
 
-    function acceptRFL(uint256 _RFLid, uint256 _value) isInitialized auth(ACCEPT_RFL_ROLE) public {
+    function acceptRFL(uint256 _RFLid, uint256 _value) public isInitialized auth(ACCEPT_RFL_ROLE) {
         require(_RFLid <= RFLsLength);
 
         Pando.RFL storage RFL = RFLs[_RFLid];
@@ -114,7 +91,7 @@ contract PandoAPI is AragonApp {
         _acceptRFL(_RFLid, _value);
     }
 
-    function rejectRFL(uint256 _RFLid) isInitialized auth(REJECT_RFL_ROLE) public {
+    function rejectRFL(uint256 _RFLid) public isInitialized auth(REJECT_RFL_ROLE) {
         require(_RFLid <= RFLsLength);
 
         Pando.RFL storage RFL = RFLs[_RFLid];
@@ -124,12 +101,7 @@ contract PandoAPI is AragonApp {
         _rejectRFL(_RFLid);
     }
 
-    /*
-    * @group
-    *
-    * getters
-    * public or external
-    */
+    /*--------------------*/
 
     function getRFI(uint256 _RFIid) public view returns (Pando.RFI) {
         require(_RFIid <= RFIsLength);
@@ -146,11 +118,11 @@ contract PandoAPI is AragonApp {
     }
 
     function head() public view returns (bytes32) {
-        return history.head();
+        return genesis.head();
     }
 
     function getHead() isInitialized public view returns (Pando.Individuation) {
-        return history.getHead();
+        return genesis.getHead();
     }
 
     function getIndividuationHash(Pando.Individuation _individuation) public pure returns (bytes32) {
@@ -161,12 +133,7 @@ contract PandoAPI is AragonApp {
         return address(lineage.token());
     }
 
-    /*
-    * @group
-    *
-    * transactions
-    * internal
-    */
+    /*--------------------*/
 
     function _createRFI(Pando.IIndividuation _individuation, Pando.ILineage[] _lineages) internal returns (uint256 RFIid)  {
         // msg.sender is gonna be the address of a kit contract built on top of the API
@@ -207,7 +174,7 @@ contract PandoAPI is AragonApp {
 
         RFI.state = Pando.RFIState.Merged;
 
-        history.individuate(RFI.individuation);
+        genesis.individuate(RFI.individuation);
 
         for (uint256 i = 0; i < RFI.RFLids.length; i++) {
             _issueRFL(RFI.RFLids[i]);

@@ -2,8 +2,9 @@ pragma solidity ^0.4.24;
 pragma experimental ABIEncoderV2;
 
 import "@aragon/os/contracts/apps/AragonApp.sol";
-import "../Pando.sol";
-import "../PandoAPI.sol";
+import "../lib/Pando.sol";
+import "../core/PandoAPI.sol";
+
 
 contract PandoKit is AragonApp {
     PandoAPI public api;

@@ -13,8 +13,6 @@ import "@aragon/apps-shared-minime/contracts/MiniMeToken.sol";
 import "@aragon/os/contracts/lib/math/SafeMath.sol"; */
 
 
-
-
 contract PandoLineage is ITokenController, AragonApp {
 
     bytes32 public constant MINT_ROLE = keccak256("MINT_ROLE");
@@ -53,11 +51,11 @@ contract PandoLineage is ITokenController, AragonApp {
     }
 
     function onTransfer(address _from, address _to, uint _amount) external returns(bool) {
-        return true;
+        return false;
     }
 
     function onApprove(address, address, uint) public returns (bool) {
-        return true;
+        return false;
     }
 
 

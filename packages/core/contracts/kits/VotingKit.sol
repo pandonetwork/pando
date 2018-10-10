@@ -69,58 +69,63 @@ contract VotingKit is PandoKit {
     event ExecuteRFLVote(uint256 id);
 
     modifier RFIVoteExists(uint256 _RFIid) {
-       require(RFIVotes[_RFIid].RFIid > 0);
-       _;
+        require(RFIVotes[_RFIid].RFIid > 0, "RFI does not exist");
+        _;
     }
 
     modifier RFLVoteExists(uint256 _RFLid) {
-      require(RFLVotes[_RFLid].RFLid > 0);
-      _;
+        require(RFLVotes[_RFLid].RFLid > 0, "RFL does not exist");
+        _;
     }
 
     modifier senderCanVoteOnRFI(uint256 _RFIid) {
-        require(canVoteOnRFI(_RFIid, msg.sender));
+        require(canVoteOnRFI(_RFIid, msg.sender), "sender cannot vote on RFI");
         _;
     }
 
     modifier senderCanVoteOnRFL(uint256 _RFLid) {
-        require(canVoteOnRFL(_RFLid, msg.sender));
+        require(canVoteOnRFL(_RFLid, msg.sender), "sender cannot vote on RFL");
         _;
     }
 
     modifier valueIsSuperiorToRFLMinimum(uint256 _RFLid, uint256 _value) {
-        require(_value >= api.getRFL(_RFLid).lineage.minimum);
+        require(_value >= api.getRFL(_RFLid).lineage.minimum, "value is inferior to RFL minimum");
         _;
     }
 
-    function initialize(PandoAPI _api, uint256 _quorum, uint256 _required) onlyInit external {
-        require(_quorum <= 100 && _required <= _quorum);
+    function initialize(PandoAPI _api, uint256 _quorum, uint256 _required) external onlyInit {
+        require(_quorum <= 100 && _required <= _quorum, "initialization parameters out of bound");
 
         initialized();
 
-        api      = _api;
-        token    = MiniMeToken(api.getLineageToken());
-        quorum   = _quorum;
+        api = _api;
+        token = MiniMeToken(api.getLineageToken());
+        quorum = _quorum;
         required = _required;
     }
 
-    function createRFI(Pando.IIndividuation _individuation, Pando.ILineage[] _lineages) isInitialized public {
+    function createRFI(Pando.IIndividuation _individuation, Pando.ILineage[] _lineages) public isInitialized {
         _createRFI(_individuation, _lineages);
     }
 
-    function mergeRFI(uint256 _RFIid) isInitialized senderCanVoteOnRFI(_RFIid) public {
+    function mergeRFI(uint256 _RFIid) public isInitialized senderCanVoteOnRFI(_RFIid) {
         _mergeRFI(_RFIid);
     }
 
-    function rejectRFI(uint256 _RFIid) isInitialized senderCanVoteOnRFI(_RFIid) public {
+    function rejectRFI(uint256 _RFIid) public isInitialized senderCanVoteOnRFI(_RFIid) {
         _rejectRFI(_RFIid);
     }
 
-    function acceptRFL(uint256 _RFLid, uint256 _value) isInitialized senderCanVoteOnRFL(_RFLid) valueIsSuperiorToRFLMinimum(_RFLid, _value) public {
+    function acceptRFL(uint256 _RFLid, uint256 _value)
+        public
+        isInitialized
+        senderCanVoteOnRFL(_RFLid)
+        valueIsSuperiorToRFLMinimum(_RFLid, _value)
+    {
         _acceptRFL(_RFLid, _value);
     }
 
-    function rejectRFL(uint256 _RFLid) isInitialized senderCanVoteOnRFL(_RFLid) public {
+    function rejectRFL(uint256 _RFLid) public isInitialized senderCanVoteOnRFL(_RFLid) {
         _rejectRFL(_RFLid);
     }
 
@@ -141,7 +146,7 @@ contract VotingKit is PandoKit {
 
         Pando.RFI memory RFI = api.getRFI(RFIid);
 
-        for(uint256 i = 0; i < RFI.RFLids.length; i++) {
+        for (uint256 i = 0; i < RFI.RFLids.length; i++) {
             _newRFLVote(RFI.RFLids[i]);
         }
 
@@ -163,15 +168,15 @@ contract VotingKit is PandoKit {
     function _newRFIVote(uint256 _RFIid) internal {
         RFIVote storage vote = RFIVotes[_RFIid];
 
-        vote.RFIid         = _RFIid;
-        vote.blockstamp    = block.number - 1; // avoid double voting in this very block
-        vote.supply        = token.totalSupplyAt(vote.blockstamp);
-        vote.quorum        = quorum.mul(vote.supply).div(100);
-        vote.required      = required.mul(vote.supply).div(100);
-        vote.yea           = 0;
-        vote.nay           = 0;
+        vote.RFIid = _RFIid;
+        vote.blockstamp = block.number - 1; // avoid double voting in this very block
+        vote.supply = token.totalSupplyAt(vote.blockstamp);
+        vote.quorum = quorum.mul(vote.supply).div(100);
+        vote.required = required.mul(vote.supply).div(100);
+        vote.yea = 0;
+        vote.nay = 0;
         vote.participation = 0;
-        vote.state         = VoteState.Pending;
+        vote.state = VoteState.Pending;
 
         emit NewRFIVote(_RFIid);
 
@@ -182,7 +187,7 @@ contract VotingKit is PandoKit {
 
     function _cancelRFIVote(uint256 _RFIid) internal {
         RFIVote   storage vote = RFIVotes[_RFIid];
-        Pando.RFI memory  RFI  = api.getRFI(_RFIid);
+        Pando.RFI memory  RFI = api.getRFI(_RFIid);
 
         vote.state = VoteState.Cancelled;
 
@@ -197,7 +202,7 @@ contract VotingKit is PandoKit {
     function _voteRFI(uint256 _RFIid, bool _supports, address _voter) internal {
         RFIVote storage vote = RFIVotes[_RFIid];
 
-        uint256 stake    = token.balanceOfAt(_voter, vote.blockstamp);
+        uint256 stake = token.balanceOfAt(_voter, vote.blockstamp);
         VoterState state = RFIVotesBallots[_RFIid][_voter];
 
         if (state != VoterState.Absent) {
@@ -238,7 +243,7 @@ contract VotingKit is PandoKit {
         } else {
             Pando.RFI memory RFI = api.getRFI(_RFIid);
 
-            for(uint256 i = 0; i < RFI.RFLids.length; i++) {
+            for (uint256 i = 0; i < RFI.RFLids.length; i++) {
                 _cancelRFLVote(RFI.RFLids[i]);
             }
 
@@ -263,16 +268,16 @@ contract VotingKit is PandoKit {
     function _newRFLVote(uint256 _RFLid) internal {
         RFLVote storage vote = RFLVotes[_RFLid];
 
-        vote.RFLid         = _RFLid;
-        vote.blockstamp    = block.number - 1; // avoid double voting in this very block
-        vote.supply        = token.totalSupplyAt(vote.blockstamp);
-        vote.quorum        = quorum.mul(vote.supply).div(100);
-        vote.required      = required.mul(vote.supply).div(100);
-        vote.yea           = 0;
-        vote.nay           = 0;
-        vote.total         = 0;
+        vote.RFLid = _RFLid;
+        vote.blockstamp = block.number - 1; // avoid double voting in this very block
+        vote.supply = token.totalSupplyAt(vote.blockstamp);
+        vote.quorum = quorum.mul(vote.supply).div(100);
+        vote.required = required.mul(vote.supply).div(100);
+        vote.yea = 0;
+        vote.nay = 0;
+        vote.total = 0;
         vote.participation = 0;
-        vote.state         = VoteState.Pending;
+        vote.state = VoteState.Pending;
 
         emit NewRFLVote(_RFLid);
     }
@@ -288,7 +293,7 @@ contract VotingKit is PandoKit {
     function _voteRFL(uint256 _RFLid, bool _supports, uint256 _value, address _voter) internal {
         RFLVote storage vote = RFLVotes[_RFLid];
 
-        uint256 stake            = token.balanceOfAt(_voter, vote.blockstamp);
+        uint256 stake = token.balanceOfAt(_voter, vote.blockstamp);
         RFLBallot storage ballot = RFLVotesBallots[_RFLid][_voter];
 
         if (ballot.state != VoterState.Absent) {
@@ -296,21 +301,21 @@ contract VotingKit is PandoKit {
         }
 
         if (ballot.state == VoterState.Yea) {
-            vote.yea   = vote.yea.sub(stake);
+            vote.yea = vote.yea.sub(stake);
             vote.total = vote.total.sub(stake.mul(ballot.value));
         } else if (ballot.state == VoterState.Nay) {
             vote.nay = vote.nay.sub(stake);
         }
 
         if (_supports) {
-            vote.yea     = vote.yea.add(stake);
-            vote.total   = vote.total.add(stake.mul(_value));
+            vote.yea = vote.yea.add(stake);
+            vote.total = vote.total.add(stake.mul(_value));
             ballot.state = VoterState.Yea;
             ballot.value = _value;
             emit AcceptRFL(_RFLid, _value, _voter);
 
         } else {
-            vote.nay     = vote.nay.add(stake);
+            vote.nay = vote.nay.add(stake);
             ballot.state = VoterState.Nay;
             ballot.value = 0;
             emit RejectRFL(_RFLid, _voter);
@@ -331,10 +336,10 @@ contract VotingKit is PandoKit {
         vote.state = VoteState.Executed;
 
         if (vote.yea >= vote.required) {
-           api.acceptRFL(_RFLid, vote.total.div(vote.yea));
+            api.acceptRFL(_RFLid, vote.total.div(vote.yea));
         } else {
-           _cancelRFIVote(api.getRFL(_RFLid).RFIid);
-           api.rejectRFL(_RFLid);
+            _cancelRFIVote(api.getRFL(_RFLid).RFIid);
+            api.rejectRFL(_RFLid);
         }
 
         emit ExecuteRFLVote(_RFLid);
@@ -363,7 +368,7 @@ contract VotingKit is PandoKit {
         }
 
         if (vote.participation >= vote.quorum) {
-            if (vote.yea >= vote.required) { // merge RFI
+            if (vote.yea >= vote.required) {
                 for (uint256 i = 0; i < RFI.RFLids.length; i++) {
                     Pando.RFL memory RFL = api.getRFL(RFI.RFLids[i]);
                     if (!RFL.isAccepted()) {

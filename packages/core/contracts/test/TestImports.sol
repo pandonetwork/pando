@@ -6,7 +6,6 @@ import "@aragon/os/contracts/acl/ACL.sol";
 import "@aragon/os/contracts/kernel/Kernel.sol";
 import "@aragon/os/contracts/factory/DAOFactory.sol";
 import "@aragon/os/contracts/factory/EVMScriptRegistryFactory.sol";
-/* import "@aragon/apps-shared-minime/contracts/MiniMeToken.sol"; */
 
 // You might think this file is a bit odd, but let me explain.
 // We only use some contracts in our tests, which means Truffle
@@ -22,7 +21,7 @@ import "@aragon/os/contracts/factory/EVMScriptRegistryFactory.sol";
 
 
 contract TestImports {
-  constructor() public {
-    // to avoid lint error
-  }
+    constructor() public {
+        // to avoid lint error
+    }
 }
