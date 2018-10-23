@@ -5,7 +5,7 @@ import _ from 'lodash'
 import path from 'path'
 import * as utils from '../utils'
 import Repository from './repository'
-
+import IPFS from 'ipfs'
 import level from 'level'
 // import leveldown from 'leveldown'
 // import sub from 'subleveldown'
@@ -16,7 +16,7 @@ const filter = item => {
 
 export default class Index {
     public static async new(repository: Repository): Promise<Index> {
-        return new Index(repository)
+        const index = new Index(repository)
     }
 
     public static async load(repository: Repository): Promise<Index> {
@@ -25,6 +25,7 @@ export default class Index {
 
     public repository: Repository
     public db: any
+    public ipfs: any
 
     //     var levelup = require('levelup')
     // var leveldown = require('leveldown')
