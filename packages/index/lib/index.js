@@ -98,13 +98,278 @@ var Index = /** @class */ (function () {
     // const filter = item => {
     //     return item.path.indexOf('.pando') < 0 && item.path.indexOf('node_modules') < 0
     // }
-    Index.prototype.update = function () {
+    Index.prototype.current = function () {
         return __awaiter(this, void 0, void 0, function () {
-            var files, index, updates;
+            var index;
+            var _this = this;
+            return __generator(this, function (_a) {
+                index = {};
+                return [2 /*return*/, new Promise(function (resolve, reject) {
+                        var readStream = _this.index.createReadStream();
+                        var writeStream = new stream_1.default.Writable({
+                            objectMode: true,
+                            write: function (file, encoding, next) { return __awaiter(_this, void 0, void 0, function () {
+                                return __generator(this, function (_a) {
+                                    index[file.key] = file.value;
+                                    next();
+                                    return [2 /*return*/];
+                                });
+                            }); }
+                        });
+                        writeStream
+                            .on('finish', function () { resolve(index); })
+                            .on('error', function (err) { reject(err); });
+                        readStream
+                            .pipe(writeStream)
+                            .on('error', function (err) { reject(err); });
+                    })];
+            });
+        });
+    };
+    Index.prototype.track = function (paths) {
+        return __awaiter(this, void 0, void 0, function () {
+            var _a, index, untracked, modified, deleted, _i, paths_1, path, value;
+            return __generator(this, function (_b) {
+                switch (_b.label) {
+                    case 0: return [4 /*yield*/, this.status()];
+                    case 1:
+                        _a = _b.sent(), index = _a.index, untracked = _a.untracked, modified = _a.modified, deleted = _a.deleted;
+                        paths = this.extract(paths, index);
+                        _i = 0, paths_1 = paths;
+                        _b.label = 2;
+                    case 2:
+                        if (!(_i < paths_1.length)) return [3 /*break*/, 6];
+                        path = paths_1[_i];
+                        return [4 /*yield*/, this.index.get(path)];
+                    case 3:
+                        value = _b.sent();
+                        value.tracked = true;
+                        return [4 /*yield*/, this.index.put(path, value)];
+                    case 4:
+                        _b.sent();
+                        _b.label = 5;
+                    case 5:
+                        _i++;
+                        return [3 /*break*/, 2];
+                    case 6: return [2 /*return*/];
+                }
+            });
+        });
+    };
+    Index.prototype.untrack = function (paths) {
+        return __awaiter(this, void 0, void 0, function () {
+            var _a, index, untracked, modified, deleted, _i, paths_2, path, value;
+            return __generator(this, function (_b) {
+                switch (_b.label) {
+                    case 0: return [4 /*yield*/, this.status()];
+                    case 1:
+                        _a = _b.sent(), index = _a.index, untracked = _a.untracked, modified = _a.modified, deleted = _a.deleted;
+                        paths = this.extract(paths, index);
+                        _i = 0, paths_2 = paths;
+                        _b.label = 2;
+                    case 2:
+                        if (!(_i < paths_2.length)) return [3 /*break*/, 6];
+                        path = paths_2[_i];
+                        return [4 /*yield*/, this.index.get(path)];
+                    case 3:
+                        value = _b.sent();
+                        value.tracked = false;
+                        return [4 /*yield*/, this.index.put(path, value)];
+                    case 4:
+                        _b.sent();
+                        _b.label = 5;
+                    case 5:
+                        _i++;
+                        return [3 /*break*/, 2];
+                    case 6: return [2 /*return*/];
+                }
+            });
+        });
+    };
+    Index.prototype._ls = function () {
+        return __awaiter(this, void 0, void 0, function () {
+            var files;
+            var _this = this;
+            return __generator(this, function (_a) {
+                files = {};
+                return [2 /*return*/, new Promise(function (resolve, reject) {
+                        klaw_1.default(_this.repository.paths.root)
+                            .pipe(through2_1.default.obj(function (item, enc, next) {
+                            if (item.path.indexOf('.pando') >= 0) {
+                                next();
+                            }
+                            else {
+                                this.push(item);
+                                next();
+                            }
+                        }))
+                            .pipe(through2_1.default.obj(function (item, enc, next) {
+                            if (item.stats.isDirectory()) {
+                                next();
+                            }
+                            else {
+                                this.push(item);
+                                next();
+                            }
+                        }))
+                            .on('data', function (file) {
+                            files[path_1.default.relative(_this.repository.paths.root, file.path)] = { mtime: file.stats.mtime };
+                        })
+                            .on('end', function () { resolve(files); });
+                    })];
+            });
+        });
+    };
+    Index.prototype.status = function () {
+        return __awaiter(this, void 0, void 0, function () {
+            var files, index, untracked, unsnapshot, modified, deleted, updates;
             var _this = this;
             return __generator(this, function (_a) {
                 files = {};
                 index = {};
+                untracked = [];
+                unsnapshot = [];
+                modified = [];
+                deleted = [];
+                updates = [];
+                return [2 /*return*/, new Promise(function (resolve, reject) { return __awaiter(_this, void 0, void 0, function () {
+                        var readStream, writeStream;
+                        var _this = this;
+                        return __generator(this, function (_a) {
+                            switch (_a.label) {
+                                case 0: return [4 /*yield*/, this._ls()];
+                                case 1:
+                                    files = _a.sent();
+                                    readStream = this.index.createReadStream();
+                                    writeStream = new stream_1.default.Writable({
+                                        objectMode: true,
+                                        write: function (file, encoding, next) { return __awaiter(_this, void 0, void 0, function () {
+                                            var cid;
+                                            return __generator(this, function (_a) {
+                                                switch (_a.label) {
+                                                    case 0:
+                                                        // if (file.value.tracked) { // file is tracked
+                                                        if (file.value.tracked && file.snapshot === 'null') {
+                                                            unsnapshot.push(file.key);
+                                                        }
+                                                        if (!files[file.key]) return [3 /*break*/, 4];
+                                                        if (!(new Date(file.value.mtime) < files[file.key].mtime)) return [3 /*break*/, 2];
+                                                        return [4 /*yield*/, this.cid(file.key)];
+                                                    case 1:
+                                                        cid = _a.sent();
+                                                        index[file.key] = {
+                                                            mtime: files[file.key].mtime.toISOString(),
+                                                            tracked: file.value.tracked,
+                                                            wdir: cid,
+                                                            snapshot: file.value.snapshot
+                                                        };
+                                                        updates.push({ type: 'put', key: file.key, value: index[file.key] });
+                                                        return [3 /*break*/, 3];
+                                                    case 2:
+                                                        index[file.key] = file.value;
+                                                        _a.label = 3;
+                                                    case 3:
+                                                        if (file.value.tracked && index[file.key].wdir !== index[file.key].snapshot) {
+                                                            modified.push(file.key);
+                                                        }
+                                                        if (!file.value.tracked) {
+                                                            untracked.push(file.key);
+                                                        }
+                                                        return [3 /*break*/, 5];
+                                                    case 4:
+                                                        if (file.value.snapshot === 'null') {
+                                                            delete index[file.key];
+                                                            updates.push({ type: 'del', key: file.key });
+                                                        }
+                                                        else {
+                                                            index[file.key] = {
+                                                                mtime: new Date(Date.now()).toISOString(),
+                                                                tracked: file.value.tracked,
+                                                                wdir: 'null',
+                                                                snapshot: file.value.snapshot
+                                                            };
+                                                            updates.push({ type: 'put', key: file.key, value: index[file.key] });
+                                                            if (!file.value.tracked) {
+                                                                untracked.push(file.key);
+                                                            }
+                                                        }
+                                                        if (file.value.tracked && file.value.snapshot !== 'null') {
+                                                            deleted.push(file.key);
+                                                        }
+                                                        _a.label = 5;
+                                                    case 5:
+                                                        // } else { // file is untracked
+                                                        // untracked.push(file.key)
+                                                        // }
+                                                        delete files[file.key];
+                                                        next();
+                                                        return [2 /*return*/];
+                                                }
+                                            });
+                                        }); }
+                                    });
+                                    writeStream
+                                        .on('finish', function () { return __awaiter(_this, void 0, void 0, function () {
+                                        var _a, _b, _i, path, cid;
+                                        return __generator(this, function (_c) {
+                                            switch (_c.label) {
+                                                case 0:
+                                                    _a = [];
+                                                    for (_b in files)
+                                                        _a.push(_b);
+                                                    _i = 0;
+                                                    _c.label = 1;
+                                                case 1:
+                                                    if (!(_i < _a.length)) return [3 /*break*/, 4];
+                                                    path = _a[_i];
+                                                    return [4 /*yield*/, this.cid(path)];
+                                                case 2:
+                                                    cid = _c.sent();
+                                                    index[path] = {
+                                                        mtime: files[path].mtime.toISOString(),
+                                                        tracked: false,
+                                                        wdir: cid,
+                                                        snapshot: 'null'
+                                                    };
+                                                    updates.push({ type: 'put', key: path, value: index[path] });
+                                                    untracked.push(path);
+                                                    _c.label = 3;
+                                                case 3:
+                                                    _i++;
+                                                    return [3 /*break*/, 1];
+                                                case 4: return [4 /*yield*/, this.index.batch(updates)];
+                                                case 5:
+                                                    _c.sent();
+                                                    resolve({ index: index, untracked: untracked, unsnapshot: unsnapshot, modified: modified, deleted: deleted });
+                                                    return [2 /*return*/];
+                                            }
+                                        });
+                                    }); })
+                                        .on('error', function (err) {
+                                        reject(err);
+                                    });
+                                    readStream
+                                        .pipe(writeStream)
+                                        .on('error', function (err) {
+                                        reject(err);
+                                    });
+                                    return [2 /*return*/];
+                            }
+                        });
+                    }); })];
+            });
+        });
+    };
+    Index.prototype.update = function () {
+        return __awaiter(this, void 0, void 0, function () {
+            var files, index, untracked, modified, deleted, updates;
+            var _this = this;
+            return __generator(this, function (_a) {
+                files = {};
+                index = {};
+                untracked = [];
+                modified = [];
+                deleted = [];
                 updates = [];
                 return [2 /*return*/, new Promise(function (resolve, reject) {
                         klaw_1.default(_this.repository.paths.root)
@@ -140,7 +405,6 @@ var Index = /** @class */ (function () {
                                             case 0:
                                                 if (!files[file.key]) return [3 /*break*/, 4];
                                                 if (!(new Date(file.value.mtime) < files[file.key].mtime)) return [3 /*break*/, 2];
-                                                console.log('Modified file: ' + file.key);
                                                 data = [{ path: file.key, content: fs_extra_1.default.readFileSync(path_1.default.join(this.repository.paths.root, file.key)) }];
                                                 return [4 /*yield*/, this.node.files.add(data, { onlyHash: true })];
                                             case 1:
@@ -153,14 +417,21 @@ var Index = /** @class */ (function () {
                                                     wdir: cid
                                                 };
                                                 updates.push({ type: 'put', key: file.key, value: index[file.key] });
+                                                if (index[file.key].stage !== 'null') {
+                                                    modified.push(file.key);
+                                                }
+                                                else {
+                                                    untracked.push(file.key);
+                                                }
                                                 return [3 /*break*/, 3];
                                             case 2:
-                                                console.log('Unmodified file: ' + file.key);
                                                 index[file.key] = file.value;
+                                                if (index[file.key].stage === 'null') {
+                                                    untracked.push(file.key);
+                                                }
                                                 _a.label = 3;
                                             case 3: return [3 /*break*/, 5];
                                             case 4:
-                                                console.log('Deleted file: ' + file.key);
                                                 index[file.key] = {
                                                     mtime: new Date(Date.now()).toISOString(),
                                                     snapshot: file.value.snapshot,
@@ -168,6 +439,7 @@ var Index = /** @class */ (function () {
                                                     wdir: 'null'
                                                 };
                                                 updates.push({ type: 'put', key: file.key, value: index[file.key] });
+                                                deleted.push(file.key);
                                                 _a.label = 5;
                                             case 5:
                                                 delete files[file.key];
@@ -204,6 +476,7 @@ var Index = /** @class */ (function () {
                                                 wdir: cid
                                             };
                                             updates.push({ type: 'put', key: path, value: index[path] });
+                                            untracked.push(path);
                                             _c.label = 3;
                                         case 3:
                                             _i++;
@@ -211,7 +484,7 @@ var Index = /** @class */ (function () {
                                         case 4: return [4 /*yield*/, this.index.batch(updates)];
                                         case 5:
                                             _c.sent();
-                                            resolve(index);
+                                            resolve({ index: index, untracked: untracked, modified: modified, deleted: deleted });
                                             return [2 /*return*/];
                                     }
                                 });
@@ -229,9 +502,92 @@ var Index = /** @class */ (function () {
             });
         });
     };
+    Index.prototype.cid = function (path) {
+        return __awaiter(this, void 0, void 0, function () {
+            var data, result;
+            return __generator(this, function (_a) {
+                switch (_a.label) {
+                    case 0:
+                        data = [{ path: path, content: fs_extra_1.default.readFileSync(path_1.default.join(this.repository.paths.root, path)) }];
+                        return [4 /*yield*/, this.node.files.add(data, { onlyHash: true })];
+                    case 1:
+                        result = _a.sent();
+                        return [2 /*return*/, result[0].hash];
+                }
+            });
+        });
+    };
+    // public async snapshot(files: string[]): Promise<any> {
+    //     // const files:any = {}
+    //     const index = await this.update()
+    //     const paths = this.extract(files, index)
+    //     const updates: any[] = []
+    //
+    //     console.log(paths)
+    //
+    //     for (let path of paths) {
+    //         const entry = await this.index.get(path)
+    //
+    //         if (entry.tracked && entry.wdir !== entry.snapshot) { // entry has been modified since last stage
+    //             if (entry.wdir !== 'null') { // entry exists in wdir
+    //                 await this.node.files.write('/' + path, fs.readFileSync(npath.join(this.repository.paths.root, path)), { create: true, parents: true })
+    //             } else { // entry does not exists in wdir
+    //                 await this.node.files.rm('/' + path)
+    //                 await this.clean(path)
+    //             }
+    //
+    //             index[path].stage = index[path].wdir
+    //             updates.push({ type: 'put', key: path, value: index[path] })
+    //         }
+    //     }
+    //
+    //     await this.index.batch(updates)
+    //
+    //     return index
+    // }
+    Index.prototype.snapshot = function (opts) {
+        return __awaiter(this, void 0, void 0, function () {
+            var _a, index, untracked, modified, deleted, promises, updates, _i, modified_1, path;
+            return __generator(this, function (_b) {
+                switch (_b.label) {
+                    case 0: return [4 /*yield*/, this.status()];
+                    case 1:
+                        _a = _b.sent(), index = _a.index, untracked = _a.untracked, modified = _a.modified, deleted = _a.deleted;
+                        promises = [];
+                        updates = [];
+                        for (_i = 0, modified_1 = modified; _i < modified_1.length; _i++) {
+                            path = modified_1[_i];
+                            index[path].snapshot = index[path].wdir;
+                            updates.push({ type: 'put', key: path, value: index[path] });
+                            promises.push(this.node.files.write('/' + path, fs_extra_1.default.readFileSync(path_1.default.join(this.repository.paths.root, path)), { create: true, parents: true }));
+                        }
+                        // for (let path in modified) {
+                        //     const entry = await this.index.get(path)
+                        //
+                        //     if (entry.tracked && entry.wdir !== entry.snapshot) { // entry has been modified since last stage
+                        //         if (entry.wdir !== 'null') { // entry exists in wdir
+                        //             await this.node.files.write('/' + path, fs.readFileSync(npath.join(this.repository.paths.root, path)), { create: true, parents: true })
+                        //         } else { // entry does not exists in wdir
+                        //             await this.node.files.rm('/' + path)
+                        //             await this.clean(path)
+                        //         }
+                        //
+                        //         index[path].stage = index[path].wdir
+                        //         updates.push({ type: 'put', key: path, value: index[path] })
+                        //     }
+                        // }
+                        promises.push(this.index.batch(updates));
+                        return [4 /*yield*/, Promise.all(promises)];
+                    case 2:
+                        _b.sent();
+                        return [2 /*return*/, index];
+                }
+            });
+        });
+    };
     Index.prototype.stage = function (files) {
         return __awaiter(this, void 0, void 0, function () {
-            var index, paths, updates, _i, paths_1, path, entry, ls, hash;
+            var index, paths, updates, _i, paths_3, path, entry;
             return __generator(this, function (_a) {
                 switch (_a.label) {
                     case 0: return [4 /*yield*/, this.update()];
@@ -240,116 +596,79 @@ var Index = /** @class */ (function () {
                         paths = this.extract(files, index);
                         updates = [];
                         console.log(paths);
-                        _i = 0, paths_1 = paths;
+                        _i = 0, paths_3 = paths;
                         _a.label = 2;
                     case 2:
-                        if (!(_i < paths_1.length)) return [3 /*break*/, 9];
-                        path = paths_1[_i];
+                        if (!(_i < paths_3.length)) return [3 /*break*/, 10];
+                        path = paths_3[_i];
                         return [4 /*yield*/, this.index.get(path)];
                     case 3:
                         entry = _a.sent();
-                        if (!(entry.wdir !== entry.stage)) return [3 /*break*/, 8];
+                        if (!(entry.wdir !== entry.stage)) return [3 /*break*/, 9];
                         if (!(entry.wdir !== 'null')) return [3 /*break*/, 5];
                         return [4 /*yield*/, this.node.files.write('/' + path, fs_extra_1.default.readFileSync(path_1.default.join(this.repository.paths.root, path)), { create: true, parents: true })];
                     case 4:
                         _a.sent();
-                        return [3 /*break*/, 7];
+                        return [3 /*break*/, 8];
                     case 5: // entry does not exists in wdir
-                    return [4 /*yield*/, this.node.files.rm('/' + path)
-                        // const dir = path.dirname('/foo/bar/baz/asdf/quux');
-                        // empty directory
-                    ];
+                    return [4 /*yield*/, this.node.files.rm('/' + path)];
                     case 6:
                         _a.sent();
-                        _a.label = 7;
+                        return [4 /*yield*/, this.clean(path)];
                     case 7:
-                        index[path].stage = index[path].wdir;
-                        updates.push({ type: 'put', key: path, value: index[path] });
+                        _a.sent();
                         _a.label = 8;
                     case 8:
+                        index[path].stage = index[path].wdir;
+                        updates.push({ type: 'put', key: path, value: index[path] });
+                        _a.label = 9;
+                    case 9:
                         _i++;
                         return [3 /*break*/, 2];
-                    case 9: return [4 /*yield*/, this.index.batch(updates)];
-                    case 10:
-                        _a.sent();
-                        console.log('MFS');
-                        return [4 /*yield*/, this.node.files.ls()];
+                    case 10: return [4 /*yield*/, this.index.batch(updates)];
                     case 11:
-                        ls = _a.sent();
-                        return [4 /*yield*/, this.node.files.stat('/', { hash: true })];
-                    case 12:
-                        hash = _a.sent();
-                        console.log(hash);
-                        return [2 /*return*/, index
-                            // for (let path of files) {
-                            //     path = npath.relative(this.repository.paths.root, path)
-                            //
-                            //     // fs.stat(npath.join(this.repository.paths.root, path), (err, stats) => {
-                            //     //
-                            //     // }
-                            //     //
-                            //     // fs.access(npath.join(this.repository.paths.root, path), fs.constants.F_OK, (err) => {
-                            //     //     if(err) { // path does not exist in wdir
-                            //     //
-                            //     //     } else { // path exists in wdir
-                            //     //
-                            //     //     }
-                            //     // })
-                            // }
-                            // const readStream  = this.index.createReadStream()
-                            // const writeStream = new stream.Writable({
-                            //     objectMode: true,
-                            //     write: async (file, encoding, next) => {
-                            //
-                            //         if (file.)
-                            //
-                            //         if (files.indexOf(file.key)]) { // file still exists in wdir
-                            //             if (new Date(file.value.mtime) < files[file.key].mtime) { // file has been modified since last index's update
-                            //                 console.log('Modified file: ' + file.key)
-                            //
-                            //                 const data = [{ path: file.key, content: fs.readFileSync(npath.join(this.repository.paths.root, file.key)) }]
-                            //                 const result = await this.node.files.add(data, { onlyHash: true })
-                            //                 const cid = result[0].hash
-                            //
-                            //                 index[file.key] = {
-                            //                     mtime: files[file.key].mtime.toISOString(),
-                            //                     snapshot: file.value.snapshot,
-                            //                     stage: file.value.stage,
-                            //                     wdir: cid
-                            //                 }
-                            //                 updates.push({ type: 'put', key: file.key, value: index[file.key] })
-                            //             } else { // file has not been modified since last index's update
-                            //                 console.log('Unmodified file: ' + file.key)
-                            //                 index[file.key] = file.value
-                            //             }
-                            //         } else { // file does not exist in wdir anymore
-                            //             console.log('Deleted file: ' + file.key)
-                            //             index[file.key] = {
-                            //                 mtime: new Date(Date.now()).toISOString(),
-                            //                 snapshot: file.value.snapshot,
-                            //                 stage: file.value.stage,
-                            //                 wdir: 'null'
-                            //             }
-                            //             updates.push({ type: 'put', key: file.key, value: index[file.key] })
-                            //         }
-                            //         delete files[file.key]
-                            //         next();
-                            //     }
-                            // });
-                        ];
+                        _a.sent();
+                        return [2 /*return*/, index];
                 }
             });
         });
     };
-    Index.prototype.extract = function (files, index) {
+    Index.prototype.clean = function (path) {
+        return __awaiter(this, void 0, void 0, function () {
+            var dir, stat;
+            return __generator(this, function (_a) {
+                switch (_a.label) {
+                    case 0:
+                        dir = path_1.default.dirname(path);
+                        _a.label = 1;
+                    case 1:
+                        if (!(dir !== '.')) return [3 /*break*/, 6];
+                        return [4 /*yield*/, this.node.files.stat('/' + dir)];
+                    case 2:
+                        stat = _a.sent();
+                        if (!(stat.type === 'directory' && stat.blocks === 0)) return [3 /*break*/, 4];
+                        return [4 /*yield*/, this.node.files.rm('/' + dir, { recursive: true })];
+                    case 3:
+                        _a.sent();
+                        return [3 /*break*/, 5];
+                    case 4: return [3 /*break*/, 6];
+                    case 5:
+                        dir = path_1.default.dirname(dir);
+                        return [3 /*break*/, 1];
+                    case 6: return [2 /*return*/];
+                }
+            });
+        });
+    };
+    Index.prototype.extract = function (paths, index) {
         var _this = this;
-        files = files.map(function (path) {
+        paths = paths.map(function (path) {
             path = path_1.default.relative(_this.repository.paths.root, path);
             return _.filter(Object.keys(index), function (entry) {
                 return entry.indexOf(path) === 0;
             });
         });
-        return _.uniq(_.flattenDeep(files));
+        return _.uniq(_.flattenDeep(paths));
     };
     return Index;
 }());
