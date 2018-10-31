@@ -1,15 +1,4 @@
 "use strict";
-var __assign = (this && this.__assign) || function () {
-    __assign = Object.assign || function(t) {
-        for (var s, i = 1, n = arguments.length; i < n; i++) {
-            s = arguments[i];
-            for (var p in s) if (Object.prototype.hasOwnProperty.call(s, p))
-                t[p] = s[p];
-        }
-        return t;
-    };
-    return __assign.apply(this, arguments);
-};
 var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
     return new (P || (P = Promise))(function (resolve, reject) {
         function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
@@ -49,72 +38,35 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-var fs_extra_1 = __importDefault(require("fs-extra"));
-var ipfs_1 = __importDefault(require("ipfs"));
+var index_1 = __importDefault(require("./index/"));
+var v1_1 = __importDefault(require("uuid/v1"));
 var path_1 = __importDefault(require("path"));
-var factory_1 = __importDefault(require("./fiber/factory"));
-// import Index from '@pando/index'
-var Repository = /** @class */ (function () {
-    // public index: Index
-    function Repository(path, node) {
-        if (path === void 0) { path = '.'; }
-        // public static async create(path: string = '.'): Promise<Repository> {
-        //
-        //
-        //     const repository = new Repository(path)
-        //
-        //     fs.ensureDirSync(repository.paths.pando)
-        //
-        //
-        //     return repository
-        // }
-        this.paths = __assign({}, Repository.paths);
-        for (var p in this.paths) {
-            if (this.paths.hasOwnProperty(p)) {
-                this.paths[p] = path_1.default.join(path, this.paths[p]);
-            }
-        }
-        this.node = node;
-        this.fibers = new factory_1.default(this);
+var fs_extra_1 = __importDefault(require("fs-extra"));
+var Fiber = /** @class */ (function () {
+    function Fiber(repository, uuid) {
+        this.repository = repository;
+        this.uuid = uuid;
+        this.paths = { root: path_1.default.join(repository.paths.fibers, uuid), index: path_1.default.join(repository.paths.fibers, uuid, 'index') };
+        this.index = new index_1.default(this);
     }
-    Repository.create = function (path) {
-        if (path === void 0) { path = '.'; }
+    Fiber.create = function (repository) {
         return __awaiter(this, void 0, void 0, function () {
+            var uuid;
             return __generator(this, function (_a) {
-                return [2 /*return*/, new Promise(function (resolve, reject) {
-                        var node = new ipfs_1.default({ repo: path_1.default.join(path, Repository.paths.ipfs), start: false });
-                        node.on('ready', function () {
-                            resolve(new Repository(path, node));
-                        });
-                        node.on('error', function (error) {
-                            reject(error);
-                        });
-                    })];
+                uuid = v1_1.default();
+                fs_extra_1.default.ensureDirSync(path_1.default.join(repository.paths.fibers, uuid));
+                return [2 /*return*/, new Fiber(repository, uuid)];
             });
         });
     };
-    Repository.prototype.remove = function () {
+    Fiber.prototype.status = function () {
         return __awaiter(this, void 0, void 0, function () {
             return __generator(this, function (_a) {
-                // fs.removeSync(this.paths.pando)
-                fs_extra_1.default.removeSync(this.paths.pando);
-                return [2 /*return*/];
+                return [2 /*return*/, this.index.status()];
             });
         });
     };
-    Repository.paths = {
-        root: '.',
-        pando: '.pando',
-        ipfs: '.pando/ipfs',
-        index: '.pando/index',
-        db: '.pando/db',
-        current: '.pando/current',
-        config: '.pando/config',
-        branches: '.pando/branches',
-        fibers: '.pando/fibers',
-        remotes: '.pando/remotes'
-    };
-    return Repository;
+    return Fiber;
 }());
-exports.default = Repository;
+exports.default = Fiber;
 //# sourceMappingURL=index.js.map

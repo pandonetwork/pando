@@ -2,7 +2,7 @@ import fs from 'fs-extra'
 import IPFS from 'ipfs'
 import Level from 'level'
 import npath from 'path'
-import FiberFactory from './fibers'
+import FiberFactory from './fiber/factory'
 
 // import Index from '@pando/index'
 
@@ -17,6 +17,7 @@ export default class Repository {
         current: '.pando/current',
         config: '.pando/config',
         branches: '.pando/branches',
+        fibers: '.pando/fibers',
         remotes: '.pando/remotes'
     }
 
