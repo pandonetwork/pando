@@ -1,1 +1,1 @@
-This is a subdirectory test file
+sub test file

@@ -50,25 +50,46 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 var fs_extra_1 = __importDefault(require("fs-extra"));
+var ipfs_1 = __importDefault(require("ipfs"));
 var path_1 = __importDefault(require("path"));
+var fibers_1 = __importDefault(require("./fibers"));
+// import Index from '@pando/index'
 var Repository = /** @class */ (function () {
-    function Repository(path) {
+    // public index: Index
+    function Repository(path, node) {
         if (path === void 0) { path = '.'; }
+        // public static async create(path: string = '.'): Promise<Repository> {
+        //
+        //
+        //     const repository = new Repository(path)
+        //
+        //     fs.ensureDirSync(repository.paths.pando)
+        //
+        //
+        //     return repository
+        // }
         this.paths = __assign({}, Repository.paths);
         for (var p in this.paths) {
             if (this.paths.hasOwnProperty(p)) {
                 this.paths[p] = path_1.default.join(path, this.paths[p]);
             }
         }
+        this.node = node;
+        this.fibers = new fibers_1.default(this);
     }
     Repository.create = function (path) {
         if (path === void 0) { path = '.'; }
         return __awaiter(this, void 0, void 0, function () {
-            var repository;
             return __generator(this, function (_a) {
-                repository = new Repository(path);
-                fs_extra_1.default.ensureDirSync(repository.paths.pando);
-                return [2 /*return*/, repository];
+                return [2 /*return*/, new Promise(function (resolve, reject) {
+                        var node = new ipfs_1.default({ repo: path_1.default.join(path, Repository.paths.ipfs), start: false });
+                        node.on('ready', function () {
+                            resolve(new Repository(path, node));
+                        });
+                        node.on('error', function (error) {
+                            reject(error);
+                        });
+                    })];
             });
         });
     };

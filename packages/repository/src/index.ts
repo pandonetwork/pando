@@ -2,6 +2,9 @@ import fs from 'fs-extra'
 import IPFS from 'ipfs'
 import Level from 'level'
 import npath from 'path'
+import FiberFactory from './fibers'
+
+// import Index from '@pando/index'
 
 
 export default class Repository {
@@ -17,25 +20,47 @@ export default class Repository {
         remotes: '.pando/remotes'
     }
 
+
     public static async create(path: string = '.'): Promise<Repository> {
+        return new Promise<Repository>((resolve, reject) => {
+            let node = new IPFS({ repo: npath.join(path, Repository.paths.ipfs), start: false })
 
+            node.on('ready', () => {
+                resolve(new Repository(path, node))
+            })
 
-        const repository = new Repository(path)
-
-        fs.ensureDirSync(repository.paths.pando)
-
-
-        return repository
+            node.on('error', (error) => {
+                reject(error)
+            })
+        })
     }
 
-    public paths = { ...Repository.paths }
+    // public static async create(path: string = '.'): Promise<Repository> {
+    //
+    //
+    //     const repository = new Repository(path)
+    //
+    //     fs.ensureDirSync(repository.paths.pando)
+    //
+    //
+    //     return repository
+    // }
 
-    public constructor(path: string = '.') {
+
+    public paths = { ...Repository.paths }
+    public node: IPFS
+    public fibers: FiberFactory
+    // public index: Index
+
+    public constructor(path: string = '.', node: IPFS) {
         for (const p in this.paths) {
             if (this.paths.hasOwnProperty(p)) {
                 this.paths[p] = npath.join(path, this.paths[p])
             }
         }
+        this.node = node
+        this.fibers = new FiberFactory(this)
+
     }
 
     public async remove() {

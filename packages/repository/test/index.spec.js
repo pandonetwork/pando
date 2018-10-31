@@ -1,145 +1,119 @@
 /* eslint-disable import/no-duplicates */
-// import Repository from '@pando/repository'
-//
-// import Index from '@pando/index'
-// import path from 'path'
-// import chai from 'chai'
-//
-// const expect = chai.expect
-// const should = chai.should
+import Repository from '../lib'
+import fs from 'fs-extra'
+// import Index from '../lib'
+import path from 'path'
+import chai from 'chai'
+import { promisify } from 'util'
+import capture from 'collect-console'
 
-describe('Repository#Index', () => {
-    let repository, index
+const expect = chai.expect
+const should = chai.should()
 
-    beforeEach(async () => {
-        // repository = new Repository(path.join('test', 'fixtures'))
-        // index = await Index.create(repository)
-    })
 
-    beforeEach(async () => {
-        // await index.remove()
-    })
+let cids = { origin: {}, modified: {}, deleted: {}}
 
-    describe('#constructor', () => {
-        it('should initialize index correctly', async () => {
-            // repository.index.repository.should.be.deep.equal(repository)
-            // repository.index.path.should.equal(repository.paths.index)
+cids.origin['test.md'] = 'QmShBmhvEZ1dDwPvLvpjimRW76AQrVz3fbpZYwsqNJN2Xh'
+cids.origin[path.join('dir', 'test_1.md')] = 'Qmaij6pBZtRmVf6sUUaJ4rRkwkF78aqT38GP1YSZho7yLY'
+cids.origin[path.join('dir', 'test_2.md')] = 'Qme4pabV5DApSeHsuWu6gXa3EyUj58N85hdMfdD7372rnV'
+cids.origin[path.join('dir', 'sub', 'test.md')] = 'QmfHhdmitp8duYj8fsvDTkeRWd5szP7qnS4qEC8oCt37Hr'
+
+cids.modified['test.md'] = 'QmUenaNZqJKZvz3qMaNaF4VBTpddpnr97wf6REKte7pJtw'
+cids.modified[path.join('dir', 'test_1.md')] = 'QmXtt8JV8xAc4R8syRLvYeCkGCkaSd49kTGnZBpfyq2Srq'
+cids.modified[path.join('dir', 'test_2.md')] = 'Qme4pabV5DApSeHsuWu6gXa3EyUj58N85hdMfdD7372rnV'
+cids.modified[path.join('dir', 'sub', 'test.md')] = 'QmRS8LgmCc4SNbtwxnLmNRhNdFfP2dRDwYUeC8WNkQXuqm'
+
+cids.deleted['test.md'] = 'null'
+cids.deleted[path.join('dir', 'test_1.md')] = 'Qmaij6pBZtRmVf6sUUaJ4rRkwkF78aqT38GP1YSZho7yLY'
+cids.deleted[path.join('dir', 'test_2.md')] = 'Qme4pabV5DApSeHsuWu6gXa3EyUj58N85hdMfdD7372rnV'
+cids.deleted[path.join('dir', 'sub', 'test.md')] = 'null'
+
+let paths = {}
+
+paths['test.md']         = 'test.md'
+paths['dir/test_1.md']   = path.join('dir', 'test_1.md')
+paths['dir/test_2.md']   = path.join('dir', 'test_2.md')
+paths['dir/sub']         = path.join('dir', 'sub')
+paths['dir/sub/test.md'] = path.join('dir', 'sub', 'test.md')
+
+
+
+const fixtures = {
+    files: {
+        modify: () => {
+            fs.writeFileSync(path.join('test', 'fixtures', 'test.md'), 'modified test file\n', 'utf8')
+            fs.writeFileSync(path.join('test', 'fixtures', 'dir', 'test_1.md'), 'modified dir test file 1\n', 'utf8')
+            fs.writeFileSync(path.join('test', 'fixtures', 'dir', 'sub', 'test.md'), 'modified sub test file\n', 'utf8')
+        },
+
+        delete: () => {
+            fs.removeSync(path.join('test', 'fixtures', 'test.md'))
+            // fs.removeSync(path.join('test', 'fixtures', 'dir', 'sub', 'test.md'))
+        }
+    },
+
+    directories: {
+        delete: () => {
+            fs.removeSync(path.join('test', 'fixtures', 'dir', 'sub'))
+        }
+    },
+
+    restore: () => {
+        fs.ensureDirSync(path.join('test', 'fixtures', 'dir'))
+        fs.ensureDirSync(path.join('test', 'fixtures', 'dir', 'sub'))
+        fs.writeFileSync(path.join('test', 'fixtures', 'test.md'), 'test file\n', 'utf8')
+        fs.writeFileSync(path.join('test', 'fixtures', 'dir', 'test_1.md'), 'dir test file 1\n', 'utf8')
+        fs.writeFileSync(path.join('test', 'fixtures', 'dir', 'test_2.md'), 'dir test file 2\n', 'utf8')
+        fs.writeFileSync(path.join('test', 'fixtures', 'dir', 'sub', 'test.md'), 'sub test file\n', 'utf8')
+    }
+}
+
+describe('@pando/repository', () => {
+    let repository
+
+    const clean = async () => {
+        const reset = capture.log()
+
+        await repository.node.start()
+        await repository.node.stop()
+
+        reset()
+
+        await repository.remove()
+        await fixtures.restore()
+    }
+
+    describe('#create', () => {
+        describe('no repository exists at given path', () => {
+            after(async () => {
+                await clean()
+            })
+
+            it("it should initialize repository", async () => {
+                repository = await Repository.create(path.join('test', 'fixtures'))
+
+                repository.paths.root.should.equal(path.join('test', 'fixtures'))
+            })
+
+            it("it should create .pando directory structure", async () => {
+
+            })
+        })
+
+        describe('a repository exists at given path', () => {
+            // after(async () => {
+            //     await clean()
+            // })
+
+            it("it should throw", async () => {
+
+            })
         })
     })
 
+    describe('#fibers', () => {
+        describe('#create', () => {
 
-
-    // describe('#updateLevel', () => {
-    //     it('should return staged files correctly', async () => {
-    //         const toto = await repository.index.updateLevel()
-    //
-    //         console.log(toto)
-    //
-    //         // await repository.stage([npath.join('test', 'mocks', 'test.md'), npath.join('test', 'mocks', 'test-directory', 'test-1.md')])
-    //         // let staged = repository.index.staged
-    //         //
-    //         // staged[0].should.equal(npath.join('test-directory', 'test-1.md'))
-    //         // staged[1].should.equal('test.md')
-    //         // expect(staged[2]).to.not.exist()
-    //     })
-    // })
-
-    // describe('#staged', () => {
-    //     it('should return staged files correctly', async () => {
-    //         await repository.stage([npath.join('test', 'mocks', 'test.md'), npath.join('test', 'mocks', 'test-directory', 'test-1.md')])
-    //         let staged = repository.index.staged
-    //
-    //         staged[0].should.equal(npath.join('test-directory', 'test-1.md'))
-    //         staged[1].should.equal('test.md')
-    //         expect(staged[2]).to.not.exist()
-    //     })
-    // })
-    //
-    // describe('#unsnapshot', () => {
-    //     it('should return unspnashot files correctly', async () => {
-    //         await repository.stage([npath.join('test', 'mocks', 'test.md'), npath.join('test', 'mocks', 'test-directory', 'test-1.md')])
-    //         let unsnapshot = repository.index.unsnapshot
-    //
-    //         unsnapshot[0].should.equal(npath.join('test-directory', 'test-1.md'))
-    //         unsnapshot[1].should.equal('test.md')
-    //         expect(unsnapshot[2]).to.not.exist()
-    //     })
-    // })
-    //
-    // describe('#modified', () => {
-    //     after(() => {
-    //         utils.test.cleanMocks()
-    //     })
-    //
-    //     it('should return modified files correctly', async () => {
-    //         await repository.stage([npath.join('test', 'mocks', 'test.md')])
-    //         utils.fs.write(npath.join('test', 'mocks', 'test.md'), 'This is a modified test file')
-    //         await repository.index.update()
-    //         let modified = repository.index.modified
-    //
-    //         modified[0].should.equal('test.md')
-    //         expect(modified[1]).to.not.exist()
-    //     })
-    // })
-    //
-    // describe('#update', () => {
-    //     before(async () => {
-    //         await Repository.remove(npath.join('test', 'mocks'))
-    //         repository = await pando.repositories.create(npath.join('test', 'mocks'))
-    //     })
-    //
-    //     afterEach(() => {
-    //         utils.test.cleanMocks()
-    //     })
-    //
-    //     it('should compute hashes properly', async () => {
-    //         let index = await repository.index.update()
-    //
-    //         for (let path in cids) {
-    //             index[path].wdir.should.be.equal(cids[path])
-    //         }
-    //     })
-    //
-    //     it('should update wdir field correctly when a file is modified', async () => {
-    //         let cid = 'QmenBbcSZowrrBqPjpmH6LSXfLe7jtuxrQ8iGWdteTsNE9'
-    //         utils.fs.write(npath.join('test', 'mocks', 'test.md'), 'This is a modified test file')
-    //         let index = await repository.index.update()
-    //
-    //         index['test.md'].wdir.should.be.equal(cid)
-    //     })
-    //
-    //     it('should update wdir field correctly when a file is added', async () => {
-    //         let cid = 'QmbxGVmc917jMqK1EQy2SzUEA2WahwGW8ztX7NLNX59MzX'
-    //         utils.fs.write(npath.join('test', 'mocks', 'test-2.md'), 'This is a test file')
-    //         let index = await repository.index.update()
-    //
-    //         index['test-2.md'].wdir.should.be.equal(cid)
-    //     })
-    //
-    //     it('should update wdir field correctly when a file is deleted', async () => {
-    //         utils.fs.rm(npath.join('test', 'mocks', 'test.md'))
-    //         let index = await repository.index.update()
-    //
-    //         index['test.md'].wdir.should.be.equal('null')
-    //     })
-    // })
-    //
-    // describe('#reinitialize', () => {
-    //     before(async () => {
-    //         await Repository.remove(npath.join('test', 'mocks'))
-    //         repository = await pando.repositories.create(npath.join('test', 'mocks'))
-    //     })
-    //
-    //     it('should reinitialize index correctly', async () => {
-    //         await repository.stage([npath.join('test', 'mocks', 'test.md')])
-    //         let snapshot = await repository.snapshot('My first snapshot')
-    //         const tree = await snapshot.tree.toIPLD()
-    //
-    //         let reinitialized = await repository.index.reinitialize(await snapshot.tree.toIPLD())
-    //
-    //         reinitialized['test.md'].wdir.should.equal(cids['test.md'])
-    //         reinitialized['test.md'].stage.should.equal(cids['test.md'])
-    //         reinitialized['test.md'].repo.should.equal(cids['test.md'])
-    //     })
-    // })
+        })
+    })
 })
