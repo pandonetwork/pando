@@ -94,16 +94,33 @@ describe('@pando/fiber', () => {
                 repository = await Repository.create(path.join('test', 'fixtures'))
                 fiber = await Fiber.create(repository)
 
-                console.log(fiber.paths)
+                // console.log(fiber.paths)
+                //
+                // console.log(fiber.index)
 
-                console.log(fiber.index)
+                let snapshot = await fiber.snapshot()
 
-                const status = await fiber.status()
+                console.log(snapshot)
 
-                console.log(status.index)
+                snapshot = await fiber.snapshot()
+
+                console.log(snapshot)
+
+                snapshot = await fiber.snapshot()
+
+                console.log(snapshot)
+
+                snapshot = await fiber.snapshot()
+
+                console.log(snapshot)
+
+                let snapshots = await fiber.log()
+
+                console.log(snapshots)
 
 
-                repository.paths.root.should.equal(path.join('test', 'fixtures'))
+
+                // repository.paths.root.should.equal(path.join('test', 'fixtures'))
             })
 
             it("it should create .pando directory structure", async () => {

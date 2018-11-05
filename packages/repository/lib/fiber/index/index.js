@@ -341,148 +341,6 @@ var Index = /** @class */ (function () {
             });
         });
     };
-    Index.prototype.update = function () {
-        return __awaiter(this, void 0, void 0, function () {
-            var files, index, untracked, modified, deleted, updates;
-            var _this = this;
-            return __generator(this, function (_a) {
-                files = {};
-                index = {};
-                untracked = [];
-                modified = [];
-                deleted = [];
-                updates = [];
-                return [2 /*return*/, new Promise(function (resolve, reject) {
-                        klaw_1.default(_this.repository.paths.root)
-                            .pipe(through2_1.default.obj(function (item, enc, next) {
-                            if (item.path.indexOf('.pando') >= 0) {
-                                next();
-                            }
-                            else {
-                                this.push(item);
-                                next();
-                            }
-                        }))
-                            .pipe(through2_1.default.obj(function (item, enc, next) {
-                            if (item.stats.isDirectory()) {
-                                next();
-                            }
-                            else {
-                                this.push(item);
-                                next();
-                            }
-                        }))
-                            .on('data', function (file) {
-                            files[path_1.default.relative(_this.repository.paths.root, file.path)] = { mtime: file.stats.mtime };
-                        })
-                            .on('end', function () {
-                            var readStream = _this.db.createReadStream();
-                            var writeStream = new stream_1.default.Writable({
-                                objectMode: true,
-                                write: function (file, encoding, next) { return __awaiter(_this, void 0, void 0, function () {
-                                    var data, result, cid;
-                                    return __generator(this, function (_a) {
-                                        switch (_a.label) {
-                                            case 0:
-                                                if (!files[file.key]) return [3 /*break*/, 4];
-                                                if (!(new Date(file.value.mtime) < files[file.key].mtime)) return [3 /*break*/, 2];
-                                                data = [{ path: file.key, content: fs_extra_1.default.readFileSync(path_1.default.join(this.repository.paths.root, file.key)) }];
-                                                return [4 /*yield*/, this.node.files.add(data, { onlyHash: true })];
-                                            case 1:
-                                                result = _a.sent();
-                                                cid = result[0].hash;
-                                                index[file.key] = {
-                                                    mtime: files[file.key].mtime.toISOString(),
-                                                    snapshot: file.value.snapshot,
-                                                    stage: file.value.stage,
-                                                    wdir: cid
-                                                };
-                                                updates.push({ type: 'put', key: file.key, value: index[file.key] });
-                                                if (index[file.key].stage !== 'null') {
-                                                    modified.push(file.key);
-                                                }
-                                                else {
-                                                    untracked.push(file.key);
-                                                }
-                                                return [3 /*break*/, 3];
-                                            case 2:
-                                                index[file.key] = file.value;
-                                                if (index[file.key].stage === 'null') {
-                                                    untracked.push(file.key);
-                                                }
-                                                _a.label = 3;
-                                            case 3: return [3 /*break*/, 5];
-                                            case 4:
-                                                index[file.key] = {
-                                                    mtime: new Date(Date.now()).toISOString(),
-                                                    snapshot: file.value.snapshot,
-                                                    stage: file.value.stage,
-                                                    wdir: 'null'
-                                                };
-                                                updates.push({ type: 'put', key: file.key, value: index[file.key] });
-                                                deleted.push(file.key);
-                                                _a.label = 5;
-                                            case 5:
-                                                delete files[file.key];
-                                                next();
-                                                return [2 /*return*/];
-                                        }
-                                    });
-                                }); }
-                            });
-                            writeStream
-                                .on('finish', function () { return __awaiter(_this, void 0, void 0, function () {
-                                var _a, _b, _i, path, data, result, cid;
-                                return __generator(this, function (_c) {
-                                    switch (_c.label) {
-                                        case 0:
-                                            _a = [];
-                                            for (_b in files)
-                                                _a.push(_b);
-                                            _i = 0;
-                                            _c.label = 1;
-                                        case 1:
-                                            if (!(_i < _a.length)) return [3 /*break*/, 4];
-                                            path = _a[_i];
-                                            if (!files.hasOwnProperty(path)) return [3 /*break*/, 3];
-                                            data = [{ path: path, content: fs_extra_1.default.readFileSync(path_1.default.join(this.repository.paths.root, path)) }];
-                                            return [4 /*yield*/, this.node.files.add(data, { onlyHash: true })];
-                                        case 2:
-                                            result = _c.sent();
-                                            cid = result[0].hash;
-                                            index[path] = {
-                                                mtime: files[path].mtime.toISOString(),
-                                                snapshot: 'null',
-                                                stage: 'null',
-                                                wdir: cid
-                                            };
-                                            updates.push({ type: 'put', key: path, value: index[path] });
-                                            untracked.push(path);
-                                            _c.label = 3;
-                                        case 3:
-                                            _i++;
-                                            return [3 /*break*/, 1];
-                                        case 4: return [4 /*yield*/, this.db.batch(updates)];
-                                        case 5:
-                                            _c.sent();
-                                            resolve({ index: index, untracked: untracked, modified: modified, deleted: deleted });
-                                            return [2 /*return*/];
-                                    }
-                                });
-                            }); })
-                                .on('error', function (err) {
-                                reject(err);
-                            });
-                            readStream
-                                .pipe(writeStream)
-                                .on('error', function (err) {
-                                reject(err);
-                            });
-                        });
-                    })];
-            });
-        });
-    };
     Index.prototype.cid = function (path) {
         return __awaiter(this, void 0, void 0, function () {
             var data, result;
@@ -500,7 +358,7 @@ var Index = /** @class */ (function () {
     };
     Index.prototype.snapshot = function (opts) {
         return __awaiter(this, void 0, void 0, function () {
-            var _a, index, untracked, modified, deleted, promises, updates, _i, modified_1, path;
+            var _a, index, untracked, modified, deleted, promises, updates, _i, modified_1, path, hash;
             return __generator(this, function (_b) {
                 switch (_b.label) {
                     case 0: return [4 /*yield*/, this.status()];
@@ -533,7 +391,12 @@ var Index = /** @class */ (function () {
                         return [4 /*yield*/, Promise.all(promises)];
                     case 2:
                         _b.sent();
-                        return [2 /*return*/, index];
+                        return [4 /*yield*/, this.node.files.stat('/', { hash: true })];
+                    case 3:
+                        hash = (_b.sent()).hash;
+                        console.log('HASH');
+                        console.log(hash);
+                        return [2 /*return*/, hash];
                 }
             });
         });
@@ -565,15 +428,16 @@ var Index = /** @class */ (function () {
             });
         });
     };
+    // @ignore
     Index.prototype.extract = function (paths, index) {
         var _this = this;
-        paths = paths.map(function (path) {
+        var extracted = paths.map(function (path) {
             path = path_1.default.relative(_this.repository.paths.root, path);
             return _.filter(Object.keys(index), function (entry) {
                 return entry.indexOf(path) === 0;
             });
         });
-        return _.uniq(_.flattenDeep(paths));
+        return _.uniq(_.flattenDeep(extracted));
     };
     return Index;
 }());

@@ -4,7 +4,13 @@ import Level from 'level'
 import npath from 'path'
 import FiberFactory from './fiber/factory'
 
+import util from 'util'
+
+import async from 'async';
+
 // import Index from '@pando/index'
+
+const ensure = util.promisify(fs.ensureDir)
 
 
 export default class Repository {
@@ -16,37 +22,33 @@ export default class Repository {
         db: '.pando/db',
         current: '.pando/current',
         config: '.pando/config',
-        branches: '.pando/branches',
         fibers: '.pando/fibers',
-        remotes: '.pando/remotes'
     }
 
 
     public static async create(path: string = '.'): Promise<Repository> {
-        return new Promise<Repository>((resolve, reject) => {
-            let node = new IPFS({ repo: npath.join(path, Repository.paths.ipfs), start: false })
+        return new Promise<Repository>(async (resolve, reject) => {
 
-            node.on('ready', () => {
-                resolve(new Repository(path, node))
-            })
+            // TODO: check that path exists
 
-            node.on('error', (error) => {
-                reject(error)
-            })
+            await Promise.all([
+                ensure(npath.join(path, '.pando', 'ipfs')),
+                ensure(npath.join(path, '.pando', 'fibers'))
+            ])
+
+            const node = new IPFS({ repo: npath.join(path, '.pando', 'ipfs'), start: false })
+                .on('error', err => {
+                    reject(err)
+                })
+                .on('ready', async () => {
+                    const repository = new Repository(path, node)
+                    await repository.fibers.create('master')
+                    console.log('On va switcher')
+                    await repository.fibers.switch('master', { stash: false })
+                    resolve(repository)
+                })
         })
     }
-
-    // public static async create(path: string = '.'): Promise<Repository> {
-    //
-    //
-    //     const repository = new Repository(path)
-    //
-    //     fs.ensureDirSync(repository.paths.pando)
-    //
-    //
-    //     return repository
-    // }
-
 
     public paths = { ...Repository.paths }
     public node: IPFS
@@ -54,18 +56,18 @@ export default class Repository {
     // public index: Index
 
     public constructor(path: string = '.', node: IPFS) {
-        for (const p in this.paths) {
-            if (this.paths.hasOwnProperty(p)) {
-                this.paths[p] = npath.join(path, this.paths[p])
-            }
-        }
-        this.node = node
-        this.fibers = new FiberFactory(this)
+        this.paths['root']   = path
+        this.paths['pando']  = npath.join(path, '.pando')
+        this.paths['ipfs']   = npath.join(path, '.pando', 'ipfs')
+        this.paths['fibers'] = npath.join(path, '.pando', 'fibers')
 
+        this.node   = node
+        this.fibers = new FiberFactory(this)
     }
 
     public async remove() {
-        // fs.removeSync(this.paths.pando)
+        if (this.fibers.db.isOpen()) { await this.fibers.db.close() }
+
         fs.removeSync(this.paths.pando)
     }
 }

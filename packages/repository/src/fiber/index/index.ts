@@ -48,7 +48,6 @@ export default class Index {
     public fiber: Fiber
     public db: Level
 
-
     constructor(fiber: Fiber) {
         this.fiber = fiber
         this.db    = Level(fiber.paths.index, { valueEncoding: 'json' })
@@ -264,123 +263,6 @@ export default class Index {
         })
     }
 
-    public async update(): Promise<any> {
-        const files = {}
-        const index = {}
-        const untracked : string[] = []
-        const modified: string[] = []
-        const deleted: string[] = []
-
-        const updates: any[] = []
-
-        return new Promise((resolve, reject): any => {
-            klaw(this.repository.paths.root)
-                .pipe(through2.obj(function (item, enc, next) { // ignore .pando directory
-                    if (item.path.indexOf('.pando') >= 0) {
-                        next()
-                    } else {
-                        this.push(item)
-                        next()
-                    }
-                }))
-                .pipe(through2.obj(function (item, enc, next) { // ignore directories
-                    if (item.stats.isDirectory()) {
-                        next()
-                    } else {
-                        this.push(item)
-                        next()
-                    }
-                }))
-                .on('data', file => {
-                    files[npath.relative(this.repository.paths.root, file.path)] = { mtime: file.stats.mtime }
-                })
-                .on('end', () => {
-                    const readStream  = this.db.createReadStream()
-
-                    const writeStream = new stream.Writable({
-                        objectMode: true,
-                        write: async (file, encoding, next) => {
-                            if (files[file.key]) { // file still exists in wdir
-                                if (new Date(file.value.mtime) < files[file.key].mtime) { // file has been modified since last index's update
-
-                                    const data = [{ path: file.key, content: fs.readFileSync(npath.join(this.repository.paths.root, file.key)) }]
-                                    const result = await this.node.files.add(data, { onlyHash: true })
-                                    const cid = result[0].hash
-
-                                    index[file.key] = {
-                                        mtime: files[file.key].mtime.toISOString(),
-                                        snapshot: file.value.snapshot,
-                                        stage: file.value.stage,
-                                        wdir: cid
-                                    }
-                                    updates.push({ type: 'put', key: file.key, value: index[file.key] })
-
-                                    if (index[file.key].stage !== 'null') {
-                                        modified.push(file.key)
-                                    } else {
-                                        untracked.push(file.key)
-                                    }
-
-                                } else { // file has not been modified since last index's update
-                                    index[file.key] = file.value
-
-                                    if (index[file.key].stage === 'null') {
-                                        untracked.push(file.key)
-                                    }
-                                }
-                            } else { // file does not exist in wdir anymore
-                                index[file.key] = {
-                                    mtime: new Date(Date.now()).toISOString(),
-                                    snapshot: file.value.snapshot,
-                                    stage: file.value.stage,
-                                    wdir: 'null'
-                                }
-                                updates.push({ type: 'put', key: file.key, value: index[file.key] })
-
-                                deleted.push(file.key)
-                            }
-                            delete files[file.key]
-                            next();
-                        }
-                    });
-
-                    writeStream
-                        .on('finish', async () => {
-                            for (const path in files) { // file has been added since last index's update
-                                if (files.hasOwnProperty(path)) {
-                                    const data = [{ path: path, content: fs.readFileSync(npath.join(this.repository.paths.root, path)) }]
-                                    const result = await this.node.files.add(data, { onlyHash: true })
-                                    const cid = result[0].hash
-
-                                    index[path] = {
-                                        mtime: files[path].mtime.toISOString(),
-                                        snapshot: 'null',
-                                        stage: 'null',
-                                        wdir: cid
-                                    }
-
-                                    updates.push({ type: 'put', key: path, value: index[path] })
-                                    untracked.push(path)
-                                }
-                            }
-
-                            await this.db.batch(updates)
-
-                            resolve({ index, untracked, modified, deleted })
-                        })
-                        .on('error', err => {
-                            reject(err)
-                        })
-
-                    readStream
-                        .pipe(writeStream)
-                        .on('error', err => {
-                            reject(err)
-                        })
-                })
-        })
-    }
-
     public async cid(path: string): Promise<string> {
         const data   = [{ path: path, content: fs.readFileSync(npath.join(this.repository.paths.root, path)) }]
         const result = await this.node.files.add(data, { onlyHash: true })
@@ -419,7 +301,12 @@ export default class Index {
         await Promise.all(promises)
 
 
-        return index
+        const hash = (await this.node.files.stat('/', { hash: true })).hash
+
+        console.log('HASH')
+        console.log(hash)
+
+        return hash
     }
 
     private async clean(path: string): Promise<void> {
@@ -438,13 +325,14 @@ export default class Index {
         }
     }
 
+    // @ignore
     private extract(paths: string[], index: any): string[] {
-        paths = paths.map(path => {
+        let extracted = paths.map(path => {
             path = npath.relative(this.repository.paths.root, path)
             return _.filter(Object.keys(index), entry => {
                 return entry.indexOf(path) === 0
             })
         })
-        return _.uniq(_.flattenDeep(paths))
+        return _.uniq(_.flattenDeep(extracted))
     }
 }

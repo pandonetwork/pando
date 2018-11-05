@@ -53,52 +53,83 @@ var fs_extra_1 = __importDefault(require("fs-extra"));
 var ipfs_1 = __importDefault(require("ipfs"));
 var path_1 = __importDefault(require("path"));
 var factory_1 = __importDefault(require("./fiber/factory"));
+var util_1 = __importDefault(require("util"));
 // import Index from '@pando/index'
+var ensure = util_1.default.promisify(fs_extra_1.default.ensureDir);
 var Repository = /** @class */ (function () {
     // public index: Index
     function Repository(path, node) {
         if (path === void 0) { path = '.'; }
-        // public static async create(path: string = '.'): Promise<Repository> {
-        //
-        //
-        //     const repository = new Repository(path)
-        //
-        //     fs.ensureDirSync(repository.paths.pando)
-        //
-        //
-        //     return repository
-        // }
         this.paths = __assign({}, Repository.paths);
-        for (var p in this.paths) {
-            if (this.paths.hasOwnProperty(p)) {
-                this.paths[p] = path_1.default.join(path, this.paths[p]);
-            }
-        }
+        this.paths['root'] = path;
+        this.paths['pando'] = path_1.default.join(path, '.pando');
+        this.paths['ipfs'] = path_1.default.join(path, '.pando', 'ipfs');
+        this.paths['fibers'] = path_1.default.join(path, '.pando', 'fibers');
         this.node = node;
         this.fibers = new factory_1.default(this);
     }
     Repository.create = function (path) {
         if (path === void 0) { path = '.'; }
         return __awaiter(this, void 0, void 0, function () {
+            var _this = this;
             return __generator(this, function (_a) {
-                return [2 /*return*/, new Promise(function (resolve, reject) {
-                        var node = new ipfs_1.default({ repo: path_1.default.join(path, Repository.paths.ipfs), start: false });
-                        node.on('ready', function () {
-                            resolve(new Repository(path, node));
+                return [2 /*return*/, new Promise(function (resolve, reject) { return __awaiter(_this, void 0, void 0, function () {
+                        var node;
+                        var _this = this;
+                        return __generator(this, function (_a) {
+                            switch (_a.label) {
+                                case 0: 
+                                // TODO: check that path exists
+                                return [4 /*yield*/, Promise.all([
+                                        ensure(path_1.default.join(path, '.pando', 'ipfs')),
+                                        ensure(path_1.default.join(path, '.pando', 'fibers'))
+                                    ])];
+                                case 1:
+                                    // TODO: check that path exists
+                                    _a.sent();
+                                    node = new ipfs_1.default({ repo: path_1.default.join(path, '.pando', 'ipfs'), start: false })
+                                        .on('error', function (err) {
+                                        reject(err);
+                                    })
+                                        .on('ready', function () { return __awaiter(_this, void 0, void 0, function () {
+                                        var repository;
+                                        return __generator(this, function (_a) {
+                                            switch (_a.label) {
+                                                case 0:
+                                                    repository = new Repository(path, node);
+                                                    return [4 /*yield*/, repository.fibers.create('master')];
+                                                case 1:
+                                                    _a.sent();
+                                                    console.log('On va switcher');
+                                                    return [4 /*yield*/, repository.fibers.switch('master', { stash: false })];
+                                                case 2:
+                                                    _a.sent();
+                                                    resolve(repository);
+                                                    return [2 /*return*/];
+                                            }
+                                        });
+                                    }); });
+                                    return [2 /*return*/];
+                            }
                         });
-                        node.on('error', function (error) {
-                            reject(error);
-                        });
-                    })];
+                    }); })];
             });
         });
     };
     Repository.prototype.remove = function () {
         return __awaiter(this, void 0, void 0, function () {
             return __generator(this, function (_a) {
-                // fs.removeSync(this.paths.pando)
-                fs_extra_1.default.removeSync(this.paths.pando);
-                return [2 /*return*/];
+                switch (_a.label) {
+                    case 0:
+                        if (!this.fibers.db.isOpen()) return [3 /*break*/, 2];
+                        return [4 /*yield*/, this.fibers.db.close()];
+                    case 1:
+                        _a.sent();
+                        _a.label = 2;
+                    case 2:
+                        fs_extra_1.default.removeSync(this.paths.pando);
+                        return [2 /*return*/];
+                }
             });
         });
     };
@@ -110,9 +141,7 @@ var Repository = /** @class */ (function () {
         db: '.pando/db',
         current: '.pando/current',
         config: '.pando/config',
-        branches: '.pando/branches',
         fibers: '.pando/fibers',
-        remotes: '.pando/remotes'
     };
     return Repository;
 }());
