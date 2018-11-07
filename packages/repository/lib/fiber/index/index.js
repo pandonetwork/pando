@@ -52,6 +52,7 @@ var klaw_1 = __importDefault(require("klaw"));
 var through2_1 = __importDefault(require("through2"));
 var stream_1 = __importDefault(require("stream"));
 var _ = __importStar(require("lodash"));
+var util_1 = __importDefault(require("util"));
 var ignore = through2_1.default.obj(function (item, enc, next) {
     // console.log(item.path)
     // console.log('IGNORE')
@@ -63,8 +64,58 @@ var ignore = through2_1.default.obj(function (item, enc, next) {
 var Index = /** @class */ (function () {
     function Index(fiber) {
         this.fiber = fiber;
-        this.db = level_1.default(fiber.paths.index, { valueEncoding: 'json' });
+        this.db = util_1.default.promisify(level_1.default)(fiber.paths.index, { valueEncoding: 'json' });
     }
+    // public static async create(fiber: Fiber): Promise<Index> {
+    //
+    //     const db = Level(fiber.paths.index, { valueEncoding: 'json' })
+    //
+    //     return new Index(fiber, db)
+    //
+    //     // return new Promise<Index>((resolve, reject) => {
+    //     //     const node = new IPFS({ repo: repository.paths.ipfs, start: false })
+    //     //     node.on('ready', () => {
+    //     //         Level(repository.paths.index, { valueEncoding: 'json' }, function (err, db) {
+    //     //             if (err) reject(err)
+    //     //
+    //     //             resolve(new Index(repository, node, db))
+    //     //         })
+    //     //     })
+    //     //     node.on('error', (error) => {
+    //     //         reject(error)
+    //     //     })
+    //     // })
+    // }
+    Index.for = function (fiber) {
+        return __awaiter(this, void 0, void 0, function () {
+            var index;
+            return __generator(this, function (_a) {
+                switch (_a.label) {
+                    case 0:
+                        index = new Index(fiber);
+                        return [4 /*yield*/, index.initialize()];
+                    case 1:
+                        _a.sent();
+                        return [2 /*return*/, index];
+                }
+            });
+        });
+    };
+    Index.prototype.initialize = function () {
+        return __awaiter(this, void 0, void 0, function () {
+            var _a;
+            return __generator(this, function (_b) {
+                switch (_b.label) {
+                    case 0:
+                        _a = this;
+                        return [4 /*yield*/, this.db];
+                    case 1:
+                        _a.db = _b.sent();
+                        return [2 /*return*/, this];
+                }
+            });
+        });
+    };
     Object.defineProperty(Index.prototype, "repository", {
         get: function () {
             return this.fiber.repository;
@@ -372,21 +423,6 @@ var Index = /** @class */ (function () {
                             updates.push({ type: 'put', key: path, value: index[path] });
                             promises.push(this.node.files.write('/' + path, fs_extra_1.default.readFileSync(path_1.default.join(this.repository.paths.root, path)), { create: true, parents: true }));
                         }
-                        // for (let path in modified) {
-                        //     const entry = await this.db.get(path)
-                        //
-                        //     if (entry.tracked && entry.wdir !== entry.snapshot) { // entry has been modified since last stage
-                        //         if (entry.wdir !== 'null') { // entry exists in wdir
-                        //             await this.node.files.write('/' + path, fs.readFileSync(npath.join(this.repository.paths.root, path)), { create: true, parents: true })
-                        //         } else { // entry does not exists in wdir
-                        //             await this.node.files.rm('/' + path)
-                        //             await this.clean(path)
-                        //         }
-                        //
-                        //         index[path].stage = index[path].wdir
-                        //         updates.push({ type: 'put', key: path, value: index[path] })
-                        //     }
-                        // }
                         promises.push(this.db.batch(updates));
                         return [4 /*yield*/, Promise.all(promises)];
                     case 2:
@@ -394,8 +430,6 @@ var Index = /** @class */ (function () {
                         return [4 /*yield*/, this.node.files.stat('/', { hash: true })];
                     case 3:
                         hash = (_b.sent()).hash;
-                        console.log('HASH');
-                        console.log(hash);
                         return [2 /*return*/, hash];
                 }
             });
@@ -428,7 +462,6 @@ var Index = /** @class */ (function () {
             });
         });
     };
-    // @ignore
     Index.prototype.extract = function (paths, index) {
         var _this = this;
         var extracted = paths.map(function (path) {

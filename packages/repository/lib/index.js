@@ -97,10 +97,9 @@ var Repository = /** @class */ (function () {
                                             switch (_a.label) {
                                                 case 0:
                                                     repository = new Repository(path, node);
-                                                    return [4 /*yield*/, repository.fibers.create('master')];
+                                                    return [4 /*yield*/, repository.fibers.create('master', { fork: false })];
                                                 case 1:
                                                     _a.sent();
-                                                    console.log('On va switcher');
                                                     return [4 /*yield*/, repository.fibers.switch('master', { stash: false })];
                                                 case 2:
                                                     _a.sent();

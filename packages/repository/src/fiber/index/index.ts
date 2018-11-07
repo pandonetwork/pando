@@ -11,6 +11,8 @@ import klaw from 'klaw'
 import through2 from 'through2'
 import stream from 'stream'
 import * as _ from 'lodash'
+import util      from 'util'
+
 
 const ignore = through2.obj(function (item, enc, next) {
     // console.log(item.path)
@@ -45,12 +47,25 @@ export default class Index {
     //     // })
     // }
 
+    public static async for(fiber: Fiber): Promise<Index> {
+        const index = new Index(fiber)
+        await index.initialize()
+
+        return index
+    }
+
     public fiber: Fiber
     public db: Level
 
     constructor(fiber: Fiber) {
         this.fiber = fiber
-        this.db    = Level(fiber.paths.index, { valueEncoding: 'json' })
+        this.db    = util.promisify(Level)(fiber.paths.index, { valueEncoding: 'json' })
+    }
+
+    public async initialize(): Promise<Index> {
+        this.db = await this.db
+
+        return this
     }
 
     get repository(): Repository {
@@ -272,6 +287,7 @@ export default class Index {
 
     public async snapshot(opts?: any): Promise<any> {
         const { index, untracked, modified, deleted } = await this.status()
+
         const promises: any[] = []
         const updates:  any[] = []
 
@@ -282,29 +298,12 @@ export default class Index {
             promises.push(this.node.files.write('/' + path, fs.readFileSync(npath.join(this.repository.paths.root, path)), { create: true, parents: true }))
         }
 
-        // for (let path in modified) {
-        //     const entry = await this.db.get(path)
-        //
-        //     if (entry.tracked && entry.wdir !== entry.snapshot) { // entry has been modified since last stage
-        //         if (entry.wdir !== 'null') { // entry exists in wdir
-        //             await this.node.files.write('/' + path, fs.readFileSync(npath.join(this.repository.paths.root, path)), { create: true, parents: true })
-        //         } else { // entry does not exists in wdir
-        //             await this.node.files.rm('/' + path)
-        //             await this.clean(path)
-        //         }
-        //
-        //         index[path].stage = index[path].wdir
-        //         updates.push({ type: 'put', key: path, value: index[path] })
-        //     }
-        // }
         promises.push(this.db.batch(updates))
-        await Promise.all(promises)
 
+        await Promise.all(promises)
 
         const hash = (await this.node.files.stat('/', { hash: true })).hash
 
-        console.log('HASH')
-        console.log(hash)
 
         return hash
     }
@@ -325,7 +324,6 @@ export default class Index {
         }
     }
 
-    // @ignore
     private extract(paths: string[], index: any): string[] {
         let extracted = paths.map(path => {
             path = npath.relative(this.repository.paths.root, path)

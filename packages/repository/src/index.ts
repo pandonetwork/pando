@@ -42,8 +42,7 @@ export default class Repository {
                 })
                 .on('ready', async () => {
                     const repository = new Repository(path, node)
-                    await repository.fibers.create('master')
-                    console.log('On va switcher')
+                    await repository.fibers.create('master', { fork: false })
                     await repository.fibers.switch('master', { stash: false })
                     resolve(repository)
                 })

@@ -61,63 +61,7 @@ var FiberFactory = /** @class */ (function () {
         this.repository = repository;
         this.db = level_1.default(path_1.default.join(repository.paths.fibers, 'db'), { valueEncoding: 'json' });
     }
-    FiberFactory.prototype.current = function (_a) {
-        var _b = (_a === void 0 ? {} : _a).uuid, uuid = _b === void 0 ? false : _b;
-        return __awaiter(this, void 0, void 0, function () {
-            var _this = this;
-            return __generator(this, function (_c) {
-                return [2 /*return*/, new Promise(function (resolve, reject) {
-                        _this.db
-                            .createReadStream()
-                            .on('data', function (fiber) { return __awaiter(_this, void 0, void 0, function () {
-                            var _a;
-                            return __generator(this, function (_b) {
-                                switch (_b.label) {
-                                    case 0:
-                                        if (!fiber.value.current) return [3 /*break*/, 3];
-                                        if (!uuid) return [3 /*break*/, 1];
-                                        resolve(fiber.key);
-                                        return [3 /*break*/, 3];
-                                    case 1:
-                                        _a = resolve;
-                                        return [4 /*yield*/, this.load(fiber.key)];
-                                    case 2:
-                                        _a.apply(void 0, [_b.sent()]);
-                                        _b.label = 3;
-                                    case 3: return [2 /*return*/];
-                                }
-                            });
-                        }); })
-                            .on('end', function () { return __awaiter(_this, void 0, void 0, function () {
-                            return __generator(this, function (_a) {
-                                resolve(undefined);
-                                return [2 /*return*/];
-                            });
-                        }); })
-                            .on('error', function (err) {
-                            reject(err);
-                        });
-                    })];
-            });
-        });
-    };
-    FiberFactory.prototype.create = function (name) {
-        return __awaiter(this, void 0, void 0, function () {
-            var fiber;
-            return __generator(this, function (_a) {
-                switch (_a.label) {
-                    case 0: return [4 /*yield*/, _1.default.create(this.repository)];
-                    case 1:
-                        fiber = _a.sent();
-                        return [4 /*yield*/, this.db.put(fiber.uuid, { name: name, wdir: 'null', snapshot: 'null', current: false })];
-                    case 2:
-                        _a.sent();
-                        return [2 /*return*/, fiber];
-                }
-            });
-        });
-    };
-    FiberFactory.prototype.load = function (name) {
+    FiberFactory.prototype.uuid = function (name) {
         return __awaiter(this, void 0, void 0, function () {
             var uuid;
             var _this = this;
@@ -131,28 +75,117 @@ var FiberFactory = /** @class */ (function () {
                                 uuid = fiber.key;
                             }
                         })
-                            .on('end', function () { return __awaiter(_this, void 0, void 0, function () {
+                            .on('end', function () {
+                            if (typeof uuid === 'undefined') {
+                                reject(new Error('Unknown fiber ' + name));
+                            }
+                            else {
+                                resolve(uuid);
+                            }
+                        })
+                            .on('error', function (err) {
+                            reject(err);
+                        });
+                    })];
+            });
+        });
+    };
+    FiberFactory.prototype.current = function (_a) {
+        var _b = (_a === void 0 ? {} : _a).uuid, uuid = _b === void 0 ? false : _b;
+        return __awaiter(this, void 0, void 0, function () {
+            var done;
+            var _this = this;
+            return __generator(this, function (_c) {
+                done = false;
+                return [2 /*return*/, new Promise(function (resolve, reject) {
+                        _this.db
+                            .createReadStream()
+                            .on('data', function (fiber) { return __awaiter(_this, void 0, void 0, function () {
                             var _a;
                             return __generator(this, function (_b) {
                                 switch (_b.label) {
                                     case 0:
-                                        if (!(typeof uuid === 'undefined')) return [3 /*break*/, 1];
-                                        reject(new Error('Unknown branch ' + name));
+                                        if (!fiber.value.current) return [3 /*break*/, 3];
+                                        done = true;
+                                        if (!uuid) return [3 /*break*/, 1];
+                                        resolve(fiber.key);
                                         return [3 /*break*/, 3];
                                     case 1:
                                         _a = resolve;
-                                        return [4 /*yield*/, _1.default.load(this.repository, uuid)];
+                                        return [4 /*yield*/, this.load(fiber.key, { uuid: true })];
                                     case 2:
                                         _a.apply(void 0, [_b.sent()]);
                                         _b.label = 3;
                                     case 3: return [2 /*return*/];
                                 }
                             });
-                        }); }).
-                            on('error', function (err) {
+                        }); })
+                            .on('end', function () { return __awaiter(_this, void 0, void 0, function () {
+                            return __generator(this, function (_a) {
+                                if (!done) {
+                                    reject(new Error('Unknow current fiber'));
+                                }
+                                return [2 /*return*/];
+                            });
+                        }); })
+                            .on('error', function (err) {
                             reject(err);
                         });
                     })];
+            });
+        });
+    };
+    FiberFactory.prototype.create = function (name, _a) {
+        var _b = _a === void 0 ? {} : _a, _c = _b.fork, fork = _c === void 0 ? true : _c, _d = _b.open, open = _d === void 0 ? false : _d;
+        return __awaiter(this, void 0, void 0, function () {
+            var fiber, current;
+            return __generator(this, function (_e) {
+                switch (_e.label) {
+                    case 0: return [4 /*yield*/, _1.default.create(this.repository)];
+                    case 1:
+                        fiber = _e.sent();
+                        if (!fork) return [3 /*break*/, 5];
+                        return [4 /*yield*/, this.current({ uuid: true })];
+                    case 2:
+                        current = _e.sent();
+                        return [4 /*yield*/, fs_extra_1.default.copy(path_1.default.join(this.repository.paths.fibers, current, 'snapshots'), path_1.default.join(this.repository.paths.fibers, fiber.uuid, 'snapshots'))];
+                    case 3:
+                        _e.sent();
+                        return [4 /*yield*/, this._stash(fiber.uuid, { copy: true })];
+                    case 4:
+                        _e.sent();
+                        _e.label = 5;
+                    case 5: return [4 /*yield*/, this.db.put(fiber.uuid, { name: name, wdir: 'null', snapshot: 'null', current: false })];
+                    case 6:
+                        _e.sent();
+                        if (!open) return [3 /*break*/, 8];
+                        return [4 /*yield*/, fiber.open()];
+                    case 7:
+                        _e.sent();
+                        _e.label = 8;
+                    case 8: return [2 /*return*/, fiber];
+                }
+            });
+        });
+    };
+    FiberFactory.prototype.load = function (name, _a) {
+        var _b = (_a === void 0 ? {} : _a).uuid, uuid = _b === void 0 ? false : _b;
+        return __awaiter(this, void 0, void 0, function () {
+            var _c;
+            return __generator(this, function (_d) {
+                switch (_d.label) {
+                    case 0:
+                        if (!uuid) return [3 /*break*/, 1];
+                        _c = name;
+                        return [3 /*break*/, 3];
+                    case 1: return [4 /*yield*/, this.uuid(name)];
+                    case 2:
+                        _c = _d.sent();
+                        _d.label = 3;
+                    case 3:
+                        name = _c;
+                        return [2 /*return*/, _1.default.load(this.repository, name)];
+                }
             });
         });
     };
@@ -189,22 +222,25 @@ var FiberFactory = /** @class */ (function () {
                             return __generator(this, function (_a) {
                                 switch (_a.label) {
                                     case 0:
-                                        if (!stash) return [3 /*break*/, 2];
+                                        if (!stash) return [3 /*break*/, 3];
                                         // throw if uuid is undefined
-                                        console.log('Finish');
+                                        return [4 /*yield*/, this._stash(from)];
+                                    case 1:
+                                        // throw if uuid is undefined
+                                        _a.sent();
                                         return [4 /*yield*/, Promise.all([
-                                                this._stash(from),
+                                                // this._stash(from as string),
                                                 this._unstash(to),
                                                 this.db.batch(ops)
                                             ])];
-                                    case 1:
+                                    case 2:
                                         _a.sent();
-                                        return [3 /*break*/, 4];
-                                    case 2: return [4 /*yield*/, this.db.batch(ops)];
-                                    case 3:
-                                        _a.sent();
-                                        _a.label = 4;
+                                        return [3 /*break*/, 5];
+                                    case 3: return [4 /*yield*/, this.db.batch(ops)];
                                     case 4:
+                                        _a.sent();
+                                        _a.label = 5;
+                                    case 5:
                                         resolve();
                                         return [2 /*return*/];
                                 }
@@ -218,11 +254,12 @@ var FiberFactory = /** @class */ (function () {
             });
         });
     };
-    FiberFactory.prototype._stash = function (uuid) {
+    FiberFactory.prototype._stash = function (uuid, _a) {
+        var _b = (_a === void 0 ? {} : _a).copy, copy = _b === void 0 ? false : _b;
         return __awaiter(this, void 0, void 0, function () {
             var ops, files;
             var _this = this;
-            return __generator(this, function (_a) {
+            return __generator(this, function (_c) {
                 ops = [];
                 files = [];
                 return [2 /*return*/, new Promise(function (resolve, reject) {
@@ -251,7 +288,12 @@ var FiberFactory = /** @class */ (function () {
                                         // empty fibers/uuid/backup
                                         for (_i = 0, files_1 = files; _i < files_1.length; _i++) {
                                             file = files_1[_i];
-                                            ops.push(fs_extra_1.default.move(file, path_1.default.join(this.repository.paths.fibers, uuid, 'stash', path_1.default.basename(file))));
+                                            if (copy) {
+                                                ops.push(fs_extra_1.default.copy(file, path_1.default.join(this.repository.paths.fibers, uuid, 'stash', path_1.default.basename(file))));
+                                            }
+                                            else {
+                                                ops.push(fs_extra_1.default.move(file, path_1.default.join(this.repository.paths.fibers, uuid, 'stash', path_1.default.basename(file)), { overwrite: true }));
+                                            }
                                         }
                                         return [4 /*yield*/, Promise.all(ops)];
                                     case 1:
@@ -286,12 +328,9 @@ var FiberFactory = /** @class */ (function () {
                                 switch (_a.label) {
                                     case 0:
                                         files.shift();
-                                        console.log('UNSTASH: ' + path_1.default.join(this.repository.paths.fibers, uuid, 'stash'));
-                                        console.log(files);
                                         for (_i = 0, files_2 = files; _i < files_2.length; _i++) {
                                             file = files_2[_i];
-                                            console.log('To move back: ' + file);
-                                            ops.push(fs_extra_1.default.move(file, path_1.default.join(this.repository.paths.root, path_1.default.basename(file))));
+                                            ops.push(fs_extra_1.default.move(file, path_1.default.join(this.repository.paths.root, path_1.default.basename(file)), { overwrite: true }));
                                         }
                                         return [4 /*yield*/, Promise.all(ops)];
                                     case 1:

@@ -19,22 +19,50 @@ export default class FiberFactory {
 
     }
 
+    public async uuid(name: string): Promise<string> {
+        let uuid: string|undefined = undefined
+
+        return new Promise<string>((resolve, reject) => {
+            this.db
+                .createReadStream()
+                .on('data', fiber => {
+                    if (fiber.value.name === name) { uuid = fiber.key }
+                })
+                .on('end', () => {
+                    if (typeof uuid === 'undefined') {
+                        reject(new Error('Unknown fiber ' + name))
+                    } else {
+                        resolve(uuid)
+                    }
+                })
+                .on('error', (err) => {
+                    reject (err)
+                })
+        })
+    }
+
     public async current({ uuid = false }: { uuid?: boolean} = {}): Promise<Fiber|string|undefined> {
+        let done: boolean = false
+
         return new Promise<Fiber|string|undefined>((resolve, reject) => {
             this.db
                 .createReadStream()
                 .on('data', async fiber => {
                     if (fiber.value.current) {
+                        done = true
                         if (uuid) {
                             resolve(fiber.key)
                         } else {
-                            resolve(await this.load(fiber.key))
+                            resolve(await this.load(fiber.key, { uuid: true }))
                         }
 
                     }
                 })
                 .on('end', async () => {
-                    resolve(undefined)
+                    if (!done) {
+                        reject(new Error('Unknow current fiber'))
+                    }
+
                 })
                 .on('error', err => {
                     reject(err)
@@ -42,41 +70,28 @@ export default class FiberFactory {
         })
     }
 
-    public async create(name: string): Promise<Fiber> {
+    public async create(name: string, { fork = true, open = false }: { fork?: boolean, open?: boolean } = {}): Promise<Fiber> {
+        let fiber = await Fiber.create(this.repository)
 
-        // put a fork option to copy the database of the current branch
-        // copy the database from current branch to the newly created branch ?
-
-        const fiber = await Fiber.create(this.repository)
-
+        if (fork) {
+            const current: string = await this.current({ uuid: true }) as string
+            await fs.copy(npath.join(this.repository.paths.fibers, current, 'snapshots'), npath.join(this.repository.paths.fibers, fiber.uuid, 'snapshots'))
+            await this._stash(fiber.uuid, { copy: true })
+        }
 
         await this.db.put(fiber.uuid, { name, wdir: 'null', snapshot: 'null', current: false })
+
+        if (open) {
+            await fiber.open()
+        }
 
         return fiber
     }
 
-    public async load(name: string): Promise<Fiber> {
-        let uuid: string|undefined = undefined
+    public async load(name: string, { uuid = false }: { uuid?: boolean } = {}): Promise<Fiber> {
+        name = uuid ? name : await this.uuid(name)
 
-        return new Promise<Fiber>((resolve, reject) => {
-            this.db
-                .createReadStream()
-                .on('data', fiber => {
-                    if (fiber.value.name === name) {
-                        uuid = fiber.key
-                    }
-                })
-                .on('end', async () => {
-                    if (typeof uuid === 'undefined') {
-                        reject(new Error('Unknown branch ' + name))
-                    } else {
-                        resolve(await Fiber.load(this.repository, uuid))
-                    }
-                }).
-                on('error', (err) => {
-                    reject (err)
-                })
-        })
+        return Fiber.load(this.repository, name)
     }
 
     public async switch(name: string, { stash = true }: { stash?: boolean} = {}): Promise<any> {
@@ -107,9 +122,12 @@ export default class FiberFactory {
                 .on('finish', async () => {
                     if (stash) {
                         // throw if uuid is undefined
-                        console.log('Finish')
+
+
+                        await this._stash(from as string)
+
                         await Promise.all([
-                            this._stash(from as string),
+                            // this._stash(from as string),
                             this._unstash(to as string),
                             this.db.batch(ops)
                         ])
@@ -126,7 +144,7 @@ export default class FiberFactory {
         })
     }
 
-    private async _stash(uuid: string): Promise<any> {
+    private async _stash(uuid: string, { copy = false }: { copy?: boolean} = {}): Promise<any> {
         const ops:any[]       = []
         const files: string[] = []
 
@@ -152,7 +170,14 @@ export default class FiberFactory {
                     // empty fibers/uuid/backup
 
                     for (let file of files) {
-                        ops.push(fs.move(file, npath.join(this.repository.paths.fibers, uuid, 'stash', npath.basename(file))))
+                        if (copy) {
+                            ops.push(fs.copy(file, npath.join(this.repository.paths.fibers, uuid, 'stash', npath.basename(file))))
+
+                        } else {
+                            ops.push(fs.move(file, npath.join(this.repository.paths.fibers, uuid, 'stash', npath.basename(file)), { overwrite: true }))
+
+                        }
+
                     }
 
                     await Promise.all(ops)
@@ -177,14 +202,11 @@ export default class FiberFactory {
                 .on('end', async () => {
                     files.shift()
 
-                    console.log('UNSTASH: ' + npath.join(this.repository.paths.fibers, uuid, 'stash'))
-                    console.log(files)
 
                     for (let file of files) {
 
-                        console.log('To move back: ' + file)
 
-                        ops.push(fs.move(file, npath.join(this.repository.paths.root, npath.basename(file))))
+                        ops.push(fs.move(file, npath.join(this.repository.paths.root, npath.basename(file)), { overwrite: true }))
                     }
 
                     await Promise.all(ops)

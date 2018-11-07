@@ -1,4 +1,5 @@
 "use strict";
+///<reference path="../../node_modules/@types/levelup/index.d.ts"/>
 var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
     return new (P || (P = Promise))(function (resolve, reject) {
         function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
@@ -37,26 +38,52 @@ var __generator = (this && this.__generator) || function (thisArg, body) {
 var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
+var _this = this;
 Object.defineProperty(exports, "__esModule", { value: true });
 var index_1 = __importDefault(require("./index/"));
 var level_1 = __importDefault(require("level"));
 var v1_1 = __importDefault(require("uuid/v1"));
 var path_1 = __importDefault(require("path"));
 var fs_extra_1 = __importDefault(require("fs-extra"));
+var db = function (location, options) { return __awaiter(_this, void 0, void 0, function () {
+    return __generator(this, function (_a) {
+        return [2 /*return*/, new Promise(function (resolve, reject) {
+                level_1.default(location, options, function (err, dbs) {
+                    if (err) {
+                        reject(err);
+                    }
+                    else {
+                        resolve(dbs);
+                    }
+                });
+            })];
+    });
+}); };
 var Fiber = /** @class */ (function () {
     function Fiber(repository, uuid) {
         this.repository = repository;
         this.uuid = uuid;
         this.paths = { root: path_1.default.join(repository.paths.fibers, uuid), index: path_1.default.join(repository.paths.fibers, uuid, 'index'), snapshots: path_1.default.join(repository.paths.fibers, uuid, 'snapshots') };
-        this.index = new index_1.default(this);
-        this.snapshots = level_1.default(this.paths.snapshots, { valueEncoding: 'json' });
     }
+    Fiber.paths = function (repository, uuid, path) {
+        switch (path) {
+            case "root":
+                return path_1.default.join(repository.paths.fibers, uuid);
+            case "index":
+                return path_1.default.join(repository.paths.fibers, uuid, 'index');
+            case "snapshots":
+                return path_1.default.join(repository.paths.fibers, uuid, 'snapshots');
+            default:
+                throw new Error('Unknown path');
+        }
+    };
     Fiber.exists = function (repository, uuid) {
         return __awaiter(this, void 0, void 0, function () {
             return __generator(this, function (_a) {
                 switch (_a.label) {
                     case 0: return [4 /*yield*/, fs_extra_1.default.pathExists(path_1.default.join(repository.paths.fibers, uuid))];
                     case 1:
+                        // rewrite awith promise.all
                         if (!(_a.sent()))
                             return [2 /*return*/, false];
                         return [4 /*yield*/, fs_extra_1.default.pathExists(path_1.default.join(repository.paths.fibers, uuid, 'index'))];
@@ -72,22 +99,95 @@ var Fiber = /** @class */ (function () {
             });
         });
     };
-    Fiber.create = function (repository) {
+    Fiber.create = function (repository, _a) {
+        var _b = (_a === void 0 ? {} : _a).open, open = _b === void 0 ? false : _b;
         return __awaiter(this, void 0, void 0, function () {
-            var uuid;
-            return __generator(this, function (_a) {
-                uuid = v1_1.default();
-                fs_extra_1.default.ensureDirSync(path_1.default.join(repository.paths.fibers, uuid));
-                fs_extra_1.default.ensureDirSync(path_1.default.join(repository.paths.fibers, uuid, 'stash'));
-                return [2 /*return*/, new Fiber(repository, uuid)];
+            var fiber;
+            return __generator(this, function (_c) {
+                switch (_c.label) {
+                    case 0:
+                        fiber = new Fiber(repository, v1_1.default());
+                        return [4 /*yield*/, fiber.initialize({ mkdir: true })];
+                    case 1:
+                        _c.sent();
+                        if (!!open) return [3 /*break*/, 4];
+                        return [4 /*yield*/, fiber.snapshots.close()];
+                    case 2:
+                        _c.sent();
+                        return [4 /*yield*/, fiber.index.db.close()];
+                    case 3:
+                        _c.sent();
+                        _c.label = 4;
+                    case 4: return [2 /*return*/, fiber];
+                }
             });
         });
     };
     Fiber.load = function (repository, uuid) {
         return __awaiter(this, void 0, void 0, function () {
+            var fiber;
             return __generator(this, function (_a) {
-                // TODO: check that fiber exists
-                return [2 /*return*/, new Fiber(repository, uuid)];
+                fiber = new Fiber(repository, uuid);
+                return [2 /*return*/, fiber.initialize()];
+            });
+        });
+    };
+    Fiber.prototype.open = function () {
+        return __awaiter(this, void 0, void 0, function () {
+            var ops;
+            return __generator(this, function (_a) {
+                switch (_a.label) {
+                    case 0:
+                        ops = [];
+                        if (this.snapshots.isClosed())
+                            ops.push(this.snapshots.open());
+                        if (this.index.db.isClosed())
+                            ops.push(this.index.db.open());
+                        return [4 /*yield*/, Promise.all(ops)];
+                    case 1:
+                        _a.sent();
+                        return [2 /*return*/];
+                }
+            });
+        });
+    };
+    Fiber.prototype.close = function () {
+        return __awaiter(this, void 0, void 0, function () {
+            var ops;
+            return __generator(this, function (_a) {
+                switch (_a.label) {
+                    case 0:
+                        ops = [];
+                        if (this.snapshots.isOpen())
+                            ops.push(this.snapshots.close());
+                        if (this.index.db.isOpen())
+                            ops.push(this.index.db.close());
+                        return [4 /*yield*/, Promise.all(ops)];
+                    case 1:
+                        _a.sent();
+                        return [2 /*return*/];
+                }
+            });
+        });
+    };
+    Fiber.prototype.initialize = function (_a) {
+        var _b = (_a === void 0 ? {} : _a).mkdir, mkdir = _b === void 0 ? false : _b;
+        return __awaiter(this, void 0, void 0, function () {
+            var _c;
+            return __generator(this, function (_d) {
+                switch (_d.label) {
+                    case 0:
+                        if (mkdir) {
+                            fs_extra_1.default.ensureDirSync(path_1.default.join(this.repository.paths.fibers, this.uuid, 'stash'));
+                        }
+                        return [4 /*yield*/, Promise.all([
+                                index_1.default.for(this),
+                                db(this.paths.snapshots, { valueEncoding: 'json' })
+                            ])];
+                    case 1:
+                        _c = _d.sent(), this.index = _c[0], this.snapshots = _c[1];
+                        return [2 /*return*/, this];
+                }
             });
         });
     };
@@ -141,13 +241,29 @@ var Fiber = /** @class */ (function () {
             var _this = this;
             return __generator(this, function (_a) {
                 length = 0;
-                return [2 /*return*/, new Promise(function (resolve, reject) {
-                        _this.snapshots
-                            .createReadStream({ reverse: true, limit: 1, values: false })
-                            .on('data', function (key) { length = parseInt(key) + 1; })
-                            .on('error', function (err) { reject(err); })
-                            .on('end', function () { resolve(length); });
-                    })];
+                return [2 /*return*/, new Promise(function (resolve, reject) { return __awaiter(_this, void 0, void 0, function () {
+                        var _this = this;
+                        return __generator(this, function (_a) {
+                            this.snapshots
+                                .createReadStream({ reverse: true, limit: 1, values: false })
+                                .on('data', function (key) {
+                                length = parseInt(key) + 1;
+                            })
+                                .on('error', function (err) { return __awaiter(_this, void 0, void 0, function () {
+                                return __generator(this, function (_a) {
+                                    reject(err);
+                                    return [2 /*return*/];
+                                });
+                            }); })
+                                .on('end', function () { return __awaiter(_this, void 0, void 0, function () {
+                                return __generator(this, function (_a) {
+                                    resolve(length);
+                                    return [2 /*return*/];
+                                });
+                            }); });
+                            return [2 /*return*/];
+                        });
+                    }); })];
             });
         });
     };
