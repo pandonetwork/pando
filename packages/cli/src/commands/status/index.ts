@@ -40,7 +40,6 @@ const handler = async () => {
 /* tslint:disable:object-literal-sort-keys */
 export const status = {
   command: 'status',
-  aliases: ['init'],
   desc: 'Show repository status',
   builder,
   handler

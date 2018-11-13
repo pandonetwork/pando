@@ -189,6 +189,34 @@ var FiberFactory = /** @class */ (function () {
             });
         });
     };
+    FiberFactory.prototype.list = function () {
+        return __awaiter(this, void 0, void 0, function () {
+            var fibers;
+            var _this = this;
+            return __generator(this, function (_a) {
+                fibers = [];
+                return [2 /*return*/, new Promise(function (resolve, reject) {
+                        _this.db
+                            .createReadStream()
+                            .on('data', function (fiber) { return __awaiter(_this, void 0, void 0, function () {
+                            return __generator(this, function (_a) {
+                                fibers.push(fiber.value);
+                                return [2 /*return*/];
+                            });
+                        }); })
+                            .on('end', function () { return __awaiter(_this, void 0, void 0, function () {
+                            return __generator(this, function (_a) {
+                                resolve(fibers);
+                                return [2 /*return*/];
+                            });
+                        }); })
+                            .on('error', function (err) {
+                            reject(err);
+                        });
+                    })];
+            });
+        });
+    };
     FiberFactory.prototype.switch = function (name, _a) {
         var _b = (_a === void 0 ? {} : _a).stash, stash = _b === void 0 ? true : _b;
         return __awaiter(this, void 0, void 0, function () {

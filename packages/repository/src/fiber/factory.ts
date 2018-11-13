@@ -94,8 +94,22 @@ export default class FiberFactory {
         return Fiber.load(this.repository, name)
     }
 
-    public async list() : Promise<any> {
-        
+    public async list(): Promise<any> {
+        const fibers: any[] = []
+
+        return new Promise<any>((resolve, reject) => {
+            this.db
+                .createReadStream()
+                .on('data', async fiber => {
+                    fibers.push(fiber.value)
+                })
+                .on('end', async () => {
+                    resolve(fibers)
+                })
+                .on('error', err => {
+                    reject(err)
+                })
+        })
     }
 
     public async switch(name: string, { stash = true }: { stash?: boolean} = {}): Promise<any> {

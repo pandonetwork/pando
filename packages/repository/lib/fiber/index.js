@@ -198,7 +198,8 @@ var Fiber = /** @class */ (function () {
             });
         });
     };
-    Fiber.prototype.snapshot = function () {
+    Fiber.prototype.snapshot = function (message) {
+        if (message === void 0) { message = 'n/a'; }
         return __awaiter(this, void 0, void 0, function () {
             var id, tree, snapshot;
             return __generator(this, function (_a) {
@@ -209,7 +210,7 @@ var Fiber = /** @class */ (function () {
                         return [4 /*yield*/, this.index.snapshot()];
                     case 2:
                         tree = _a.sent();
-                        snapshot = { id: id, timestamp: new Date(Date.now()).toISOString(), tree: tree };
+                        snapshot = { id: id, timestamp: new Date(Date.now()).toISOString(), message: message, tree: tree };
                         return [4 /*yield*/, this.snapshots.put(id, snapshot)];
                     case 3:
                         _a.sent();

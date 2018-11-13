@@ -9,6 +9,10 @@ const argv = yargs
   .command(commands.untrack)
   .command(commands.status)
   .command(commands.fibers)
+  .command(commands.switch_)
+  .command(commands.snapshot)
+  .command(commands.log)
+
   // .command(commands.stage)
   // .command(commands.snapshot)
   // .command(commands.fetch)

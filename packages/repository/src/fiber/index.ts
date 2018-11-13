@@ -108,8 +108,6 @@ export default class Fiber {
             fs.ensureDirSync(npath.join(this.repository.paths.fibers, this.uuid, 'stash'))
         }
 
-
-
         [this.index, this.snapshots] = await Promise.all([
             Index.for(this),
             db(this.paths.snapshots, { valueEncoding: 'json' })
@@ -123,16 +121,12 @@ export default class Fiber {
         return this.index.status()
     }
 
-    public async snapshot(): Promise<any> {
-
-
+    public async snapshot(message: string = 'n/a'): Promise<any> {
         const id       = await this._length()
         const tree     = await this.index.snapshot()
-        const snapshot = { id: id, timestamp: new Date(Date.now()).toISOString(), tree: tree }
+        const snapshot = { id: id, timestamp: new Date(Date.now()).toISOString(), message, tree }
 
         await this.snapshots.put(id, snapshot)
-
-
 
         return snapshot
     }
@@ -151,8 +145,6 @@ export default class Fiber {
 
     private async _length(): Promise<number> {
         let length = 0
-
-
 
         return new Promise<any>(async (resolve, reject) => {
             this.snapshots

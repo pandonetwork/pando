@@ -1,6 +1,8 @@
 import Repository from '@pando/repository'
 import * as display from '@ui/display'
 import yargs from 'yargs'
+import chalk from 'chalk'
+import figures from 'figures'
 
 const builder = () => {
   return yargs.help().version(false)
@@ -8,10 +10,16 @@ const builder = () => {
 
 const handler = async argv => {
   try {
-    // const pando = await Pando.load()
-    // const repository = await pando.repositories.load()
-    // const branchName = repository.currentBranchName
-    // display.info('Currently on ' + branchName + ' branch')
+      const repository = await Repository.load()
+      const fibers     = await repository.fibers.list()
+
+      for (let fiber of fibers) {
+          if (fiber.current) {
+              console.log(figures('❯\t') + chalk.green(fiber.name))
+          } else {
+              console.log(figures('\t') + fiber.name)
+          }
+      }
   } catch (err) {
     display.error(err.message)
   }

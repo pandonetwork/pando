@@ -21,11 +21,8 @@ const handler = async () => {
   // } catch (err) {
   //   display.error(err.message)
   // }
-
-  console.log('INIT')
-
-  await Repository.create(process.cwd())
-
+  await Repository.create()
+  display.success('Pando repository initialized')
 }
 
 /* tslint:disable:object-literal-sort-keys */
