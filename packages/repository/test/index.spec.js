@@ -1,7 +1,6 @@
 /* eslint-disable import/no-duplicates */
-import Repository from '@pando/repository'
+import Repository from '../lib'
 import fs from 'fs-extra'
-import Index from '../lib'
 import path from 'path'
 import chai from 'chai'
 import { promisify } from 'util'
@@ -69,19 +68,37 @@ const fixtures = {
 }
 
 describe('@pando/index', () => {
-    let repo, index
+    let repo, master, index
+
+    const init =  async () => {
+        repo  = await Repository.create(path.join('test', 'fixtures'))
+        master = await repo.fibers.load('master')
+        index = master.index
+    }
 
     const clean = async () => {
+
+
         const reset = capture.log()
 
-        await index.node.start()
-        await index.node.stop()
-        await index.index.close()
+        await repo.node.start()
+        await repo.node.stop()
 
         reset()
 
         await repo.remove()
         await fixtures.restore()
+
+        // const reset = capture.log()
+        //
+        // await index.node.start()
+        // await index.node.stop()
+        // await index.index.close()
+        //
+        // reset()
+        //
+        // await repo.remove()
+        // await fixtures.restore()
     }
 
     describe('#track', () => {
@@ -136,8 +153,7 @@ describe('@pando/index', () => {
                     let result, indexed, untracked, modified, deleted
 
                     before(async () => {
-                        repo  = await Repository.create(path.join('test', 'fixtures'))
-                        index = await Index.create(repo)
+                        await init()
                     })
 
                     after(async () => {
@@ -208,8 +224,10 @@ describe('@pando/index', () => {
                     let result, indexed, untracked, modified, deleted
 
                     before(async () => {
-                        repo  = await Repository.create(path.join('test', 'fixtures'))
-                        index = await Index.create(repo)
+                        // repo  = await Repository.create(path.join('test', 'fixtures'))
+                        // index = await Index.create(repo)
+
+                        await init()
 
                         await index.status()
                         await fixtures.files.modify()
@@ -283,8 +301,7 @@ describe('@pando/index', () => {
                     let result, indexed, untracked, modified, deleted
 
                     before(async () => {
-                        repo  = await Repository.create(path.join('test', 'fixtures'))
-                        index = await Index.create(repo)
+                        await init()
 
                         await index.status()
                         await fixtures.files.delete()
@@ -355,8 +372,10 @@ describe('@pando/index', () => {
                     let result, indexed, untracked, modified, deleted
 
                     before(async () => {
-                        repo  = await Repository.create(path.join('test', 'fixtures'))
-                        index = await Index.create(repo)
+                        // repo  = await Repository.create(path.join('test', 'fixtures'))
+                        // index = await Index.create(repo)
+                        await init()
+
 
                         await index.track([path.join('test', 'fixtures', 'test.md'), path.join('test', 'fixtures', 'dir', 'sub', 'test.md')])
                     })
@@ -429,8 +448,10 @@ describe('@pando/index', () => {
                     let result, indexed, untracked, modified, deleted
 
                     before(async () => {
-                        repo  = await Repository.create(path.join('test', 'fixtures'))
-                        index = await Index.create(repo)
+                        // repo  = await Repository.create(path.join('test', 'fixtures'))
+                        // index = await Index.create(repo)
+
+                        await init()
 
                         await index.track([path.join('test', 'fixtures', 'test.md'), path.join('test', 'fixtures', 'dir', 'sub', 'test.md')])
                         await index.status()
@@ -505,8 +526,10 @@ describe('@pando/index', () => {
                     let result, indexed, untracked, modified, deleted
 
                     before(async () => {
-                        repo  = await Repository.create(path.join('test', 'fixtures'))
-                        index = await Index.create(repo)
+                        // repo  = await Repository.create(path.join('test', 'fixtures'))
+                        // index = await Index.create(repo)
+
+                        await init()
 
                         await index.track([path.join('test', 'fixtures', 'test.md'), path.join('test', 'fixtures', 'dir', 'sub', 'test.md')])
                         await index.status()
@@ -578,8 +601,10 @@ describe('@pando/index', () => {
                     let result, indexed, untracked, modified, deleted
 
                     before(async () => {
-                        repo  = await Repository.create(path.join('test', 'fixtures'))
-                        index = await Index.create(repo)
+                        // repo  = await Repository.create(path.join('test', 'fixtures'))
+                        // index = await Index.create(repo)
+
+                        await init()
 
                         await index.track([path.join('test', 'fixtures', 'test.md')])
                         await index.snapshot()
@@ -655,8 +680,9 @@ describe('@pando/index', () => {
                     let result, indexed, untracked, modified, deleted
 
                     before(async () => {
-                        repo  = await Repository.create(path.join('test', 'fixtures'))
-                        index = await Index.create(repo)
+                        // repo  = await Repository.create(path.join('test', 'fixtures'))
+                        // index = await Index.create(repo)
+                        await init()
 
                         await index.track([path.join('test', 'fixtures', 'test.md'), path.join('test', 'fixtures', 'dir', 'sub', 'test.md')])
                         await index.snapshot()
@@ -735,8 +761,9 @@ describe('@pando/index', () => {
                     let result, indexed, untracked, modified, deleted
 
                     before(async () => {
-                        repo  = await Repository.create(path.join('test', 'fixtures'))
-                        index = await Index.create(repo)
+                        // repo  = await Repository.create(path.join('test', 'fixtures'))
+                        // index = await Index.create(repo)
+                        await init()
 
                         await index.track([path.join('test', 'fixtures', 'test.md'), path.join('test', 'fixtures', 'dir', 'sub', 'test.md')])
                         await index.snapshot()
@@ -811,8 +838,10 @@ describe('@pando/index', () => {
                     let result, indexed, untracked, modified, deleted
 
                     before(async () => {
-                        repo  = await Repository.create(path.join('test', 'fixtures'))
-                        index = await Index.create(repo)
+                        // repo  = await Repository.create(path.join('test', 'fixtures'))
+                        // index = await Index.create(repo)
+
+                        await init()
 
                         await index.track([path.join('test', 'fixtures', 'test.md'), path.join('test', 'fixtures', 'dir', 'sub', 'test.md')])
                         await index.snapshot()
@@ -886,46 +915,4 @@ describe('@pando/index', () => {
             })
         })
     })
-
-    // describe('#snapshot', () => {
-    //     describe('untracked files have been added', () => {
-    //         it('it should update index', async () => {
-    //
-    //         })
-    //     })
-    //
-    //     describe('untracked files have been modified', () => {})
-    //
-    //     describe('untracked files have been deleted', () => {})
-    //
-    //     describe('tracked files have been added', () => {})
-    //
-    //     describe('tracked files have been modified', () => {
-    //         let result, indexed, untracked, modified, deleted
-    //
-    //         before(async () => {
-    //             repo   = await Repository.create(path.join('test', 'fixtures'))
-    //             index  = await Index.create(repo)
-    //
-    //             await index.track([path.join('test', 'fixtures', 'test.md'), path.join('test', 'fixtures', 'dir', 'sub', 'test.md')])
-    //
-    //             await fixtures.files.modify()
-    //         })
-    //
-    //         after(async () => {
-    //             await clean()
-    //         })
-    //
-    //         it('it should return updated index', async () => {
-    //             const result = await index.snapshot()
-    //         })
-    //
-    //         it('it should update index', async () => {
-    //             indexed = await index.current()
-    //         })
-    //
-    //     })
-    //
-    //     describe('tracked files have been deleted', () => {})
-    // })
 })

@@ -285,7 +285,6 @@ var FiberFactory = /** @class */ (function () {
                                 switch (_a.label) {
                                     case 0:
                                         files.shift();
-                                        // empty fibers/uuid/backup
                                         for (_i = 0, files_1 = files; _i < files_1.length; _i++) {
                                             file = files_1[_i];
                                             if (copy) {

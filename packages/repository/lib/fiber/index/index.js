@@ -53,6 +53,7 @@ var through2_1 = __importDefault(require("through2"));
 var stream_1 = __importDefault(require("stream"));
 var _ = __importStar(require("lodash"));
 var util_1 = __importDefault(require("util"));
+var error_1 = __importDefault(require("../../error"));
 var ignore = through2_1.default.obj(function (item, enc, next) {
     // console.log(item.path)
     // console.log('IGNORE')
@@ -66,26 +67,6 @@ var Index = /** @class */ (function () {
         this.fiber = fiber;
         this.db = util_1.default.promisify(level_1.default)(fiber.paths.index, { valueEncoding: 'json' });
     }
-    // public static async create(fiber: Fiber): Promise<Index> {
-    //
-    //     const db = Level(fiber.paths.index, { valueEncoding: 'json' })
-    //
-    //     return new Index(fiber, db)
-    //
-    //     // return new Promise<Index>((resolve, reject) => {
-    //     //     const node = new IPFS({ repo: repository.paths.ipfs, start: false })
-    //     //     node.on('ready', () => {
-    //     //         Level(repository.paths.index, { valueEncoding: 'json' }, function (err, db) {
-    //     //             if (err) reject(err)
-    //     //
-    //     //             resolve(new Index(repository, node, db))
-    //     //         })
-    //     //     })
-    //     //     node.on('error', (error) => {
-    //     //         reject(error)
-    //     //     })
-    //     // })
-    // }
     Index.for = function (fiber) {
         return __awaiter(this, void 0, void 0, function () {
             var index;
@@ -160,13 +141,15 @@ var Index = /** @class */ (function () {
     };
     Index.prototype.track = function (paths) {
         return __awaiter(this, void 0, void 0, function () {
-            var _a, index, untracked, modified, deleted, _i, paths_1, path, value;
+            var _a, index, untracked, modified, deleted, origin, _i, paths_1, path, value;
             return __generator(this, function (_b) {
                 switch (_b.label) {
                     case 0: return [4 /*yield*/, this.status()];
                     case 1:
                         _a = _b.sent(), index = _a.index, untracked = _a.untracked, modified = _a.modified, deleted = _a.deleted;
+                        origin = paths;
                         paths = this.extract(paths, index);
+                        if (!(paths.length > 0)) return [3 /*break*/, 7];
                         _i = 0, paths_1 = paths;
                         _b.label = 2;
                     case 2:
@@ -183,7 +166,9 @@ var Index = /** @class */ (function () {
                     case 5:
                         _i++;
                         return [3 /*break*/, 2];
-                    case 6: return [2 /*return*/];
+                    case 6: return [3 /*break*/, 8];
+                    case 7: throw new error_1.default('E_NO_INDEX_ENTRY_FOUND', origin);
+                    case 8: return [2 /*return*/, paths];
                 }
             });
         });

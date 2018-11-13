@@ -3,6 +3,7 @@ import IPFS from 'ipfs'
 import Level from 'level'
 import npath from 'path'
 import FiberFactory from './fiber/factory'
+import PandoError from './error'
 
 import util from 'util'
 
@@ -23,6 +24,35 @@ export default class Repository {
         current: '.pando/current',
         config: '.pando/config',
         fibers: '.pando/fibers',
+    }
+
+
+
+
+    public paths = { ...Repository.paths }
+    public node: IPFS
+    public fibers: FiberFactory
+    // public index: Index
+
+    public constructor(path: string = '.', node: IPFS) {
+        this.paths['root']   = path
+        this.paths['pando']  = npath.join(path, '.pando')
+        this.paths['ipfs']   = npath.join(path, '.pando', 'ipfs')
+        this.paths['fibers'] = npath.join(path, '.pando', 'fibers')
+
+        this.node   = node
+        this.fibers = new FiberFactory(this)
+    }
+
+    public static async exists(path: string = '.'): Promise<boolean> {
+
+        let [one, two, three] = await Promise.all([
+            fs.pathExists(npath.join(path, '.pando')),
+            fs.pathExists(npath.join(path, '.pando', 'ipfs')),
+            fs.pathExists(npath.join(path, '.pando', 'fibers', 'db'))
+        ])
+
+        return one && two && three
     }
 
 
@@ -49,19 +79,30 @@ export default class Repository {
         })
     }
 
-    public paths = { ...Repository.paths }
-    public node: IPFS
-    public fibers: FiberFactory
-    // public index: Index
+    public static async load(path: string = '.'): Promise<Repository> {
+        return new Promise<Repository>(async (resolve, reject) => {
 
-    public constructor(path: string = '.', node: IPFS) {
-        this.paths['root']   = path
-        this.paths['pando']  = npath.join(path, '.pando')
-        this.paths['ipfs']   = npath.join(path, '.pando', 'ipfs')
-        this.paths['fibers'] = npath.join(path, '.pando', 'fibers')
+            if (!Repository.exists(path)) {
+                reject(new PandoError('E_REPOSITORY_NOT_FOUND', path))
+            }
 
-        this.node   = node
-        this.fibers = new FiberFactory(this)
+
+            // // TODO: check that path exists
+            //
+            // await Promise.all([
+            //     ensure(npath.join(path, '.pando', 'ipfs')),
+            //     ensure(npath.join(path, '.pando', 'fibers'))
+            // ])
+            //
+            const node = new IPFS({ repo: npath.join(path, '.pando', 'ipfs'), start: false })
+                .on('error', err => {
+                    reject(err)
+                })
+                .on('ready', async () => {
+                    const repository = new Repository(path, node)
+                    resolve(repository)
+                })
+        })
     }
 
     public async remove() {

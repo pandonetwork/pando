@@ -94,6 +94,10 @@ export default class FiberFactory {
         return Fiber.load(this.repository, name)
     }
 
+    public async list() : Promise<any> {
+        
+    }
+
     public async switch(name: string, { stash = true }: { stash?: boolean} = {}): Promise<any> {
         let from: string|undefined = undefined
         let to:   string|undefined = undefined
@@ -167,8 +171,6 @@ export default class FiberFactory {
                 .on('end', async () => {
                     files.shift()
 
-                    // empty fibers/uuid/backup
-
                     for (let file of files) {
                         if (copy) {
                             ops.push(fs.copy(file, npath.join(this.repository.paths.fibers, uuid, 'stash', npath.basename(file))))
@@ -202,10 +204,7 @@ export default class FiberFactory {
                 .on('end', async () => {
                     files.shift()
 
-
                     for (let file of files) {
-
-
                         ops.push(fs.move(file, npath.join(this.repository.paths.root, npath.basename(file)), { overwrite: true }))
                     }
 

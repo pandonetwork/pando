@@ -12,6 +12,7 @@ import through2 from 'through2'
 import stream from 'stream'
 import * as _ from 'lodash'
 import util      from 'util'
+import PandoError from '../../error'
 
 
 const ignore = through2.obj(function (item, enc, next) {
@@ -25,27 +26,6 @@ const ignore = through2.obj(function (item, enc, next) {
 
 
 export default class Index {
-
-    // public static async create(fiber: Fiber): Promise<Index> {
-    //
-    //     const db = Level(fiber.paths.index, { valueEncoding: 'json' })
-    //
-    //     return new Index(fiber, db)
-    //
-    //     // return new Promise<Index>((resolve, reject) => {
-    //     //     const node = new IPFS({ repo: repository.paths.ipfs, start: false })
-    //     //     node.on('ready', () => {
-    //     //         Level(repository.paths.index, { valueEncoding: 'json' }, function (err, db) {
-    //     //             if (err) reject(err)
-    //     //
-    //     //             resolve(new Index(repository, node, db))
-    //     //         })
-    //     //     })
-    //     //     node.on('error', (error) => {
-    //     //         reject(error)
-    //     //     })
-    //     // })
-    // }
 
     public static async for(fiber: Fiber): Promise<Index> {
         const index = new Index(fiber)
@@ -103,15 +83,25 @@ export default class Index {
     public async track(paths: string[]): Promise<any> {
         let { index, untracked, modified, deleted } = await this.status()
 
+        let origin = paths
+
         paths = this.extract(paths, index)
 
-        for (let path of paths) {
-            let value = await this.db.get(path)
+        if (paths.length > 0) {
+            for (let path of paths) {
+                let value = await this.db.get(path)
 
-            value.tracked = true
+                value.tracked = true
 
-            await this.db.put(path, value)
+                await this.db.put(path, value)
+            }
         }
+
+        else {
+            throw new PandoError('E_NO_INDEX_ENTRY_FOUND', origin)
+        }
+
+        return paths
 
     }
 
@@ -331,6 +321,7 @@ export default class Index {
                 return entry.indexOf(path) === 0
             })
         })
+
         return _.uniq(_.flattenDeep(extracted))
     }
 }

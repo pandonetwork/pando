@@ -53,6 +53,7 @@ var fs_extra_1 = __importDefault(require("fs-extra"));
 var ipfs_1 = __importDefault(require("ipfs"));
 var path_1 = __importDefault(require("path"));
 var factory_1 = __importDefault(require("./fiber/factory"));
+var error_1 = __importDefault(require("./error"));
 var util_1 = __importDefault(require("util"));
 // import Index from '@pando/index'
 var ensure = util_1.default.promisify(fs_extra_1.default.ensureDir);
@@ -68,6 +69,24 @@ var Repository = /** @class */ (function () {
         this.node = node;
         this.fibers = new factory_1.default(this);
     }
+    Repository.exists = function (path) {
+        if (path === void 0) { path = '.'; }
+        return __awaiter(this, void 0, void 0, function () {
+            var _a, one, two, three;
+            return __generator(this, function (_b) {
+                switch (_b.label) {
+                    case 0: return [4 /*yield*/, Promise.all([
+                            fs_extra_1.default.pathExists(path_1.default.join(path, '.pando')),
+                            fs_extra_1.default.pathExists(path_1.default.join(path, '.pando', 'ipfs')),
+                            fs_extra_1.default.pathExists(path_1.default.join(path, '.pando', 'fibers', 'db'))
+                        ])];
+                    case 1:
+                        _a = _b.sent(), one = _a[0], two = _a[1], three = _a[2];
+                        return [2 /*return*/, one && two && three];
+                }
+            });
+        });
+    };
     Repository.create = function (path) {
         if (path === void 0) { path = '.'; }
         return __awaiter(this, void 0, void 0, function () {
@@ -110,6 +129,36 @@ var Repository = /** @class */ (function () {
                                     }); });
                                     return [2 /*return*/];
                             }
+                        });
+                    }); })];
+            });
+        });
+    };
+    Repository.load = function (path) {
+        if (path === void 0) { path = '.'; }
+        return __awaiter(this, void 0, void 0, function () {
+            var _this = this;
+            return __generator(this, function (_a) {
+                return [2 /*return*/, new Promise(function (resolve, reject) { return __awaiter(_this, void 0, void 0, function () {
+                        var node;
+                        var _this = this;
+                        return __generator(this, function (_a) {
+                            if (!Repository.exists(path)) {
+                                reject(new error_1.default('E_REPOSITORY_NOT_FOUND', path));
+                            }
+                            node = new ipfs_1.default({ repo: path_1.default.join(path, '.pando', 'ipfs'), start: false })
+                                .on('error', function (err) {
+                                reject(err);
+                            })
+                                .on('ready', function () { return __awaiter(_this, void 0, void 0, function () {
+                                var repository;
+                                return __generator(this, function (_a) {
+                                    repository = new Repository(path, node);
+                                    resolve(repository);
+                                    return [2 /*return*/];
+                                });
+                            }); });
+                            return [2 /*return*/];
                         });
                     }); })];
             });
