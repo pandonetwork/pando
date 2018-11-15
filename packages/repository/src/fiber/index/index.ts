@@ -314,7 +314,7 @@ export default class Index {
         }
     }
 
-    private extract(paths: string[], index: any): string[] {
+    public extract(paths: string[], index: any): string[] {
         let extracted = paths.map(path => {
             path = npath.relative(this.repository.paths.root, path)
             return _.filter(Object.keys(index), entry => {

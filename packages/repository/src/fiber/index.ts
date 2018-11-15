@@ -44,17 +44,20 @@ export default class Fiber {
         }
     }
 
+    /**
+    * Check if a given fiber exists locally
+    * @param repository Repository to check if the fiber exists in.
+    * @param uuid       UUID of the fiber.
+    * @returns          Returns true if the fiber exists locally, returns else otherwise.
+    */
     public static async exists(repository: Repository, uuid: string): Promise<boolean> {
+        let [one, two, three] = await Promise.all([
+            fs.pathExists(Fiber.paths(repository, uuid, 'root')),
+            fs.pathExists(Fiber.paths(repository, uuid, 'index')),
+            fs.pathExists(Fiber.paths(repository, uuid, 'snapshots'))
+        ])
 
-        // rewrite awith promise.all
-
-        if(!(await fs.pathExists(npath.join(repository.paths.fibers, uuid)))) return false
-
-        if(!(await fs.pathExists(npath.join(repository.paths.fibers, uuid, 'index')))) return false
-
-        if(!(await fs.pathExists(npath.join(repository.paths.fibers, uuid, 'snapshots')))) return false
-
-        return true
+        return one && two && three
     }
 
     public static async create(repository: Repository, { open = false }: { open?: boolean} = {}): Promise<Fiber> {
@@ -79,23 +82,7 @@ export default class Fiber {
         return fiber.initialize()
     }
 
-    public async open(): Promise<void> {
-        const ops: any[] = []
 
-        if (this.snapshots.isClosed()) ops.push(this.snapshots.open())
-        if (this.index.db.isClosed()) ops.push(this.index.db.open())
-
-        await Promise.all(ops)
-    }
-
-    public async close(): Promise<void> {
-        const ops: any[] = []
-
-        if (this.snapshots.isOpen()) ops.push(this.snapshots.close())
-        if (this.index.db.isOpen()) ops.push(this.index.db.close())
-
-        await Promise.all(ops)
-    }
 
     public constructor(repository: Repository, uuid: string) {
         this.repository = repository
@@ -131,6 +118,41 @@ export default class Fiber {
         return snapshot
     }
 
+    public async revert(id: number, paths: string[] = ['']): Promise<any> {
+
+        let snapshot = await this.snapshots.get(id)
+        let promises: any[] = []
+
+        let files: any[] = []
+
+        for (let path of paths) {
+            path = npath.relative(this.repository.paths.root, path)
+            const tree = await this.repository.node.files.get(snapshot.tree + '/' + path)
+
+            if (tree.length <= 0) {
+                throw new Error('Path ' + path + ' does not exist in snapshot ' + id)
+            } else {
+                for (let file of tree) {
+                    if (file.type === 'file') {
+                        files.push({ destination: path.length > 0 ? npath.join(npath.dirname(path), file.path) : file.path.split(npath.sep).slice(1).join(npath.sep), content: file.content })
+                    }
+                }
+            }
+        }
+
+        files = _.uniqBy(files, 'destination')
+
+        // Snapshots before we revert
+        // Save files before we revert
+
+        for (let file of files) {
+            promises.push(fs.ensureFile(file.destination).then(() => fs.writeFile(file.destination, file.content)))
+        }
+
+
+        await Promise.all(promises)
+    }
+
     public async log({ limit = 10 }: { limit?: number} = {}): Promise<any> {
         const snapshots: any[] = []
 
@@ -141,6 +163,24 @@ export default class Fiber {
                 .on('error', err => { reject(err) })
                 .on('end',   ()  => { resolve(snapshots) })
         })
+    }
+
+    public async open(): Promise<void> {
+        const ops: any[] = []
+
+        if (this.snapshots.isClosed()) ops.push(this.snapshots.open())
+        if (this.index.db.isClosed()) ops.push(this.index.db.open())
+
+        await Promise.all(ops)
+    }
+
+    public async close(): Promise<void> {
+        const ops: any[] = []
+
+        if (this.snapshots.isOpen()) ops.push(this.snapshots.close())
+        if (this.index.db.isOpen()) ops.push(this.index.db.close())
+
+        await Promise.all(ops)
     }
 
     private async _length(): Promise<number> {

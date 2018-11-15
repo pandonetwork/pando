@@ -21,6 +21,8 @@
 
 * [remove](_index_.repository.md#remove)
 * [create](_index_.repository.md#create)
+* [exists](_index_.repository.md#exists)
+* [load](_index_.repository.md#load)
 
 ### Object literals
 
@@ -37,7 +39,7 @@
 
 ⊕ **new Repository**(path?: *`string`*, node: *`IPFS`*): [Repository](_index_.repository.md)
 
-*Defined in [index.ts:55](https://github.com/ryhope/pando/blob/a668fa92/packages/repository/src/index.ts#L55)*
+*Defined in [index.ts:34](https://github.com/ryhope/pando/blob/21d335be/packages/repository/src/index.ts#L34)*
 
 **Parameters:**
 
@@ -58,7 +60,7 @@ ___
 
 **● fibers**: *[FiberFactory](_fiber_factory_.fiberfactory.md)*
 
-*Defined in [index.ts:55](https://github.com/ryhope/pando/blob/a668fa92/packages/repository/src/index.ts#L55)*
+*Defined in [index.ts:34](https://github.com/ryhope/pando/blob/21d335be/packages/repository/src/index.ts#L34)*
 
 ___
 <a id="node"></a>
@@ -67,7 +69,7 @@ ___
 
 **● node**: *`IPFS`*
 
-*Defined in [index.ts:54](https://github.com/ryhope/pando/blob/a668fa92/packages/repository/src/index.ts#L54)*
+*Defined in [index.ts:33](https://github.com/ryhope/pando/blob/21d335be/packages/repository/src/index.ts#L33)*
 
 ___
 
@@ -79,7 +81,7 @@ ___
 
 ▸ **remove**(): `Promise`<`void`>
 
-*Defined in [index.ts:68](https://github.com/ryhope/pando/blob/a668fa92/packages/repository/src/index.ts#L68)*
+*Defined in [index.ts:108](https://github.com/ryhope/pando/blob/21d335be/packages/repository/src/index.ts#L108)*
 
 **Returns:** `Promise`<`void`>
 
@@ -90,7 +92,41 @@ ___
 
 ▸ **create**(path?: *`string`*): `Promise`<[Repository](_index_.repository.md)>
 
-*Defined in [index.ts:29](https://github.com/ryhope/pando/blob/a668fa92/packages/repository/src/index.ts#L29)*
+*Defined in [index.ts:59](https://github.com/ryhope/pando/blob/21d335be/packages/repository/src/index.ts#L59)*
+
+**Parameters:**
+
+| Name | Type | Default value |
+| ------ | ------ | ------ |
+| `Default value` path | `string` | &quot;.&quot; |
+
+**Returns:** `Promise`<[Repository](_index_.repository.md)>
+
+___
+<a id="exists"></a>
+
+### `<Static>` exists
+
+▸ **exists**(path?: *`string`*): `Promise`<`boolean`>
+
+*Defined in [index.ts:47](https://github.com/ryhope/pando/blob/21d335be/packages/repository/src/index.ts#L47)*
+
+**Parameters:**
+
+| Name | Type | Default value |
+| ------ | ------ | ------ |
+| `Default value` path | `string` | &quot;.&quot; |
+
+**Returns:** `Promise`<`boolean`>
+
+___
+<a id="load"></a>
+
+### `<Static>` load
+
+▸ **load**(path?: *`string`*): `Promise`<[Repository](_index_.repository.md)>
+
+*Defined in [index.ts:82](https://github.com/ryhope/pando/blob/21d335be/packages/repository/src/index.ts#L82)*
 
 **Parameters:**
 
@@ -110,7 +146,7 @@ ___
 
 **paths**: *`object`*
 
-*Defined in [index.ts:53](https://github.com/ryhope/pando/blob/a668fa92/packages/repository/src/index.ts#L53)*
+*Defined in [index.ts:32](https://github.com/ryhope/pando/blob/21d335be/packages/repository/src/index.ts#L32)*
 
 ___
 <a id="paths-1"></a>
@@ -119,7 +155,7 @@ ___
 
 **paths**: *`object`*
 
-*Defined in [index.ts:17](https://github.com/ryhope/pando/blob/a668fa92/packages/repository/src/index.ts#L17)*
+*Defined in [index.ts:18](https://github.com/ryhope/pando/blob/21d335be/packages/repository/src/index.ts#L18)*
 
 <a id="paths-1.config"></a>
 
@@ -127,7 +163,7 @@ ___
 
 **● config**: *`string`* = ".pando/config"
 
-*Defined in [index.ts:24](https://github.com/ryhope/pando/blob/a668fa92/packages/repository/src/index.ts#L24)*
+*Defined in [index.ts:25](https://github.com/ryhope/pando/blob/21d335be/packages/repository/src/index.ts#L25)*
 
 ___
 <a id="paths-1.current"></a>
@@ -136,7 +172,7 @@ ___
 
 **● current**: *`string`* = ".pando/current"
 
-*Defined in [index.ts:23](https://github.com/ryhope/pando/blob/a668fa92/packages/repository/src/index.ts#L23)*
+*Defined in [index.ts:24](https://github.com/ryhope/pando/blob/21d335be/packages/repository/src/index.ts#L24)*
 
 ___
 <a id="paths-1.db"></a>
@@ -145,7 +181,7 @@ ___
 
 **● db**: *`string`* = ".pando/db"
 
-*Defined in [index.ts:22](https://github.com/ryhope/pando/blob/a668fa92/packages/repository/src/index.ts#L22)*
+*Defined in [index.ts:23](https://github.com/ryhope/pando/blob/21d335be/packages/repository/src/index.ts#L23)*
 
 ___
 <a id="paths-1.fibers-1"></a>
@@ -154,7 +190,7 @@ ___
 
 **● fibers**: *`string`* = ".pando/fibers"
 
-*Defined in [index.ts:25](https://github.com/ryhope/pando/blob/a668fa92/packages/repository/src/index.ts#L25)*
+*Defined in [index.ts:26](https://github.com/ryhope/pando/blob/21d335be/packages/repository/src/index.ts#L26)*
 
 ___
 <a id="paths-1.index"></a>
@@ -163,7 +199,7 @@ ___
 
 **● index**: *`string`* = ".pando/index"
 
-*Defined in [index.ts:21](https://github.com/ryhope/pando/blob/a668fa92/packages/repository/src/index.ts#L21)*
+*Defined in [index.ts:22](https://github.com/ryhope/pando/blob/21d335be/packages/repository/src/index.ts#L22)*
 
 ___
 <a id="paths-1.ipfs"></a>
@@ -172,7 +208,7 @@ ___
 
 **● ipfs**: *`string`* = ".pando/ipfs"
 
-*Defined in [index.ts:20](https://github.com/ryhope/pando/blob/a668fa92/packages/repository/src/index.ts#L20)*
+*Defined in [index.ts:21](https://github.com/ryhope/pando/blob/21d335be/packages/repository/src/index.ts#L21)*
 
 ___
 <a id="paths-1.pando"></a>
@@ -181,7 +217,7 @@ ___
 
 **● pando**: *`string`* = ".pando"
 
-*Defined in [index.ts:19](https://github.com/ryhope/pando/blob/a668fa92/packages/repository/src/index.ts#L19)*
+*Defined in [index.ts:20](https://github.com/ryhope/pando/blob/21d335be/packages/repository/src/index.ts#L20)*
 
 ___
 <a id="paths-1.root"></a>
@@ -190,7 +226,7 @@ ___
 
 **● root**: *`string`* = "."
 
-*Defined in [index.ts:18](https://github.com/ryhope/pando/blob/a668fa92/packages/repository/src/index.ts#L18)*
+*Defined in [index.ts:19](https://github.com/ryhope/pando/blob/21d335be/packages/repository/src/index.ts#L19)*
 
 ___
 

@@ -88,17 +88,6 @@ describe('@pando/index', () => {
 
         await repo.remove()
         await fixtures.restore()
-
-        // const reset = capture.log()
-        //
-        // await index.node.start()
-        // await index.node.stop()
-        // await index.index.close()
-        //
-        // reset()
-        //
-        // await repo.remove()
-        // await fixtures.restore()
     }
 
     describe('#track', () => {

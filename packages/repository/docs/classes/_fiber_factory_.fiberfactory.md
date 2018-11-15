@@ -23,8 +23,10 @@
 * [_unstash](_fiber_factory_.fiberfactory.md#_unstash)
 * [create](_fiber_factory_.fiberfactory.md#create)
 * [current](_fiber_factory_.fiberfactory.md#current)
+* [list](_fiber_factory_.fiberfactory.md#list)
 * [load](_fiber_factory_.fiberfactory.md#load)
 * [switch](_fiber_factory_.fiberfactory.md#switch)
+* [uuid](_fiber_factory_.fiberfactory.md#uuid)
 
 ---
 
@@ -36,7 +38,7 @@
 
 ⊕ **new FiberFactory**(repository: *[Repository](_index_.repository.md)*): [FiberFactory](_fiber_factory_.fiberfactory.md)
 
-*Defined in [fiber/factory.ts:14](https://github.com/ryhope/pando/blob/a668fa92/packages/repository/src/fiber/factory.ts#L14)*
+*Defined in [fiber/factory.ts:14](https://github.com/ryhope/pando/blob/21d335be/packages/repository/src/fiber/factory.ts#L14)*
 
 **Parameters:**
 
@@ -56,7 +58,7 @@ ___
 
 **● db**: *`Level`*
 
-*Defined in [fiber/factory.ts:14](https://github.com/ryhope/pando/blob/a668fa92/packages/repository/src/fiber/factory.ts#L14)*
+*Defined in [fiber/factory.ts:14](https://github.com/ryhope/pando/blob/21d335be/packages/repository/src/fiber/factory.ts#L14)*
 
 ___
 <a id="repository"></a>
@@ -65,7 +67,7 @@ ___
 
 **● repository**: *[Repository](_index_.repository.md)*
 
-*Defined in [fiber/factory.ts:13](https://github.com/ryhope/pando/blob/a668fa92/packages/repository/src/fiber/factory.ts#L13)*
+*Defined in [fiber/factory.ts:13](https://github.com/ryhope/pando/blob/21d335be/packages/repository/src/fiber/factory.ts#L13)*
 
 ___
 
@@ -75,15 +77,19 @@ ___
 
 ### `<Private>` _stash
 
-▸ **_stash**(uuid: *`string`*): `Promise`<`any`>
+▸ **_stash**(uuid: *`string`*, __namedParameters?: *`object`*): `Promise`<`any`>
 
-*Defined in [fiber/factory.ts:129](https://github.com/ryhope/pando/blob/a668fa92/packages/repository/src/fiber/factory.ts#L129)*
+*Defined in [fiber/factory.ts:165](https://github.com/ryhope/pando/blob/21d335be/packages/repository/src/fiber/factory.ts#L165)*
 
 **Parameters:**
 
-| Name | Type |
-| ------ | ------ |
-| uuid | `string` |
+**uuid: `string`**
+
+**`Default value` __namedParameters: `object`**
+
+| Name | Type | Default value |
+| ------ | ------ | ------ |
+| copy | `boolean` | false |
 
 **Returns:** `Promise`<`any`>
 
@@ -94,7 +100,7 @@ ___
 
 ▸ **_unstash**(uuid: *`string`*): `Promise`<`any`>
 
-*Defined in [fiber/factory.ts:165](https://github.com/ryhope/pando/blob/a668fa92/packages/repository/src/fiber/factory.ts#L165)*
+*Defined in [fiber/factory.ts:206](https://github.com/ryhope/pando/blob/21d335be/packages/repository/src/fiber/factory.ts#L206)*
 
 **Parameters:**
 
@@ -109,15 +115,20 @@ ___
 
 ###  create
 
-▸ **create**(name: *`string`*): `Promise`<[Fiber](_fiber_index_.fiber.md)>
+▸ **create**(name: *`string`*, __namedParameters?: *`object`*): `Promise`<[Fiber](_fiber_index_.fiber.md)>
 
-*Defined in [fiber/factory.ts:45](https://github.com/ryhope/pando/blob/a668fa92/packages/repository/src/fiber/factory.ts#L45)*
+*Defined in [fiber/factory.ts:73](https://github.com/ryhope/pando/blob/21d335be/packages/repository/src/fiber/factory.ts#L73)*
 
 **Parameters:**
 
-| Name | Type |
-| ------ | ------ |
-| name | `string` |
+**name: `string`**
+
+**`Default value` __namedParameters: `object`**
+
+| Name | Type | Default value |
+| ------ | ------ | ------ |
+| fork | `boolean` | true |
+| open | `boolean` | false |
 
 **Returns:** `Promise`<[Fiber](_fiber_index_.fiber.md)>
 
@@ -128,7 +139,7 @@ ___
 
 ▸ **current**(__namedParameters?: *`object`*): `Promise`< [Fiber](_fiber_index_.fiber.md) &#124; `string` &#124; `undefined`>
 
-*Defined in [fiber/factory.ts:22](https://github.com/ryhope/pando/blob/a668fa92/packages/repository/src/fiber/factory.ts#L22)*
+*Defined in [fiber/factory.ts:44](https://github.com/ryhope/pando/blob/21d335be/packages/repository/src/fiber/factory.ts#L44)*
 
 **Parameters:**
 
@@ -141,19 +152,34 @@ ___
 **Returns:** `Promise`< [Fiber](_fiber_index_.fiber.md) &#124; `string` &#124; `undefined`>
 
 ___
+<a id="list"></a>
+
+###  list
+
+▸ **list**(): `Promise`<`any`>
+
+*Defined in [fiber/factory.ts:97](https://github.com/ryhope/pando/blob/21d335be/packages/repository/src/fiber/factory.ts#L97)*
+
+**Returns:** `Promise`<`any`>
+
+___
 <a id="load"></a>
 
 ###  load
 
-▸ **load**(name: *`string`*): `Promise`<[Fiber](_fiber_index_.fiber.md)>
+▸ **load**(name: *`string`*, __namedParameters?: *`object`*): `Promise`<[Fiber](_fiber_index_.fiber.md)>
 
-*Defined in [fiber/factory.ts:58](https://github.com/ryhope/pando/blob/a668fa92/packages/repository/src/fiber/factory.ts#L58)*
+*Defined in [fiber/factory.ts:91](https://github.com/ryhope/pando/blob/21d335be/packages/repository/src/fiber/factory.ts#L91)*
 
 **Parameters:**
 
-| Name | Type |
-| ------ | ------ |
-| name | `string` |
+**name: `string`**
+
+**`Default value` __namedParameters: `object`**
+
+| Name | Type | Default value |
+| ------ | ------ | ------ |
+| uuid | `boolean` | false |
 
 **Returns:** `Promise`<[Fiber](_fiber_index_.fiber.md)>
 
@@ -164,7 +190,7 @@ ___
 
 ▸ **switch**(name: *`string`*, __namedParameters?: *`object`*): `Promise`<`any`>
 
-*Defined in [fiber/factory.ts:82](https://github.com/ryhope/pando/blob/a668fa92/packages/repository/src/fiber/factory.ts#L82)*
+*Defined in [fiber/factory.ts:115](https://github.com/ryhope/pando/blob/21d335be/packages/repository/src/fiber/factory.ts#L115)*
 
 **Parameters:**
 
@@ -177,6 +203,23 @@ ___
 | stash | `boolean` | true |
 
 **Returns:** `Promise`<`any`>
+
+___
+<a id="uuid"></a>
+
+###  uuid
+
+▸ **uuid**(name: *`string`*): `Promise`<`string`>
+
+*Defined in [fiber/factory.ts:22](https://github.com/ryhope/pando/blob/21d335be/packages/repository/src/fiber/factory.ts#L22)*
+
+**Parameters:**
+
+| Name | Type |
+| ------ | ------ |
+| name | `string` |
+
+**Returns:** `Promise`<`string`>
 
 ___
 

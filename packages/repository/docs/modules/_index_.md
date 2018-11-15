@@ -22,7 +22,7 @@
 
 **● ensure**: *`function`* =  util.promisify(fs.ensureDir)
 
-*Defined in [index.ts:13](https://github.com/ryhope/pando/blob/a668fa92/packages/repository/src/index.ts#L13)*
+*Defined in [index.ts:14](https://github.com/ryhope/pando/blob/21d335be/packages/repository/src/index.ts#L14)*
 
 #### Type declaration
 ▸(arg1: *`T1`*): `Promise`<`TResult`>

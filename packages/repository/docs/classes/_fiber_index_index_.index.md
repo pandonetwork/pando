@@ -29,10 +29,12 @@
 * [clean](_fiber_index_index_.index.md#clean)
 * [current](_fiber_index_index_.index.md#current)
 * [extract](_fiber_index_index_.index.md#extract)
+* [initialize](_fiber_index_index_.index.md#initialize)
 * [snapshot](_fiber_index_index_.index.md#snapshot)
 * [status](_fiber_index_index_.index.md#status)
 * [track](_fiber_index_index_.index.md#track)
 * [untrack](_fiber_index_index_.index.md#untrack)
+* [for](_fiber_index_index_.index.md#for)
 
 ---
 
@@ -44,7 +46,7 @@
 
 ⊕ **new Index**(fiber: *[Fiber](_fiber_index_.fiber.md)*): [Index](_fiber_index_index_.index.md)
 
-*Defined in [fiber/index/index.ts:49](https://github.com/ryhope/pando/blob/a668fa92/packages/repository/src/fiber/index/index.ts#L49)*
+*Defined in [fiber/index/index.ts:38](https://github.com/ryhope/pando/blob/21d335be/packages/repository/src/fiber/index/index.ts#L38)*
 
 **Parameters:**
 
@@ -64,7 +66,7 @@ ___
 
 **● db**: *`Level`*
 
-*Defined in [fiber/index/index.ts:49](https://github.com/ryhope/pando/blob/a668fa92/packages/repository/src/fiber/index/index.ts#L49)*
+*Defined in [fiber/index/index.ts:38](https://github.com/ryhope/pando/blob/21d335be/packages/repository/src/fiber/index/index.ts#L38)*
 
 ___
 <a id="fiber"></a>
@@ -73,7 +75,7 @@ ___
 
 **● fiber**: *[Fiber](_fiber_index_.fiber.md)*
 
-*Defined in [fiber/index/index.ts:48](https://github.com/ryhope/pando/blob/a668fa92/packages/repository/src/fiber/index/index.ts#L48)*
+*Defined in [fiber/index/index.ts:37](https://github.com/ryhope/pando/blob/21d335be/packages/repository/src/fiber/index/index.ts#L37)*
 
 ___
 
@@ -85,7 +87,7 @@ ___
 
 getnode(): `IPFS`
 
-*Defined in [fiber/index/index.ts:60](https://github.com/ryhope/pando/blob/a668fa92/packages/repository/src/fiber/index/index.ts#L60)*
+*Defined in [fiber/index/index.ts:55](https://github.com/ryhope/pando/blob/21d335be/packages/repository/src/fiber/index/index.ts#L55)*
 
 **Returns:** `IPFS`
 
@@ -96,7 +98,7 @@ ___
 
 getrepository(): [Repository](_index_.repository.md)
 
-*Defined in [fiber/index/index.ts:56](https://github.com/ryhope/pando/blob/a668fa92/packages/repository/src/fiber/index/index.ts#L56)*
+*Defined in [fiber/index/index.ts:51](https://github.com/ryhope/pando/blob/21d335be/packages/repository/src/fiber/index/index.ts#L51)*
 
 **Returns:** [Repository](_index_.repository.md)
 
@@ -110,7 +112,7 @@ ___
 
 ▸ **_ls**(): `Promise`<`any`>
 
-*Defined in [fiber/index/index.ts:118](https://github.com/ryhope/pando/blob/a668fa92/packages/repository/src/fiber/index/index.ts#L118)*
+*Defined in [fiber/index/index.ts:123](https://github.com/ryhope/pando/blob/21d335be/packages/repository/src/fiber/index/index.ts#L123)*
 
 **Returns:** `Promise`<`any`>
 
@@ -121,7 +123,7 @@ ___
 
 ▸ **cid**(path: *`string`*): `Promise`<`string`>
 
-*Defined in [fiber/index/index.ts:266](https://github.com/ryhope/pando/blob/a668fa92/packages/repository/src/fiber/index/index.ts#L266)*
+*Defined in [fiber/index/index.ts:271](https://github.com/ryhope/pando/blob/21d335be/packages/repository/src/fiber/index/index.ts#L271)*
 
 **Parameters:**
 
@@ -138,7 +140,7 @@ ___
 
 ▸ **clean**(path: *`string`*): `Promise`<`void`>
 
-*Defined in [fiber/index/index.ts:312](https://github.com/ryhope/pando/blob/a668fa92/packages/repository/src/fiber/index/index.ts#L312)*
+*Defined in [fiber/index/index.ts:301](https://github.com/ryhope/pando/blob/21d335be/packages/repository/src/fiber/index/index.ts#L301)*
 
 **Parameters:**
 
@@ -155,18 +157,18 @@ ___
 
 ▸ **current**(): `Promise`<`any`>
 
-*Defined in [fiber/index/index.ts:64](https://github.com/ryhope/pando/blob/a668fa92/packages/repository/src/fiber/index/index.ts#L64)*
+*Defined in [fiber/index/index.ts:59](https://github.com/ryhope/pando/blob/21d335be/packages/repository/src/fiber/index/index.ts#L59)*
 
 **Returns:** `Promise`<`any`>
 
 ___
 <a id="extract"></a>
 
-### `<Private>` extract
+###  extract
 
 ▸ **extract**(paths: *`string`[]*, index: *`any`*): `string`[]
 
-*Defined in [fiber/index/index.ts:329](https://github.com/ryhope/pando/blob/a668fa92/packages/repository/src/fiber/index/index.ts#L329)*
+*Defined in [fiber/index/index.ts:317](https://github.com/ryhope/pando/blob/21d335be/packages/repository/src/fiber/index/index.ts#L317)*
 
 **Parameters:**
 
@@ -178,13 +180,24 @@ ___
 **Returns:** `string`[]
 
 ___
+<a id="initialize"></a>
+
+###  initialize
+
+▸ **initialize**(): `Promise`<[Index](_fiber_index_index_.index.md)>
+
+*Defined in [fiber/index/index.ts:45](https://github.com/ryhope/pando/blob/21d335be/packages/repository/src/fiber/index/index.ts#L45)*
+
+**Returns:** `Promise`<[Index](_fiber_index_index_.index.md)>
+
+___
 <a id="snapshot"></a>
 
 ###  snapshot
 
 ▸ **snapshot**(opts?: *`any`*): `Promise`<`any`>
 
-*Defined in [fiber/index/index.ts:273](https://github.com/ryhope/pando/blob/a668fa92/packages/repository/src/fiber/index/index.ts#L273)*
+*Defined in [fiber/index/index.ts:278](https://github.com/ryhope/pando/blob/21d335be/packages/repository/src/fiber/index/index.ts#L278)*
 
 **Parameters:**
 
@@ -201,7 +214,7 @@ ___
 
 ▸ **status**(): `Promise`<`any`>
 
-*Defined in [fiber/index/index.ts:146](https://github.com/ryhope/pando/blob/a668fa92/packages/repository/src/fiber/index/index.ts#L146)*
+*Defined in [fiber/index/index.ts:151](https://github.com/ryhope/pando/blob/21d335be/packages/repository/src/fiber/index/index.ts#L151)*
 
 **Returns:** `Promise`<`any`>
 
@@ -212,7 +225,7 @@ ___
 
 ▸ **track**(paths: *`string`[]*): `Promise`<`any`>
 
-*Defined in [fiber/index/index.ts:88](https://github.com/ryhope/pando/blob/a668fa92/packages/repository/src/fiber/index/index.ts#L88)*
+*Defined in [fiber/index/index.ts:83](https://github.com/ryhope/pando/blob/21d335be/packages/repository/src/fiber/index/index.ts#L83)*
 
 **Parameters:**
 
@@ -229,7 +242,7 @@ ___
 
 ▸ **untrack**(paths: *`string`[]*): `Promise`<`any`>
 
-*Defined in [fiber/index/index.ts:103](https://github.com/ryhope/pando/blob/a668fa92/packages/repository/src/fiber/index/index.ts#L103)*
+*Defined in [fiber/index/index.ts:108](https://github.com/ryhope/pando/blob/21d335be/packages/repository/src/fiber/index/index.ts#L108)*
 
 **Parameters:**
 
@@ -238,6 +251,23 @@ ___
 | paths | `string`[] |
 
 **Returns:** `Promise`<`any`>
+
+___
+<a id="for"></a>
+
+### `<Static>` for
+
+▸ **for**(fiber: *[Fiber](_fiber_index_.fiber.md)*): `Promise`<[Index](_fiber_index_index_.index.md)>
+
+*Defined in [fiber/index/index.ts:30](https://github.com/ryhope/pando/blob/21d335be/packages/repository/src/fiber/index/index.ts#L30)*
+
+**Parameters:**
+
+| Name | Type |
+| ------ | ------ |
+| fiber | [Fiber](_fiber_index_.fiber.md) |
+
+**Returns:** `Promise`<[Index](_fiber_index_index_.index.md)>
 
 ___
 

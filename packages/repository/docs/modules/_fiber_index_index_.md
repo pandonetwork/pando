@@ -29,7 +29,7 @@
     next()
 })
 
-*Defined in [fiber/index/index.ts:15](https://github.com/ryhope/pando/blob/a668fa92/packages/repository/src/fiber/index/index.ts#L15)*
+*Defined in [fiber/index/index.ts:18](https://github.com/ryhope/pando/blob/21d335be/packages/repository/src/fiber/index/index.ts#L18)*
 
 ___
 

@@ -38,6 +38,13 @@ var __generator = (this && this.__generator) || function (thisArg, body) {
 var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
+var __importStar = (this && this.__importStar) || function (mod) {
+    if (mod && mod.__esModule) return mod;
+    var result = {};
+    if (mod != null) for (var k in mod) if (Object.hasOwnProperty.call(mod, k)) result[k] = mod[k];
+    result["default"] = mod;
+    return result;
+};
 var _this = this;
 Object.defineProperty(exports, "__esModule", { value: true });
 var index_1 = __importDefault(require("./index/"));
@@ -45,6 +52,7 @@ var level_1 = __importDefault(require("level"));
 var v1_1 = __importDefault(require("uuid/v1"));
 var path_1 = __importDefault(require("path"));
 var fs_extra_1 = __importDefault(require("fs-extra"));
+var _ = __importStar(require("lodash"));
 var db = function (location, options) { return __awaiter(_this, void 0, void 0, function () {
     return __generator(this, function (_a) {
         return [2 /*return*/, new Promise(function (resolve, reject) {
@@ -79,22 +87,25 @@ var Fiber = /** @class */ (function () {
     };
     Fiber.exists = function (repository, uuid) {
         return __awaiter(this, void 0, void 0, function () {
-            return __generator(this, function (_a) {
-                switch (_a.label) {
-                    case 0: return [4 /*yield*/, fs_extra_1.default.pathExists(path_1.default.join(repository.paths.fibers, uuid))];
+            var _a, one, two, three;
+            return __generator(this, function (_b) {
+                switch (_b.label) {
+                    case 0: return [4 /*yield*/, Promise.all([
+                            fs_extra_1.default.pathExists(Fiber.paths(repository, uuid, 'root')),
+                            fs_extra_1.default.pathExists(Fiber.paths(repository, uuid, 'index')),
+                            fs_extra_1.default.pathExists(Fiber.paths(repository, uuid, 'snapshots'))
+                        ])];
                     case 1:
-                        // rewrite awith promise.all
-                        if (!(_a.sent()))
-                            return [2 /*return*/, false];
-                        return [4 /*yield*/, fs_extra_1.default.pathExists(path_1.default.join(repository.paths.fibers, uuid, 'index'))];
-                    case 2:
-                        if (!(_a.sent()))
-                            return [2 /*return*/, false];
-                        return [4 /*yield*/, fs_extra_1.default.pathExists(path_1.default.join(repository.paths.fibers, uuid, 'snapshots'))];
-                    case 3:
-                        if (!(_a.sent()))
-                            return [2 /*return*/, false];
-                        return [2 /*return*/, true];
+                        _a = _b.sent(), one = _a[0], two = _a[1], three = _a[2];
+                        return [2 /*return*/, one && two && three
+                            // if(!(await fs.pathExists(Fiber.paths(repository, uuid, 'root')))) return false
+                            //
+                            // if(!(await fs.pathExists(npath.join(repository.paths.fibers, uuid, 'index')))) return false
+                            //
+                            // if(!(await fs.pathExists(npath.join(repository.paths.fibers, uuid, 'snapshots')))) return false
+                            //
+                            // return true
+                        ];
                 }
             });
         });
@@ -129,44 +140,6 @@ var Fiber = /** @class */ (function () {
             return __generator(this, function (_a) {
                 fiber = new Fiber(repository, uuid);
                 return [2 /*return*/, fiber.initialize()];
-            });
-        });
-    };
-    Fiber.prototype.open = function () {
-        return __awaiter(this, void 0, void 0, function () {
-            var ops;
-            return __generator(this, function (_a) {
-                switch (_a.label) {
-                    case 0:
-                        ops = [];
-                        if (this.snapshots.isClosed())
-                            ops.push(this.snapshots.open());
-                        if (this.index.db.isClosed())
-                            ops.push(this.index.db.open());
-                        return [4 /*yield*/, Promise.all(ops)];
-                    case 1:
-                        _a.sent();
-                        return [2 /*return*/];
-                }
-            });
-        });
-    };
-    Fiber.prototype.close = function () {
-        return __awaiter(this, void 0, void 0, function () {
-            var ops;
-            return __generator(this, function (_a) {
-                switch (_a.label) {
-                    case 0:
-                        ops = [];
-                        if (this.snapshots.isOpen())
-                            ops.push(this.snapshots.close());
-                        if (this.index.db.isOpen())
-                            ops.push(this.index.db.close());
-                        return [4 /*yield*/, Promise.all(ops)];
-                    case 1:
-                        _a.sent();
-                        return [2 /*return*/];
-                }
             });
         });
     };
@@ -219,6 +192,60 @@ var Fiber = /** @class */ (function () {
             });
         });
     };
+    Fiber.prototype.revert = function (id, paths) {
+        if (paths === void 0) { paths = ['']; }
+        return __awaiter(this, void 0, void 0, function () {
+            var snapshot, promises, files, _i, paths_1, path, tree, _a, tree_1, file, _loop_1, _b, files_1, file;
+            return __generator(this, function (_c) {
+                switch (_c.label) {
+                    case 0: return [4 /*yield*/, this.snapshots.get(id)];
+                    case 1:
+                        snapshot = _c.sent();
+                        promises = [];
+                        files = [];
+                        _i = 0, paths_1 = paths;
+                        _c.label = 2;
+                    case 2:
+                        if (!(_i < paths_1.length)) return [3 /*break*/, 5];
+                        path = paths_1[_i];
+                        path = path_1.default.relative(this.repository.paths.root, path);
+                        return [4 /*yield*/, this.repository.node.files.get(snapshot.tree + '/' + path)];
+                    case 3:
+                        tree = _c.sent();
+                        if (tree.length <= 0) {
+                            throw new Error('Path ' + path + ' does not exist in snapshot ' + id);
+                        }
+                        else {
+                            for (_a = 0, tree_1 = tree; _a < tree_1.length; _a++) {
+                                file = tree_1[_a];
+                                if (file.type === 'file') {
+                                    files.push({ destination: path.length > 0 ? path_1.default.join(path_1.default.dirname(path), file.path) : file.path.split(path_1.default.sep).slice(1).join(path_1.default.sep), content: file.content });
+                                }
+                            }
+                        }
+                        _c.label = 4;
+                    case 4:
+                        _i++;
+                        return [3 /*break*/, 2];
+                    case 5:
+                        files = _.uniqBy(files, 'destination');
+                        _loop_1 = function (file) {
+                            promises.push(fs_extra_1.default.ensureFile(file.destination).then(function () { return fs_extra_1.default.writeFile(file.destination, file.content); }));
+                        };
+                        // Snapshots before we revert
+                        // Save files before we revert
+                        for (_b = 0, files_1 = files; _b < files_1.length; _b++) {
+                            file = files_1[_b];
+                            _loop_1(file);
+                        }
+                        return [4 /*yield*/, Promise.all(promises)];
+                    case 6:
+                        _c.sent();
+                        return [2 /*return*/];
+                }
+            });
+        });
+    };
     Fiber.prototype.log = function (_a) {
         var _b = (_a === void 0 ? {} : _a).limit, limit = _b === void 0 ? 10 : _b;
         return __awaiter(this, void 0, void 0, function () {
@@ -233,6 +260,44 @@ var Fiber = /** @class */ (function () {
                             .on('error', function (err) { reject(err); })
                             .on('end', function () { resolve(snapshots); });
                     })];
+            });
+        });
+    };
+    Fiber.prototype.open = function () {
+        return __awaiter(this, void 0, void 0, function () {
+            var ops;
+            return __generator(this, function (_a) {
+                switch (_a.label) {
+                    case 0:
+                        ops = [];
+                        if (this.snapshots.isClosed())
+                            ops.push(this.snapshots.open());
+                        if (this.index.db.isClosed())
+                            ops.push(this.index.db.open());
+                        return [4 /*yield*/, Promise.all(ops)];
+                    case 1:
+                        _a.sent();
+                        return [2 /*return*/];
+                }
+            });
+        });
+    };
+    Fiber.prototype.close = function () {
+        return __awaiter(this, void 0, void 0, function () {
+            var ops;
+            return __generator(this, function (_a) {
+                switch (_a.label) {
+                    case 0:
+                        ops = [];
+                        if (this.snapshots.isOpen())
+                            ops.push(this.snapshots.close());
+                        if (this.index.db.isOpen())
+                            ops.push(this.index.db.close());
+                        return [4 /*yield*/, Promise.all(ops)];
+                    case 1:
+                        _a.sent();
+                        return [2 /*return*/];
+                }
             });
         });
     };
