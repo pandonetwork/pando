@@ -21,7 +21,9 @@ var PandoError = /** @class */ (function (_super) {
         for (var _i = 1; _i < arguments.length; _i++) {
             args[_i - 1] = arguments[_i];
         }
-        return _super.call(this, PandoError.message(code, args)) || this;
+        var _this = _super.call(this, code) || this;
+        _this.args = args;
+        return _this;
     }
     PandoError.message = function (code) {
         var args = [];

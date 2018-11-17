@@ -53,6 +53,7 @@ var v1_1 = __importDefault(require("uuid/v1"));
 var path_1 = __importDefault(require("path"));
 var fs_extra_1 = __importDefault(require("fs-extra"));
 var _ = __importStar(require("lodash"));
+var error_1 = __importDefault(require("../error"));
 var db = function (location, options) { return __awaiter(_this, void 0, void 0, function () {
     return __generator(this, function (_a) {
         return [2 /*return*/, new Promise(function (resolve, reject) {
@@ -71,7 +72,12 @@ var Fiber = /** @class */ (function () {
     function Fiber(repository, uuid) {
         this.repository = repository;
         this.uuid = uuid;
-        this.paths = { root: path_1.default.join(repository.paths.fibers, uuid), index: path_1.default.join(repository.paths.fibers, uuid, 'index'), snapshots: path_1.default.join(repository.paths.fibers, uuid, 'snapshots') };
+        this.paths = {
+            root: Fiber.paths(repository, uuid, 'root'),
+            index: Fiber.paths(repository, uuid, 'index'),
+            snapshots: Fiber.paths(repository, uuid, 'snapshots'),
+            stash: Fiber.paths(repository, uuid, 'stash')
+        };
     }
     Fiber.paths = function (repository, uuid, path) {
         switch (path) {
@@ -81,10 +87,18 @@ var Fiber = /** @class */ (function () {
                 return path_1.default.join(repository.paths.fibers, uuid, 'index');
             case "snapshots":
                 return path_1.default.join(repository.paths.fibers, uuid, 'snapshots');
+            case "stash":
+                return path_1.default.join(repository.paths.fibers, uuid, 'stash');
             default:
                 throw new Error('Unknown path');
         }
     };
+    /**
+    * Check if a given fiber exists locally
+    * @param repository Repository to check if the fiber exists in.
+    * @param uuid       UUID of the fiber.
+    * @returns          Returns true if the fiber exists locally, returns else otherwise.
+    */
     Fiber.exists = function (repository, uuid) {
         return __awaiter(this, void 0, void 0, function () {
             var _a, one, two, three;
@@ -93,19 +107,12 @@ var Fiber = /** @class */ (function () {
                     case 0: return [4 /*yield*/, Promise.all([
                             fs_extra_1.default.pathExists(Fiber.paths(repository, uuid, 'root')),
                             fs_extra_1.default.pathExists(Fiber.paths(repository, uuid, 'index')),
-                            fs_extra_1.default.pathExists(Fiber.paths(repository, uuid, 'snapshots'))
+                            fs_extra_1.default.pathExists(Fiber.paths(repository, uuid, 'snapshots')),
+                            fs_extra_1.default.pathExists(Fiber.paths(repository, uuid, 'stash'))
                         ])];
                     case 1:
                         _a = _b.sent(), one = _a[0], two = _a[1], three = _a[2];
-                        return [2 /*return*/, one && two && three
-                            // if(!(await fs.pathExists(Fiber.paths(repository, uuid, 'root')))) return false
-                            //
-                            // if(!(await fs.pathExists(npath.join(repository.paths.fibers, uuid, 'index')))) return false
-                            //
-                            // if(!(await fs.pathExists(npath.join(repository.paths.fibers, uuid, 'snapshots')))) return false
-                            //
-                            // return true
-                        ];
+                        return [2 /*return*/, one && two && three];
                 }
             });
         });
@@ -118,18 +125,15 @@ var Fiber = /** @class */ (function () {
                 switch (_c.label) {
                     case 0:
                         fiber = new Fiber(repository, v1_1.default());
-                        return [4 /*yield*/, fiber.initialize({ mkdir: true })];
+                        return [4 /*yield*/, fiber._initialize({ mkdir: true })];
                     case 1:
                         _c.sent();
-                        if (!!open) return [3 /*break*/, 4];
-                        return [4 /*yield*/, fiber.snapshots.close()];
+                        if (!!open) return [3 /*break*/, 3];
+                        return [4 /*yield*/, fiber._close()];
                     case 2:
                         _c.sent();
-                        return [4 /*yield*/, fiber.index.db.close()];
-                    case 3:
-                        _c.sent();
-                        _c.label = 4;
-                    case 4: return [2 /*return*/, fiber];
+                        _c.label = 3;
+                    case 3: return [2 /*return*/, fiber];
                 }
             });
         });
@@ -138,12 +142,19 @@ var Fiber = /** @class */ (function () {
         return __awaiter(this, void 0, void 0, function () {
             var fiber;
             return __generator(this, function (_a) {
-                fiber = new Fiber(repository, uuid);
-                return [2 /*return*/, fiber.initialize()];
+                switch (_a.label) {
+                    case 0: return [4 /*yield*/, Fiber.exists(repository, uuid)];
+                    case 1:
+                        if (!(_a.sent())) {
+                            throw new error_1.default('E_FIBER_NOT_FOUND', uuid);
+                        }
+                        fiber = new Fiber(repository, uuid);
+                        return [2 /*return*/, fiber._initialize()];
+                }
             });
         });
     };
-    Fiber.prototype.initialize = function (_a) {
+    Fiber.prototype._initialize = function (_a) {
         var _b = (_a === void 0 ? {} : _a).mkdir, mkdir = _b === void 0 ? false : _b;
         return __awaiter(this, void 0, void 0, function () {
             var _c;
@@ -151,7 +162,7 @@ var Fiber = /** @class */ (function () {
                 switch (_d.label) {
                     case 0:
                         if (mkdir) {
-                            fs_extra_1.default.ensureDirSync(path_1.default.join(this.repository.paths.fibers, this.uuid, 'stash'));
+                            fs_extra_1.default.ensureDirSync(this.paths.stash);
                         }
                         return [4 /*yield*/, Promise.all([
                                 index_1.default.for(this),
@@ -196,11 +207,13 @@ var Fiber = /** @class */ (function () {
         if (paths === void 0) { paths = ['']; }
         return __awaiter(this, void 0, void 0, function () {
             var snapshot, promises, files, _i, paths_1, path, tree, _a, tree_1, file, _loop_1, _b, files_1, file;
+            var _this = this;
             return __generator(this, function (_c) {
                 switch (_c.label) {
                     case 0: return [4 /*yield*/, this.snapshots.get(id)];
                     case 1:
                         snapshot = _c.sent();
+                        console.log(snapshot);
                         promises = [];
                         files = [];
                         _i = 0, paths_1 = paths;
@@ -230,7 +243,10 @@ var Fiber = /** @class */ (function () {
                     case 5:
                         files = _.uniqBy(files, 'destination');
                         _loop_1 = function (file) {
-                            promises.push(fs_extra_1.default.ensureFile(file.destination).then(function () { return fs_extra_1.default.writeFile(file.destination, file.content); }));
+                            // console.log('destination: '+ file.destination)
+                            // console.log('content: ' + file.content.toString())
+                            // ADD the repository root !
+                            promises.push(fs_extra_1.default.ensureFile(file.destination).then(function () { return fs_extra_1.default.writeFile(path_1.default.join(_this.repository.paths.root, file.destination), file.content); }));
                         };
                         // Snapshots before we revert
                         // Save files before we revert
@@ -263,7 +279,7 @@ var Fiber = /** @class */ (function () {
             });
         });
     };
-    Fiber.prototype.open = function () {
+    Fiber.prototype._open = function () {
         return __awaiter(this, void 0, void 0, function () {
             var ops;
             return __generator(this, function (_a) {
@@ -282,7 +298,7 @@ var Fiber = /** @class */ (function () {
             });
         });
     };
-    Fiber.prototype.close = function () {
+    Fiber.prototype._close = function () {
         return __awaiter(this, void 0, void 0, function () {
             var ops;
             return __generator(this, function (_a) {

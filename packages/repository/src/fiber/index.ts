@@ -9,6 +9,7 @@ import npath      from 'path'
 import fs         from 'fs-extra'
 import * as _     from 'lodash'
 import util      from 'util'
+import PandoError from '../error'
 
 
 const db = async (location, options): Promise<any> => {
@@ -24,10 +25,17 @@ const db = async (location, options): Promise<any> => {
     })
 }
 
+interface FiberPaths {
+    root: string,
+    index: string,
+    snapshots: string,
+    stash: string
+}
+
 export default class Fiber {
     public repository: Repository
     public uuid:       string
-    public paths:      any
+    public paths:      FiberPaths
     public index!:     Index
     public snapshots!: Level
 
@@ -39,6 +47,8 @@ export default class Fiber {
                 return npath.join(repository.paths.fibers, uuid, 'index')
             case "snapshots":
                 return npath.join(repository.paths.fibers, uuid, 'snapshots')
+            case "stash":
+                return npath.join(repository.paths.fibers, uuid, 'stash')
             default:
                 throw new Error('Unknown path')
         }
@@ -54,7 +64,8 @@ export default class Fiber {
         let [one, two, three] = await Promise.all([
             fs.pathExists(Fiber.paths(repository, uuid, 'root')),
             fs.pathExists(Fiber.paths(repository, uuid, 'index')),
-            fs.pathExists(Fiber.paths(repository, uuid, 'snapshots'))
+            fs.pathExists(Fiber.paths(repository, uuid, 'snapshots')),
+            fs.pathExists(Fiber.paths(repository, uuid, 'stash'))
         ])
 
         return one && two && three
@@ -63,36 +74,39 @@ export default class Fiber {
     public static async create(repository: Repository, { open = false }: { open?: boolean} = {}): Promise<Fiber> {
         const fiber = new Fiber(repository, uuidv1())
 
-        await fiber.initialize({ mkdir: true })
+        await fiber._initialize({ mkdir: true })
 
         if (!open) {
-            await fiber.snapshots.close()
-            await fiber.index.db.close()
+            await fiber._close()
         }
 
         return fiber
     }
 
     public static async load(repository: Repository, uuid: string): Promise<Fiber> {
-        // TODO: check that fiber exists
-
+        if (!await Fiber.exists(repository, uuid)) {
+            throw new PandoError('E_FIBER_NOT_FOUND', uuid)
+        }
 
         const fiber = new Fiber(repository, uuid)
 
-        return fiber.initialize()
+        return fiber._initialize()
     }
-
-
 
     public constructor(repository: Repository, uuid: string) {
         this.repository = repository
         this.uuid       = uuid
-        this.paths      = { root: npath.join(repository.paths.fibers, uuid), index: npath.join(repository.paths.fibers, uuid, 'index'), snapshots: npath.join(repository.paths.fibers, uuid, 'snapshots') }
+        this.paths      = {
+            root: Fiber.paths(repository, uuid, 'root'),
+            index: Fiber.paths(repository, uuid, 'index'),
+            snapshots: Fiber.paths(repository, uuid, 'snapshots'),
+            stash: Fiber.paths(repository, uuid, 'stash')
+        }
     }
 
-    public async initialize({ mkdir = false }: { mkdir?: boolean} = {}): Promise<Fiber> {
+    private async _initialize({ mkdir = false }: { mkdir?: boolean} = {}): Promise<Fiber> {
         if (mkdir) {
-            fs.ensureDirSync(npath.join(this.repository.paths.fibers, this.uuid, 'stash'))
+            fs.ensureDirSync(this.paths.stash)
         }
 
         [this.index, this.snapshots] = await Promise.all([
@@ -121,6 +135,9 @@ export default class Fiber {
     public async revert(id: number, paths: string[] = ['']): Promise<any> {
 
         let snapshot = await this.snapshots.get(id)
+
+        console.log(snapshot)
+
         let promises: any[] = []
 
         let files: any[] = []
@@ -146,7 +163,10 @@ export default class Fiber {
         // Save files before we revert
 
         for (let file of files) {
-            promises.push(fs.ensureFile(file.destination).then(() => fs.writeFile(file.destination, file.content)))
+            // console.log('destination: '+ file.destination)
+            // console.log('content: ' + file.content.toString())
+            // ADD the repository root !
+            promises.push(fs.ensureFile(file.destination).then(() => fs.writeFile(npath.join(this.repository.paths.root, file.destination), file.content)))
         }
 
 
@@ -165,7 +185,7 @@ export default class Fiber {
         })
     }
 
-    public async open(): Promise<void> {
+    public async _open(): Promise<void> {
         const ops: any[] = []
 
         if (this.snapshots.isClosed()) ops.push(this.snapshots.open())
@@ -174,7 +194,7 @@ export default class Fiber {
         await Promise.all(ops)
     }
 
-    public async close(): Promise<void> {
+    public async _close(): Promise<void> {
         const ops: any[] = []
 
         if (this.snapshots.isOpen()) ops.push(this.snapshots.close())

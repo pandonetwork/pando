@@ -19,11 +19,13 @@ const should = chai.should()
 
 let cids = { origin: {}, modified: {}, deleted: {}}
 
+cids.origin['tree'] = 'QmYR98BbbJxi3Nwtxd4ToS8uyAid4HC6NzULa2JGGKMgCy'
 cids.origin['test.md'] = 'QmShBmhvEZ1dDwPvLvpjimRW76AQrVz3fbpZYwsqNJN2Xh'
 cids.origin[path.join('dir', 'test_1.md')] = 'Qmaij6pBZtRmVf6sUUaJ4rRkwkF78aqT38GP1YSZho7yLY'
 cids.origin[path.join('dir', 'test_2.md')] = 'Qme4pabV5DApSeHsuWu6gXa3EyUj58N85hdMfdD7372rnV'
 cids.origin[path.join('dir', 'sub', 'test.md')] = 'QmfHhdmitp8duYj8fsvDTkeRWd5szP7qnS4qEC8oCt37Hr'
 
+cids.modified['tree'] = 'QmbHJTpmU1LDNBitKo6mxTe7L7k57o2hqFZXbGtAd3nCKg'
 cids.modified['test.md'] = 'QmUenaNZqJKZvz3qMaNaF4VBTpddpnr97wf6REKte7pJtw'
 cids.modified[path.join('dir', 'test_1.md')] = 'QmXtt8JV8xAc4R8syRLvYeCkGCkaSd49kTGnZBpfyq2Srq'
 cids.modified[path.join('dir', 'test_2.md')] = 'Qme4pabV5DApSeHsuWu6gXa3EyUj58N85hdMfdD7372rnV'
@@ -97,177 +99,310 @@ describe('@pando/repository/fibers', () => {
         await fixtures.restore()
     }
 
-    describe('#exists', () => {
-        describe('fiber exists', () => {
+    // describe('static#exists', () => {
+    //     before(async () => {
+    //         await initialize()
+    //     })
+    //
+    //     after(async () => {
+    //         await clean()
+    //     })
+    //
+    //     it('it should return true if fiber exists', async () => {
+    //         const exists = await Fiber.exists(repository, master.uuid)
+    //
+    //         exists.should.be.true
+    //     })
+    //
+    //     it('it should return false if fiber does not exist', async () => {
+    //         const exists = await Fiber.exists(repository, 'uuiddoesnotexist')
+    //
+    //         exists.should.be.false
+    //     })
+    // })
+    //
+    // describe('static#create', () => {
+    //     before(async () => {
+    //         await initialize()
+    //     })
+    //
+    //     it('it should return created fiber', async () => {
+    //         fiber = await Fiber.create(repository)
+    //
+    //         fiber.should.exist
+    //     })
+    //
+    //     it("it should set fiber's repository", async () => {
+    //         fiber.repository.should.deep.equal(repository)
+    //     })
+    //
+    //     it("it should set fiber's uuid", async () => {
+    //         fiber.uuid.should.exist
+    //     })
+    //
+    //     it("it should set fiber's paths", async () => {
+    //         fiber.paths.root.should.equal(path.join(repository.paths.fibers, fiber.uuid))
+    //         fiber.paths.index.should.equal(path.join(repository.paths.fibers, fiber.uuid, 'index'))
+    //         fiber.paths.snapshots.should.equal(path.join(repository.paths.fibers, fiber.uuid, 'snapshots'))
+    //         fiber.paths.stash.should.equal(path.join(repository.paths.fibers, fiber.uuid, 'stash'))
+    //     })
+    //
+    //     it("it should set fiber's index", async () => {
+    //         fiber.index.should.exist
+    //     })
+    //
+    //     it("it should set fiber's snapshots", async () => {
+    //         fiber.snapshots.should.exist
+    //     })
+    //
+    //     it('it should initialize directory structure', async () => {
+    //         let root_exists      = await fs.pathExists(fiber.paths.root)
+    //         let index_exists     = await fs.pathExists(fiber.paths.index)
+    //         let snapshots_exists = await fs.pathExists(fiber.paths.snapshots)
+    //         let stash_exists     = await fs.pathExists(fiber.paths.stash)
+    //
+    //         root_exists.should.be.true
+    //         index_exists.should.be.true
+    //         snapshots_exists.should.be.true
+    //         stash_exists.should.be.true
+    //     })
+    //
+    //     describe("'open' option is disabled", () => {
+    //         before(async () => {
+    //             await clean()
+    //             await initialize()
+    //             fiber = await Fiber.create(repository)
+    //         })
+    //
+    //         after(async () => {
+    //             await clean()
+    //         })
+    //
+    //         it("it should close fiber's snapshots database", async () => {
+    //             fiber.snapshots.isClosed().should.be.true
+    //         })
+    //
+    //         it("it should close fiber's index database", async () => {
+    //             fiber.index.db.isClosed().should.be.true
+    //         })
+    //     })
+    //
+    //     describe("'open' option is enabled", () => {
+    //         before(async () => {
+    //             await initialize()
+    //             fiber = await Fiber.create(repository, { open: true })
+    //         })
+    //
+    //         after(async () => {
+    //             await clean()
+    //         })
+    //
+    //         it("it should let fiber's snapshots database open", async () => {
+    //             fiber.snapshots.isOpen().should.be.true
+    //         })
+    //
+    //         it("it should let fiber's index database open", async () => {
+    //             fiber.index.db.isOpen().should.be.true
+    //         })
+    //     })
+    // })
+    //
+    // describe('static#load', () => {
+    //     describe('fiber exists', () => {
+    //         before(async () => {
+    //             await initialize()
+    //         })
+    //
+    //         after(async () => {
+    //             await clean()
+    //         })
+    //
+    //         it('it should return loaded fiber', async () => {
+    //             let created = await Fiber.create(repository)
+    //             fiber = await Fiber.load(repository, created.uuid)
+    //
+    //             fiber.should.exist
+    //         })
+    //
+    //         it("it should set fiber's repository", async () => {
+    //             fiber.repository.should.deep.equal(repository)
+    //         })
+    //
+    //         it("it should set fiber's uuid", async () => {
+    //             fiber.uuid.should.exist
+    //         })
+    //
+    //         it("it should set fiber's paths", async () => {
+    //             fiber.paths.root.should.equal(path.join(repository.paths.fibers, fiber.uuid))
+    //             fiber.paths.index.should.equal(path.join(repository.paths.fibers, fiber.uuid, 'index'))
+    //             fiber.paths.snapshots.should.equal(path.join(repository.paths.fibers, fiber.uuid, 'snapshots'))
+    //             fiber.paths.stash.should.equal(path.join(repository.paths.fibers, fiber.uuid, 'stash'))
+    //         })
+    //
+    //         it("it should set fiber's index", async () => {
+    //             fiber.index.should.exist
+    //         })
+    //
+    //         it("it should set fiber's snapshots", async () => {
+    //             fiber.snapshots.should.exist
+    //         })
+    //
+    //         it("it should open fiber's snapshots database", async () => {
+    //             fiber.snapshots.isOpen().should.be.true
+    //         })
+    //
+    //         it("it should open fiber's index database", async () => {
+    //             fiber.index.db.isOpen().should.be.true
+    //         })
+    //     })
+    //
+    //     describe('fiber does not exist', () => {
+    //         before(async () => {
+    //             await initialize()
+    //         })
+    //
+    //         after(async () => {
+    //             await clean()
+    //         })
+    //
+    //         it('it should reject with error E_FIBER_NOT_FOUND', async () => {
+    //             return Fiber.load(repository, 'uuiddoesnotexist').should.be.rejectedWith('E_FIBER_NOT_FOUND')
+    //         })
+    //     })
+    // })
+    //
+    // describe('#status', () => {
+    //     // NOTE: already tested in index.spec.js
+    // })
+    //
+    // describe('#snapshot', () => {
+    //     let snapshot
+    //
+    //     before(async () => {
+    //         await initialize()
+    //         await master.index.track([path.join('test', 'fixtures')])
+    //         await master.snapshot('First snapshot')
+    //         await fixtures.files.modify()
+    //     })
+    //
+    //     after(async () => {
+    //         await clean()
+    //     })
+    //
+    //     it('it should return created snapshot', async () => {
+    //         snapshot = await master.snapshot('Second snapshot')
+    //
+    //         snapshot.should.exist
+    //     })
+    //
+    //     it("it should set snapshot's id", async () => {
+    //         snapshot.id.should.equal(1)
+    //     })
+    //
+    //     it("it should set snapshot's timestamp", async () => {
+    //         snapshot.timestamp.should.exist
+    //     })
+    //
+    //     it("it should set snapshot's message", async () => {
+    //         snapshot.message.should.equal('Second snapshot')
+    //     })
+    //
+    //     it("it should set snapshot's tree hash", async () => {
+    //         snapshot.tree.should.equal(cids.modified['tree'])
+    //     })
+    //
+    //     it("it should update snapshot's database", async () => {
+    //         let length = await master._length()
+    //         length.should.equal(2)
+    //     })
+    // })
+    //
+    // describe('#log', () => {
+    //     let log
+    //
+    //     before(async () => {
+    //         await initialize()
+    //         await master.index.track([path.join('test', 'fixtures')])
+    //         await master.snapshot('First snapshot')
+    //         await fixtures.files.modify()
+    //         await master.snapshot('Second snapshot')
+    //     })
+    //
+    //     after(async () => {
+    //         await clean()
+    //     })
+    //
+    //     it('it should return snapshots history', async () => {
+    //         log = await master.log()
+    //
+    //         log.should.exist
+    //         log.length.should.equal(2)
+    //     })
+    //
+    //     it("it should return each snapshot's id", async () => {
+    //         log[0].id.should.equal(1)
+    //         log[1].id.should.equal(0)
+    //     })
+    //
+    //     it("it should return each snapshot's timestamp", async () => {
+    //         log[0].timestamp.should.exist
+    //         log[1].timestamp.should.exist
+    //     })
+    //
+    //     it("it should return each snapshot's message", async () => {
+    //         log[0].message.should.equal('Second snapshot')
+    //         log[1].message.should.equal('First snapshot')
+    //     })
+    //
+    //     it("it should return each snapshot's tree hash", async () => {
+    //         log[0].tree.should.equal(cids.modified['tree'])
+    //         log[1].tree.should.equal(cids.origin['tree'])
+    //     })
+    //
+    //     describe('limit parameter is passed', () => {
+    //         it('it should return #limit last snapshots', async () => {
+    //             log = await master.log({ limit: 1 })
+    //
+    //             log.should.exist
+    //             log.length.should.equal(1)
+    //             log[0].id.should.equal(1)
+    //         })
+    //     })
+    // })
+
+    describe('#revert', () => {
+        describe('snapshot exists and all entries exists in snapshots', () => {
             before(async () => {
                 await initialize()
+                await master.index.track([path.join('test', 'fixtures')])
+                await master.snapshot('First snapshot')
+                await fixtures.files.modify()
+                await master.snapshot('Second snapshot')
             })
 
             after(async () => {
                 await clean()
             })
 
-            it('it should return true', async () => {
-                const exists = await Fiber.exists(repository, master.uuid)
-
-                exists.should.be.true
-            })
-        })
-
-        describe('fiber does not exist', () => {
-            before(async () => {
-                await initialize()
+            it('it should fulfill', async () => {
+                await master.revert(0, [path.join('test', 'fixtures', 'test.md'), path.join('test', 'fixtures', 'dir', 'sub')])
             })
 
-            after(async () => {
-                await clean()
+
+            it('it should create a backup snapshot', async () => {
+
             })
 
-            it('it should return false', async () => {
-                const exists = await Fiber.exists(repository, 'uuiddoesnotexist')
+            it("it should revert entries back to snapshot's version", async () => {
 
-                exists.should.be.false
+                (await master.index.cid('test.md')).should.equal(cids.origin['test.md'])
+                // (await master.index.cid('test.md')).should.equal(cids.origin['test.md'])
+
             })
+
+
         })
     })
-
-    describe('#create', () => {
-        describe("'open' option is disabled", () => {
-            before(async () => {
-                await initialize()
-            })
-
-            after(async () => {
-                await clean()
-            })
-
-            it('it should return created fiber', async () => {
-                fiber = await Fiber.create(repository)
-
-                fiber.should.exist
-            })
-
-            it("it should set fiber's repository", async () => {
-                fiber.repository.should.deep.equal(repository)
-            })
-
-            it("it should set fiber's uuid", async () => {
-                fiber.uuid.should.exist
-            })
-
-            it("it should set fiber's paths", async () => {
-                fiber.paths.root.should.equal(path.join(repository.paths.fibers, fiber.uuid))
-                fiber.paths.index.should.equal(path.join(repository.paths.fibers, fiber.uuid, 'index'))
-                fiber.paths.snapshots.should.equal(path.join(repository.paths.fibers, fiber.uuid, 'snapshots'))
-            })
-
-            it("it should set fiber's index", async () => {
-                fiber.index.should.exist
-            })
-
-            it("it should set fiber's snapshots", async () => {
-                fiber.snapshots.should.exist
-            })
-
-            it('it should initialize directory structure', async () => {
-                let root_exists      = await fs.pathExists(fiber.paths.root)
-                let index_exists     = await fs.pathExists(fiber.paths.index)
-                let snapshots_exists = await fs.pathExists(fiber.paths.snapshots)
-
-                root_exists.should.be.true
-                index_exists.should.be.true
-                snapshots_exists.should.be.true
-            })
-
-            it("it should close fiber's snapshots database", async () => {
-                fiber.snapshots.isClosed().should.be.true
-            })
-
-            it("it should close fiber's index database", async () => {
-                fiber.index.db.isClosed().should.be.true
-            })
-        })
-
-        describe("'open' option is enabled", () => {
-            before(async () => {
-                await initialize()
-            })
-
-            after(async () => {
-                await clean()
-            })
-
-            it('it should return created fiber', async () => {
-                fiber = await Fiber.create(repository, { open: true })
-
-                fiber.should.exist
-            })
-
-            it("it should set fiber's repository", async () => {
-                fiber.repository.should.deep.equal(repository)
-            })
-
-            it("it should set fiber's uuid", async () => {
-                fiber.uuid.should.exist
-            })
-
-            it("it should set fiber's paths", async () => {
-                fiber.paths.root.should.equal(path.join(repository.paths.fibers, fiber.uuid))
-                fiber.paths.index.should.equal(path.join(repository.paths.fibers, fiber.uuid, 'index'))
-                fiber.paths.snapshots.should.equal(path.join(repository.paths.fibers, fiber.uuid, 'snapshots'))
-            })
-
-            it("it should set fiber's index", async () => {
-                fiber.index.should.exist
-            })
-
-            it("it should set fiber's snapshots", async () => {
-                fiber.snapshots.should.exist
-            })
-
-            it('it should initialize directory structure', async () => {
-                let root_exists      = await fs.pathExists(fiber.paths.root)
-                let index_exists     = await fs.pathExists(fiber.paths.index)
-                let snapshots_exists = await fs.pathExists(fiber.paths.snapshots)
-
-                root_exists.should.be.true
-                index_exists.should.be.true
-                snapshots_exists.should.be.true
-            })
-
-            it("it should let fiber's snapshots database open", async () => {
-                fiber.snapshots.isOpen().should.be.true
-            })
-
-            it("it should let fiber's index database open", async () => {
-                fiber.index.db.isOpen().should.be.true
-            })
-        })
-    })
-
-    describe('#load', () => {
-
-
-
-        // public static async load(repository: Repository, uuid: string): Promise<Fiber> {
-        //     // TODO: check that fiber exists
-        //
-        //
-        //     const fiber = new Fiber(repository, uuid)
-        //
-        //     return fiber.initialize()
-        // }
-
-
-    })
-    describe('#status', () => {})
-    describe('#snapshot', () => {})
-    describe('#log', () => {})
-    describe('#revert', () => {})
-
-    describe('#_length', () => {})
-    describe('#_open', () => {})
-    describe('#_close', () => {})
 
     // describe('#factory', () => {
     //

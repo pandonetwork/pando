@@ -16,7 +16,10 @@ export default class PandoError extends ExtendableError {
         }
     }
 
+    public args
+
     constructor(code: string, ...args) {
-        super(PandoError.message(code, args))
+        super(code)
+        this.args = args
     }
 }

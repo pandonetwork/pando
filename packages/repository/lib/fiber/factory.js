@@ -159,7 +159,7 @@ var FiberFactory = /** @class */ (function () {
                     case 6:
                         _e.sent();
                         if (!open) return [3 /*break*/, 8];
-                        return [4 /*yield*/, fiber.open()];
+                        return [4 /*yield*/, fiber._open()];
                     case 7:
                         _e.sent();
                         _e.label = 8;

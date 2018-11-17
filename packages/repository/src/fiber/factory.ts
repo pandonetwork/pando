@@ -82,7 +82,7 @@ export default class FiberFactory {
         await this.db.put(fiber.uuid, { name, wdir: 'null', snapshot: 'null', current: false })
 
         if (open) {
-            await fiber.open()
+            await fiber._open()
         }
 
         return fiber

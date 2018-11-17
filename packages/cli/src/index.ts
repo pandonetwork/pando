@@ -12,6 +12,8 @@ const argv = yargs
   .command(commands.switch_)
   .command(commands.snapshot)
   .command(commands.log)
+  .command(commands.revert)
+
 
   // .command(commands.stage)
   // .command(commands.snapshot)
