@@ -1,4 +1,5 @@
 import chalk from 'chalk'
+import figures from 'figures'
 
 /* tslint:disable:no-console */
 export const info = (message: string) => {
@@ -6,13 +7,16 @@ export const info = (message: string) => {
 }
 
 export const success = (message: string) => {
-  console.log(chalk.green(message))
+  // console.log(chalk.green(message))
+  //
+  // import figures from 'figures'
+
+  console.log(figures('✔︎ ') + message);
+
 }
 
 export const error = (message: string) => {
-  process.stdout.write('[' + chalk.red('error') + ']')
-  process.stdout.write('[' + chalk.red(message) + ']')
-  process.stdout.write('\n')
+  console.log(chalk.red(figures('✖ ') + message));
 }
 
 export const status = (say: string, params?: string) => {

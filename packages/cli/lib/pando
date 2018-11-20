@@ -92,7 +92,7 @@ return /******/ (function(modules) { // webpackBootstrap
 /******/
 /******/
 /******/ 	// Load entry module and return exports
-/******/ 	return __webpack_require__(__webpack_require__.s = 39);
+/******/ 	return __webpack_require__(__webpack_require__.s = 19);
 /******/ })
 /************************************************************************/
 /******/ ([
@@ -112,17 +112,19 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 var chalk_1 = __importDefault(__webpack_require__(3));
+var figures_1 = __importDefault(__webpack_require__(4));
 /* tslint:disable:no-console */
 exports.info = function (message) {
     console.log(chalk_1.default.blue(message));
 };
 exports.success = function (message) {
-    console.log(chalk_1.default.green(message));
+    // console.log(chalk.green(message))
+    //
+    // import figures from 'figures'
+    console.log(figures_1.default('✔︎ ') + message);
 };
 exports.error = function (message) {
-    process.stdout.write('[' + chalk_1.default.red('error') + ']');
-    process.stdout.write('[' + chalk_1.default.red(message) + ']');
-    process.stdout.write('\n');
+    console.log(chalk_1.default.red(figures_1.default('✖ ') + message));
 };
 exports.status = function (say, params) {
     process.stdout.write('[' + chalk_1.default.magenta(say) + ']');
@@ -138,7 +140,7 @@ exports.status = function (say, params) {
 /* 2 */
 /***/ (function(module, exports) {
 
-module.exports = require("@pando/pando.js");
+module.exports = require("@pando/repository");
 
 /***/ }),
 /* 3 */
@@ -148,35 +150,9 @@ module.exports = require("chalk");
 
 /***/ }),
 /* 4 */
-/***/ (function(module, exports, __webpack_require__) {
+/***/ (function(module, exports) {
 
-"use strict";
-
-var __importStar = (this && this.__importStar) || function (mod) {
-    if (mod && mod.__esModule) return mod;
-    var result = {};
-    if (mod != null) for (var k in mod) if (Object.hasOwnProperty.call(mod, k)) result[k] = mod[k];
-    result["default"] = mod;
-    return result;
-};
-var __importDefault = (this && this.__importDefault) || function (mod) {
-    return (mod && mod.__esModule) ? mod : { "default": mod };
-};
-Object.defineProperty(exports, "__esModule", { value: true });
-var utils = __importStar(__webpack_require__(36));
-var os_1 = __importDefault(__webpack_require__(32));
-var path_1 = __importDefault(__webpack_require__(31));
-exports.path = path_1.default.join(os_1.default.homedir(), '.pandoconfig');
-exports.exists = function () {
-    return utils.fs.exists(exports.path);
-};
-exports.save = function (data) {
-    return utils.yaml.write(exports.path, data);
-};
-exports.load = function () {
-    return utils.yaml.read(exports.path);
-};
-
+module.exports = require("figures");
 
 /***/ }),
 /* 5 */
@@ -184,6 +160,44 @@ exports.load = function () {
 
 "use strict";
 
+var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
+    return new (P || (P = Promise))(function (resolve, reject) {
+        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
+        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
+        function step(result) { result.done ? resolve(result.value) : new P(function (resolve) { resolve(result.value); }).then(fulfilled, rejected); }
+        step((generator = generator.apply(thisArg, _arguments || [])).next());
+    });
+};
+var __generator = (this && this.__generator) || function (thisArg, body) {
+    var _ = { label: 0, sent: function() { if (t[0] & 1) throw t[1]; return t[1]; }, trys: [], ops: [] }, f, y, t, g;
+    return g = { next: verb(0), "throw": verb(1), "return": verb(2) }, typeof Symbol === "function" && (g[Symbol.iterator] = function() { return this; }), g;
+    function verb(n) { return function (v) { return step([n, v]); }; }
+    function step(op) {
+        if (f) throw new TypeError("Generator is already executing.");
+        while (_) try {
+            if (f = 1, y && (t = op[0] & 2 ? y["return"] : op[0] ? y["throw"] || ((t = y["return"]) && t.call(y), 0) : y.next) && !(t = t.call(y, op[1])).done) return t;
+            if (y = 0, t) op = [op[0] & 2, t.value];
+            switch (op[0]) {
+                case 0: case 1: t = op; break;
+                case 4: _.label++; return { value: op[1], done: false };
+                case 5: _.label++; y = op[1]; op = [0]; continue;
+                case 7: op = _.ops.pop(); _.trys.pop(); continue;
+                default:
+                    if (!(t = _.trys, t = t.length > 0 && t[t.length - 1]) && (op[0] === 6 || op[0] === 2)) { _ = 0; continue; }
+                    if (op[0] === 3 && (!t || (op[1] > t[0] && op[1] < t[3]))) { _.label = op[1]; break; }
+                    if (op[0] === 6 && _.label < t[1]) { _.label = t[1]; t = op; break; }
+                    if (t && _.label < t[2]) { _.label = t[2]; _.ops.push(op); break; }
+                    if (t[2]) _.ops.pop();
+                    _.trys.pop(); continue;
+            }
+            op = body.call(thisArg, _);
+        } catch (e) { op = [6, e]; y = 0; } finally { f = t = 0; }
+        if (op[0] & 5) throw op[1]; return { value: op[0] ? op[1] : void 0, done: true };
+    }
+};
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
 var __importStar = (this && this.__importStar) || function (mod) {
     if (mod && mod.__esModule) return mod;
     var result = {};
@@ -191,20 +205,55 @@ var __importStar = (this && this.__importStar) || function (mod) {
     result["default"] = mod;
     return result;
 };
+var _this = this;
 Object.defineProperty(exports, "__esModule", { value: true });
-var fs = __importStar(__webpack_require__(35));
-exports.mkdir = function (path) {
-    return fs.mkdirSync(path);
+var repository_1 = __importDefault(__webpack_require__(2));
+var display = __importStar(__webpack_require__(1));
+var yargs_1 = __importDefault(__webpack_require__(0));
+var builder = function () {
+    return yargs_1.default
+        .option('snapshot', {
+        alias: 's',
+        description: 'Snapshot id to revert to',
+        required: false
+    })
+        .help()
+        .version(false);
 };
-exports.exists = function (path) {
-    return fs.existsSync(path);
+var handler = function (argv) { return __awaiter(_this, void 0, void 0, function () {
+    var id, repository, fiber, err_1;
+    return __generator(this, function (_a) {
+        switch (_a.label) {
+            case 0:
+                _a.trys.push([0, 4, , 5]);
+                id = argv.snapshot ? argv.snapshot : 0;
+                console.log('ID: ' + id);
+                return [4 /*yield*/, repository_1.default.load()];
+            case 1:
+                repository = _a.sent();
+                return [4 /*yield*/, repository.fibers.current()];
+            case 2:
+                fiber = _a.sent();
+                return [4 /*yield*/, fiber.revert(id, argv.files)];
+            case 3:
+                _a.sent();
+                return [3 /*break*/, 5];
+            case 4:
+                err_1 = _a.sent();
+                display.error(err_1.message);
+                return [3 /*break*/, 5];
+            case 5: return [2 /*return*/];
+        }
+    });
+}); };
+/* tslint:disable:object-literal-sort-keys */
+exports.revert = {
+    command: 'revert [files...]',
+    desc: 'Revert to older version',
+    builder: builder,
+    handler: handler
 };
-exports.write = function (path, data) {
-    return fs.writeFileSync(path, data);
-};
-exports.read = function (path) {
-    return fs.readFileSync(path);
-};
+/* tslint:enable:object-literal-sort-keys */
 
 
 /***/ }),
@@ -260,44 +309,48 @@ var __importStar = (this && this.__importStar) || function (mod) {
 };
 var _this = this;
 Object.defineProperty(exports, "__esModule", { value: true });
-var pando_js_1 = __importDefault(__webpack_require__(2));
+var repository_1 = __importDefault(__webpack_require__(2));
 var display = __importStar(__webpack_require__(1));
+var chalk_1 = __importDefault(__webpack_require__(3));
 var yargs_1 = __importDefault(__webpack_require__(0));
 var builder = function () {
     return yargs_1.default.help().version(false);
 };
 var handler = function (argv) { return __awaiter(_this, void 0, void 0, function () {
-    var pando, repository, remote, receipt, err_1;
+    var repository, fiber, logs, _i, logs_1, log_, err_1;
     return __generator(this, function (_a) {
         switch (_a.label) {
             case 0:
-                _a.trys.push([0, 5, , 6]);
-                return [4 /*yield*/, pando_js_1.default.load()];
+                _a.trys.push([0, 4, , 5]);
+                return [4 /*yield*/, repository_1.default.load()];
             case 1:
-                pando = _a.sent();
-                return [4 /*yield*/, pando.repositories.load()];
-            case 2:
                 repository = _a.sent();
-                return [4 /*yield*/, repository.remotes.load(argv.remote)];
+                return [4 /*yield*/, repository.fibers.current()];
+            case 2:
+                fiber = _a.sent();
+                return [4 /*yield*/, fiber.log()];
             case 3:
-                remote = _a.sent();
-                return [4 /*yield*/, remote.grant(argv.role, argv.address)];
+                logs = _a.sent();
+                for (_i = 0, logs_1 = logs; _i < logs_1.length; _i++) {
+                    log_ = logs_1[_i];
+                    console.log(chalk_1.default.cyan('snapshot #' + log_.id) + ' ' + chalk_1.default.magenta(new Date(log_.timestamp).toString()));
+                    // console.log('timestamp: ' + new Date(log_.timestamp))
+                    console.log(log_.message);
+                    console.log('');
+                }
+                return [3 /*break*/, 5];
             case 4:
-                receipt = _a.sent();
-                display.status('granted');
-                return [3 /*break*/, 6];
-            case 5:
                 err_1 = _a.sent();
                 display.error(err_1.message);
-                return [3 /*break*/, 6];
-            case 6: return [2 /*return*/];
+                return [3 /*break*/, 5];
+            case 5: return [2 /*return*/];
         }
     });
 }); };
 /* tslint:disable:object-literal-sort-keys */
-exports.grant = {
-    command: 'grant <remote> <role> <address>',
-    desc: 'Grant <address> role <role> over remote <remote>',
+exports.log = {
+    command: 'log',
+    desc: 'Show snapshots log',
     builder: builder,
     handler: handler
 };
@@ -306,9 +359,104 @@ exports.grant = {
 
 /***/ }),
 /* 7 */
-/***/ (function(module, exports) {
+/***/ (function(module, exports, __webpack_require__) {
 
-module.exports = require("cli-table");
+"use strict";
+
+var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
+    return new (P || (P = Promise))(function (resolve, reject) {
+        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
+        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
+        function step(result) { result.done ? resolve(result.value) : new P(function (resolve) { resolve(result.value); }).then(fulfilled, rejected); }
+        step((generator = generator.apply(thisArg, _arguments || [])).next());
+    });
+};
+var __generator = (this && this.__generator) || function (thisArg, body) {
+    var _ = { label: 0, sent: function() { if (t[0] & 1) throw t[1]; return t[1]; }, trys: [], ops: [] }, f, y, t, g;
+    return g = { next: verb(0), "throw": verb(1), "return": verb(2) }, typeof Symbol === "function" && (g[Symbol.iterator] = function() { return this; }), g;
+    function verb(n) { return function (v) { return step([n, v]); }; }
+    function step(op) {
+        if (f) throw new TypeError("Generator is already executing.");
+        while (_) try {
+            if (f = 1, y && (t = op[0] & 2 ? y["return"] : op[0] ? y["throw"] || ((t = y["return"]) && t.call(y), 0) : y.next) && !(t = t.call(y, op[1])).done) return t;
+            if (y = 0, t) op = [op[0] & 2, t.value];
+            switch (op[0]) {
+                case 0: case 1: t = op; break;
+                case 4: _.label++; return { value: op[1], done: false };
+                case 5: _.label++; y = op[1]; op = [0]; continue;
+                case 7: op = _.ops.pop(); _.trys.pop(); continue;
+                default:
+                    if (!(t = _.trys, t = t.length > 0 && t[t.length - 1]) && (op[0] === 6 || op[0] === 2)) { _ = 0; continue; }
+                    if (op[0] === 3 && (!t || (op[1] > t[0] && op[1] < t[3]))) { _.label = op[1]; break; }
+                    if (op[0] === 6 && _.label < t[1]) { _.label = t[1]; t = op; break; }
+                    if (t && _.label < t[2]) { _.label = t[2]; _.ops.push(op); break; }
+                    if (t[2]) _.ops.pop();
+                    _.trys.pop(); continue;
+            }
+            op = body.call(thisArg, _);
+        } catch (e) { op = [6, e]; y = 0; } finally { f = t = 0; }
+        if (op[0] & 5) throw op[1]; return { value: op[0] ? op[1] : void 0, done: true };
+    }
+};
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
+var __importStar = (this && this.__importStar) || function (mod) {
+    if (mod && mod.__esModule) return mod;
+    var result = {};
+    if (mod != null) for (var k in mod) if (Object.hasOwnProperty.call(mod, k)) result[k] = mod[k];
+    result["default"] = mod;
+    return result;
+};
+var _this = this;
+Object.defineProperty(exports, "__esModule", { value: true });
+var repository_1 = __importDefault(__webpack_require__(2));
+var display = __importStar(__webpack_require__(1));
+var yargs_1 = __importDefault(__webpack_require__(0));
+var builder = function () {
+    return yargs_1.default
+        .option('message', {
+        alias: 'm',
+        description: 'A message describing the snapshot',
+        required: false
+    })
+        .help()
+        .version(false);
+};
+var handler = function (argv) { return __awaiter(_this, void 0, void 0, function () {
+    var repository, fiber, err_1;
+    return __generator(this, function (_a) {
+        switch (_a.label) {
+            case 0:
+                _a.trys.push([0, 4, , 5]);
+                return [4 /*yield*/, repository_1.default.load()];
+            case 1:
+                repository = _a.sent();
+                return [4 /*yield*/, repository.fibers.current()];
+            case 2:
+                fiber = _a.sent();
+                return [4 /*yield*/, fiber.snapshot(argv.message)];
+            case 3:
+                _a.sent();
+                display.success('Modifications snapshot');
+                return [3 /*break*/, 5];
+            case 4:
+                err_1 = _a.sent();
+                display.error(err_1.message);
+                return [3 /*break*/, 5];
+            case 5: return [2 /*return*/];
+        }
+    });
+}); };
+/* tslint:disable:object-literal-sort-keys */
+exports.snapshot = {
+    command: 'snapshot',
+    desc: 'Snapshot modifications',
+    builder: builder,
+    handler: handler
+};
+/* tslint:enable:object-literal-sort-keys */
+
 
 /***/ }),
 /* 8 */
@@ -363,62 +511,38 @@ var __importStar = (this && this.__importStar) || function (mod) {
 };
 var _this = this;
 Object.defineProperty(exports, "__esModule", { value: true });
-var pando_js_1 = __importDefault(__webpack_require__(2));
+var repository_1 = __importDefault(__webpack_require__(2));
 var display = __importStar(__webpack_require__(1));
-var cli_table_1 = __importDefault(__webpack_require__(7));
 var yargs_1 = __importDefault(__webpack_require__(0));
 var builder = function () {
     return yargs_1.default.help().version(false);
 };
 var handler = function (argv) { return __awaiter(_this, void 0, void 0, function () {
-    var pando, repository, remote, infos, components, branches, branch, err_1;
+    var repository, err_1;
     return __generator(this, function (_a) {
         switch (_a.label) {
             case 0:
-                _a.trys.push([0, 5, , 6]);
-                return [4 /*yield*/, pando_js_1.default.load()];
+                _a.trys.push([0, 3, , 4]);
+                return [4 /*yield*/, repository_1.default.load()];
             case 1:
-                pando = _a.sent();
-                return [4 /*yield*/, pando.repositories.load()];
-            case 2:
                 repository = _a.sent();
-                return [4 /*yield*/, repository.remotes.load(argv.name)];
+                return [4 /*yield*/, repository.fibers.switch(argv.name)];
+            case 2:
+                _a.sent();
+                display.success('Switched to fiber ' + argv.name);
+                return [3 /*break*/, 4];
             case 3:
-                remote = _a.sent();
-                return [4 /*yield*/, remote.show()];
-            case 4:
-                infos = _a.sent();
-                components = new cli_table_1.default({
-                    head: ['Component', 'Address'],
-                    colWidths: [50, 50]
-                });
-                branches = new cli_table_1.default({
-                    head: ['Branch', 'Head'],
-                    colWidths: [50, 50]
-                });
-                components.push(['Kernel', infos.kernel]);
-                components.push(['ACL', infos.acl]);
-                components.push(['Tree', infos.tree]);
-                for (branch in infos.branches) {
-                    if (infos.branches.hasOwnProperty(branch)) {
-                        branches.push([branch, infos.branches[branch].head]);
-                    }
-                }
-                display.info(components.toString());
-                display.info(branches.toString());
-                return [3 /*break*/, 6];
-            case 5:
                 err_1 = _a.sent();
                 display.error(err_1.message);
-                return [3 /*break*/, 6];
-            case 6: return [2 /*return*/];
+                return [3 /*break*/, 4];
+            case 4: return [2 /*return*/];
         }
     });
 }); };
 /* tslint:disable:object-literal-sort-keys */
-exports.show = {
-    command: 'show <name>',
-    desc: 'Show remote informations',
+exports.switch_ = {
+    command: 'switch <name>',
+    desc: 'Switch fibers',
     builder: builder,
     handler: handler
 };
@@ -466,9 +590,6 @@ var __generator = (this && this.__generator) || function (thisArg, body) {
         if (op[0] & 5) throw op[1]; return { value: op[0] ? op[1] : void 0, done: true };
     }
 };
-var __importDefault = (this && this.__importDefault) || function (mod) {
-    return (mod && mod.__esModule) ? mod : { "default": mod };
-};
 var __importStar = (this && this.__importStar) || function (mod) {
     if (mod && mod.__esModule) return mod;
     var result = {};
@@ -476,43 +597,30 @@ var __importStar = (this && this.__importStar) || function (mod) {
     result["default"] = mod;
     return result;
 };
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
 var _this = this;
 Object.defineProperty(exports, "__esModule", { value: true });
-var pando_js_1 = __importDefault(__webpack_require__(2));
 var display = __importStar(__webpack_require__(1));
 var yargs_1 = __importDefault(__webpack_require__(0));
 var builder = function () {
     return yargs_1.default.help().version(false);
 };
 var handler = function (argv) { return __awaiter(_this, void 0, void 0, function () {
-    var pando, repository, remote, err_1;
     return __generator(this, function (_a) {
-        switch (_a.label) {
-            case 0:
-                _a.trys.push([0, 4, , 5]);
-                return [4 /*yield*/, pando_js_1.default.load()];
-            case 1:
-                pando = _a.sent();
-                return [4 /*yield*/, pando.repositories.load()];
-            case 2:
-                repository = _a.sent();
-                return [4 /*yield*/, repository.remotes.add(argv.name, argv.address)];
-            case 3:
-                remote = _a.sent();
-                display.status('added');
-                return [3 /*break*/, 5];
-            case 4:
-                err_1 = _a.sent();
-                display.error(err_1.message);
-                return [3 /*break*/, 5];
-            case 5: return [2 /*return*/];
+        try {
         }
+        catch (err) {
+            display.error(err.message);
+        }
+        return [2 /*return*/];
     });
 }); };
 /* tslint:disable:object-literal-sort-keys */
-exports.add = {
-    command: 'add <name> <address>',
-    desc: 'Add an existing remote',
+exports.delete_ = {
+    command: 'delete <name>',
+    desc: 'Delete fiber',
     builder: builder,
     handler: handler
 };
@@ -572,41 +680,38 @@ var __importStar = (this && this.__importStar) || function (mod) {
 };
 var _this = this;
 Object.defineProperty(exports, "__esModule", { value: true });
-var pando_js_1 = __importDefault(__webpack_require__(2));
+var repository_1 = __importDefault(__webpack_require__(2));
 var display = __importStar(__webpack_require__(1));
 var yargs_1 = __importDefault(__webpack_require__(0));
 var builder = function () {
     return yargs_1.default.help().version(false);
 };
 var handler = function (argv) { return __awaiter(_this, void 0, void 0, function () {
-    var pando, repository, remote, err_1;
+    var repository, err_1;
     return __generator(this, function (_a) {
         switch (_a.label) {
             case 0:
-                _a.trys.push([0, 4, , 5]);
-                return [4 /*yield*/, pando_js_1.default.load()];
+                _a.trys.push([0, 3, , 4]);
+                return [4 /*yield*/, repository_1.default.load()];
             case 1:
-                pando = _a.sent();
-                return [4 /*yield*/, pando.repositories.load()];
-            case 2:
                 repository = _a.sent();
-                return [4 /*yield*/, repository.remotes.deploy(argv.name)];
+                return [4 /*yield*/, repository.fibers.create(argv.name)];
+            case 2:
+                _a.sent();
+                display.success('Fiber ' + argv.name + ' created');
+                return [3 /*break*/, 4];
             case 3:
-                remote = _a.sent();
-                display.status('deployed', remote.kernel.address);
-                return [3 /*break*/, 5];
-            case 4:
                 err_1 = _a.sent();
                 display.error(err_1.message);
-                return [3 /*break*/, 5];
-            case 5: return [2 /*return*/];
+                return [3 /*break*/, 4];
+            case 4: return [2 /*return*/];
         }
     });
 }); };
 /* tslint:disable:object-literal-sort-keys */
-exports.deploy = {
-    command: 'deploy <name>',
-    desc: 'Deploy a new remote',
+exports.create = {
+    command: 'create <name>',
+    desc: 'Create a new fiber',
     builder: builder,
     handler: handler
 };
@@ -615,62 +720,6 @@ exports.deploy = {
 
 /***/ }),
 /* 11 */
-/***/ (function(module, exports, __webpack_require__) {
-
-"use strict";
-
-function __export(m) {
-    for (var p in m) if (!exports.hasOwnProperty(p)) exports[p] = m[p];
-}
-Object.defineProperty(exports, "__esModule", { value: true });
-__export(__webpack_require__(10));
-__export(__webpack_require__(9));
-__export(__webpack_require__(8));
-__export(__webpack_require__(6));
-
-
-/***/ }),
-/* 12 */
-/***/ (function(module, exports, __webpack_require__) {
-
-"use strict";
-
-var __importDefault = (this && this.__importDefault) || function (mod) {
-    return (mod && mod.__esModule) ? mod : { "default": mod };
-};
-var __importStar = (this && this.__importStar) || function (mod) {
-    if (mod && mod.__esModule) return mod;
-    var result = {};
-    if (mod != null) for (var k in mod) if (Object.hasOwnProperty.call(mod, k)) result[k] = mod[k];
-    result["default"] = mod;
-    return result;
-};
-Object.defineProperty(exports, "__esModule", { value: true });
-var yargs_1 = __importDefault(__webpack_require__(0));
-var subcommands = __importStar(__webpack_require__(11));
-var builder = function () {
-    return yargs_1.default
-        .usage('pando branch <subcommand>')
-        .command(subcommands.deploy)
-        .command(subcommands.add)
-        .command(subcommands.show)
-        .command(subcommands.grant)
-        .updateStrings({ 'Commands:': 'Subcommands:' })
-        .demandCommand(1, 'No subcommand provided')
-        .help()
-        .version(false);
-};
-/* tslint:disable:object-literal-sort-keys */
-exports.remote = {
-    command: 'remote <subcommand>',
-    desc: 'Handle remotes',
-    builder: builder
-};
-/* tslint:enable:object-literal-sort-keys */
-
-
-/***/ }),
-/* 13 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -722,26 +771,35 @@ var __importStar = (this && this.__importStar) || function (mod) {
 };
 var _this = this;
 Object.defineProperty(exports, "__esModule", { value: true });
-var pando_js_1 = __importDefault(__webpack_require__(2));
+var repository_1 = __importDefault(__webpack_require__(2));
 var display = __importStar(__webpack_require__(1));
 var yargs_1 = __importDefault(__webpack_require__(0));
+var chalk_1 = __importDefault(__webpack_require__(3));
+var figures_1 = __importDefault(__webpack_require__(4));
 var builder = function () {
     return yargs_1.default.help().version(false);
 };
 var handler = function (argv) { return __awaiter(_this, void 0, void 0, function () {
-    var pando, repository, branchName, err_1;
+    var repository, fibers, _i, fibers_1, fiber, err_1;
     return __generator(this, function (_a) {
         switch (_a.label) {
             case 0:
                 _a.trys.push([0, 3, , 4]);
-                return [4 /*yield*/, pando_js_1.default.load()];
+                return [4 /*yield*/, repository_1.default.load()];
             case 1:
-                pando = _a.sent();
-                return [4 /*yield*/, pando.repositories.load()];
-            case 2:
                 repository = _a.sent();
-                branchName = repository.currentBranchName;
-                display.info('Currently on ' + branchName + ' branch');
+                return [4 /*yield*/, repository.fibers.list()];
+            case 2:
+                fibers = _a.sent();
+                for (_i = 0, fibers_1 = fibers; _i < fibers_1.length; _i++) {
+                    fiber = fibers_1[_i];
+                    if (fiber.current) {
+                        console.log(figures_1.default('❯\t') + chalk_1.default.green(fiber.name));
+                    }
+                    else {
+                        console.log(figures_1.default('\t') + fiber.name);
+                    }
+                }
                 return [3 /*break*/, 4];
             case 3:
                 err_1 = _a.sent();
@@ -752,11 +810,66 @@ var handler = function (argv) { return __awaiter(_this, void 0, void 0, function
     });
 }); };
 /* tslint:disable:object-literal-sort-keys */
-exports.current = {
-    command: 'current',
-    desc: 'Print current branch name',
+exports.list = {
+    command: 'list',
+    aliases: ['ls'],
+    desc: 'List fibers',
     builder: builder,
     handler: handler
+};
+/* tslint:enable:object-literal-sort-keys */
+
+
+/***/ }),
+/* 12 */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+function __export(m) {
+    for (var p in m) if (!exports.hasOwnProperty(p)) exports[p] = m[p];
+}
+Object.defineProperty(exports, "__esModule", { value: true });
+__export(__webpack_require__(11));
+__export(__webpack_require__(10));
+__export(__webpack_require__(9));
+
+
+/***/ }),
+/* 13 */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
+var __importStar = (this && this.__importStar) || function (mod) {
+    if (mod && mod.__esModule) return mod;
+    var result = {};
+    if (mod != null) for (var k in mod) if (Object.hasOwnProperty.call(mod, k)) result[k] = mod[k];
+    result["default"] = mod;
+    return result;
+};
+Object.defineProperty(exports, "__esModule", { value: true });
+var yargs_1 = __importDefault(__webpack_require__(0));
+var subcommands = __importStar(__webpack_require__(12));
+var builder = function () {
+    return yargs_1.default
+        .usage('pando fibers <subcommand>')
+        .command(subcommands.list)
+        .command(subcommands.create)
+        .command(subcommands.delete_)
+        .updateStrings({ 'Commands:': 'Subcommands:' })
+        .demandCommand(1, 'No subcommand provided')
+        .help()
+        .version(false);
+};
+/* tslint:disable:object-literal-sort-keys */
+exports.fibers = {
+    command: 'fibers <subcommand>',
+    desc: 'Handle fibers',
+    builder: builder
 };
 /* tslint:enable:object-literal-sort-keys */
 
@@ -814,28 +927,28 @@ var __importStar = (this && this.__importStar) || function (mod) {
 };
 var _this = this;
 Object.defineProperty(exports, "__esModule", { value: true });
-var pando_js_1 = __importDefault(__webpack_require__(2));
+var repository_1 = __importDefault(__webpack_require__(2));
 var display = __importStar(__webpack_require__(1));
 var yargs_1 = __importDefault(__webpack_require__(0));
 var builder = function () {
     return yargs_1.default.help().version(false);
 };
 var handler = function (argv) { return __awaiter(_this, void 0, void 0, function () {
-    var pando, repository, err_1;
+    var repository, fiber, err_1;
     return __generator(this, function (_a) {
         switch (_a.label) {
             case 0:
                 _a.trys.push([0, 4, , 5]);
-                return [4 /*yield*/, pando_js_1.default.load()];
+                return [4 /*yield*/, repository_1.default.load()];
             case 1:
-                pando = _a.sent();
-                return [4 /*yield*/, pando.repositories.load()];
-            case 2:
                 repository = _a.sent();
-                return [4 /*yield*/, repository.branches.checkout(argv.name)];
+                return [4 /*yield*/, repository.fibers.current()];
+            case 2:
+                fiber = _a.sent();
+                return [4 /*yield*/, fiber.index.untrack(argv.files)];
             case 3:
                 _a.sent();
-                display.status('checked out', argv.name);
+                display.status('untracked');
                 return [3 /*break*/, 5];
             case 4:
                 err_1 = _a.sent();
@@ -846,9 +959,9 @@ var handler = function (argv) { return __awaiter(_this, void 0, void 0, function
     });
 }); };
 /* tslint:disable:object-literal-sort-keys */
-exports.checkout = {
-    command: 'checkout <name>',
-    desc: 'Checkout to another branch',
+exports.untrack = {
+    command: 'untrack <files...>',
+    desc: 'Untrack files for modifications',
     builder: builder,
     handler: handler
 };
@@ -908,28 +1021,31 @@ var __importStar = (this && this.__importStar) || function (mod) {
 };
 var _this = this;
 Object.defineProperty(exports, "__esModule", { value: true });
-var pando_js_1 = __importDefault(__webpack_require__(2));
+var repository_1 = __importDefault(__webpack_require__(2));
 var display = __importStar(__webpack_require__(1));
 var yargs_1 = __importDefault(__webpack_require__(0));
 var builder = function () {
     return yargs_1.default.help().version(false);
 };
 var handler = function (argv) { return __awaiter(_this, void 0, void 0, function () {
-    var pando, repository, err_1;
+    var repository, fiber, paths, _i, paths_1, path, err_1;
     return __generator(this, function (_a) {
         switch (_a.label) {
             case 0:
                 _a.trys.push([0, 4, , 5]);
-                return [4 /*yield*/, pando_js_1.default.load()];
+                return [4 /*yield*/, repository_1.default.load()];
             case 1:
-                pando = _a.sent();
-                return [4 /*yield*/, pando.repositories.load()];
-            case 2:
                 repository = _a.sent();
-                return [4 /*yield*/, repository.branches.create(argv.name)];
+                return [4 /*yield*/, repository.fibers.current()];
+            case 2:
+                fiber = _a.sent();
+                return [4 /*yield*/, fiber.index.track(argv.files)];
             case 3:
-                _a.sent();
-                display.status('create', argv.name);
+                paths = _a.sent();
+                for (_i = 0, paths_1 = paths; _i < paths_1.length; _i++) {
+                    path = paths_1[_i];
+                    display.success('File ' + path + ' tracked');
+                }
                 return [3 /*break*/, 5];
             case 4:
                 err_1 = _a.sent();
@@ -940,9 +1056,9 @@ var handler = function (argv) { return __awaiter(_this, void 0, void 0, function
     });
 }); };
 /* tslint:disable:object-literal-sort-keys */
-exports.new_ = {
-    command: 'new <name>',
-    desc: 'Create a new branch',
+exports.track = {
+    command: 'track <files...>',
+    desc: 'Track files for modifications',
     builder: builder,
     handler: handler
 };
@@ -955,60 +1071,6 @@ exports.new_ = {
 
 "use strict";
 
-function __export(m) {
-    for (var p in m) if (!exports.hasOwnProperty(p)) exports[p] = m[p];
-}
-Object.defineProperty(exports, "__esModule", { value: true });
-__export(__webpack_require__(15));
-__export(__webpack_require__(14));
-__export(__webpack_require__(13));
-
-
-/***/ }),
-/* 17 */
-/***/ (function(module, exports, __webpack_require__) {
-
-"use strict";
-
-var __importDefault = (this && this.__importDefault) || function (mod) {
-    return (mod && mod.__esModule) ? mod : { "default": mod };
-};
-var __importStar = (this && this.__importStar) || function (mod) {
-    if (mod && mod.__esModule) return mod;
-    var result = {};
-    if (mod != null) for (var k in mod) if (Object.hasOwnProperty.call(mod, k)) result[k] = mod[k];
-    result["default"] = mod;
-    return result;
-};
-Object.defineProperty(exports, "__esModule", { value: true });
-var yargs_1 = __importDefault(__webpack_require__(0));
-var subcommands = __importStar(__webpack_require__(16));
-var builder = function () {
-    return yargs_1.default
-        .usage('pando branch <subcommand>')
-        .command(subcommands.new_)
-        .command(subcommands.checkout)
-        .command(subcommands.current)
-        .updateStrings({ 'Commands:': 'Subcommands:' })
-        .demandCommand(1, 'No subcommand provided')
-        .help()
-        .version(false);
-};
-/* tslint:disable:object-literal-sort-keys */
-exports.branch = {
-    command: 'branch <subcommand>',
-    desc: 'Handle branches',
-    builder: builder
-};
-/* tslint:enable:object-literal-sort-keys */
-
-
-/***/ }),
-/* 18 */
-/***/ (function(module, exports, __webpack_require__) {
-
-"use strict";
-
 var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
     return new (P || (P = Promise))(function (resolve, reject) {
         function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
@@ -1056,189 +1118,51 @@ var __importStar = (this && this.__importStar) || function (mod) {
 };
 var _this = this;
 Object.defineProperty(exports, "__esModule", { value: true });
-var pando_js_1 = __importDefault(__webpack_require__(2));
-var display = __importStar(__webpack_require__(1));
-// import Table from 'cli-table'
-var chalk_1 = __importDefault(__webpack_require__(3));
-var yargs_1 = __importDefault(__webpack_require__(0));
-var builder = function () {
-    return yargs_1.default
-        .option('remote', {
-        alias: 'r',
-        description: 'The name of the remote on which to log branch',
-        required: false
-    })
-        .help()
-        .version(false);
-};
-var handler = function (argv) { return __awaiter(_this, void 0, void 0, function () {
-    var pando, repository, branch, opts, fullBranchName, head, log_2, _i, log_1, snapshot, cid, err_1;
-    return __generator(this, function (_a) {
-        switch (_a.label) {
-            case 0:
-                _a.trys.push([0, 8, , 9]);
-                return [4 /*yield*/, pando_js_1.default.load()];
-            case 1:
-                pando = _a.sent();
-                return [4 /*yield*/, pando.repositories.load()];
-            case 2:
-                repository = _a.sent();
-                branch = argv.branch ? argv.branch : repository.currentBranchName;
-                opts = argv.remote ? { remote: argv.remote } : undefined;
-                fullBranchName = argv.remote ? argv.remote + ':' + branch : branch;
-                head = repository.branches.head(branch, opts);
-                return [4 /*yield*/, repository.log(branch, opts)
-                    /* tslint:disable:no-console */
-                ];
-            case 3:
-                log_2 = _a.sent();
-                /* tslint:disable:no-console */
-                console.log('[' + chalk_1.default.magenta(branch) + ']');
-                console.log('');
-                _i = 0, log_1 = log_2;
-                _a.label = 4;
-            case 4:
-                if (!(_i < log_1.length)) return [3 /*break*/, 7];
-                snapshot = log_1[_i];
-                return [4 /*yield*/, snapshot.cid()];
-            case 5:
-                cid = (_a.sent()).toBaseEncodedString();
-                process.stdout.write(chalk_1.default.yellow('[' + cid + ']') +
-                    chalk_1.default.green('[' + new Date(snapshot.timestamp).toString() + ']'));
-                if (cid === head) {
-                    console.log('[' + chalk_1.default.blue('HEAD -> ') + chalk_1.default.magenta(fullBranchName) + ']');
-                }
-                else {
-                    console.log();
-                }
-                console.log(chalk_1.default.grey('[author]\t') + snapshot.author.account);
-                console.log(chalk_1.default.grey('[message]\t') + snapshot.message);
-                console.log();
-                _a.label = 6;
-            case 6:
-                _i++;
-                return [3 /*break*/, 4];
-            case 7: return [3 /*break*/, 9];
-            case 8:
-                err_1 = _a.sent();
-                display.error(err_1.message);
-                return [3 /*break*/, 9];
-            case 9: return [2 /*return*/];
-        }
-    });
-}); };
-/* tslint:disable:object-literal-sort-keys */
-exports.log = {
-    command: 'log [branch]',
-    desc: 'Show current branch history',
-    builder: builder,
-    handler: handler
-};
-/* tslint:enable:object-literal-sort-keys */
-
-
-/***/ }),
-/* 19 */
-/***/ (function(module, exports, __webpack_require__) {
-
-"use strict";
-
-var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
-    return new (P || (P = Promise))(function (resolve, reject) {
-        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
-        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
-        function step(result) { result.done ? resolve(result.value) : new P(function (resolve) { resolve(result.value); }).then(fulfilled, rejected); }
-        step((generator = generator.apply(thisArg, _arguments || [])).next());
-    });
-};
-var __generator = (this && this.__generator) || function (thisArg, body) {
-    var _ = { label: 0, sent: function() { if (t[0] & 1) throw t[1]; return t[1]; }, trys: [], ops: [] }, f, y, t, g;
-    return g = { next: verb(0), "throw": verb(1), "return": verb(2) }, typeof Symbol === "function" && (g[Symbol.iterator] = function() { return this; }), g;
-    function verb(n) { return function (v) { return step([n, v]); }; }
-    function step(op) {
-        if (f) throw new TypeError("Generator is already executing.");
-        while (_) try {
-            if (f = 1, y && (t = op[0] & 2 ? y["return"] : op[0] ? y["throw"] || ((t = y["return"]) && t.call(y), 0) : y.next) && !(t = t.call(y, op[1])).done) return t;
-            if (y = 0, t) op = [op[0] & 2, t.value];
-            switch (op[0]) {
-                case 0: case 1: t = op; break;
-                case 4: _.label++; return { value: op[1], done: false };
-                case 5: _.label++; y = op[1]; op = [0]; continue;
-                case 7: op = _.ops.pop(); _.trys.pop(); continue;
-                default:
-                    if (!(t = _.trys, t = t.length > 0 && t[t.length - 1]) && (op[0] === 6 || op[0] === 2)) { _ = 0; continue; }
-                    if (op[0] === 3 && (!t || (op[1] > t[0] && op[1] < t[3]))) { _.label = op[1]; break; }
-                    if (op[0] === 6 && _.label < t[1]) { _.label = t[1]; t = op; break; }
-                    if (t && _.label < t[2]) { _.label = t[2]; _.ops.push(op); break; }
-                    if (t[2]) _.ops.pop();
-                    _.trys.pop(); continue;
-            }
-            op = body.call(thisArg, _);
-        } catch (e) { op = [6, e]; y = 0; } finally { f = t = 0; }
-        if (op[0] & 5) throw op[1]; return { value: op[0] ? op[1] : void 0, done: true };
-    }
-};
-var __importDefault = (this && this.__importDefault) || function (mod) {
-    return (mod && mod.__esModule) ? mod : { "default": mod };
-};
-var __importStar = (this && this.__importStar) || function (mod) {
-    if (mod && mod.__esModule) return mod;
-    var result = {};
-    if (mod != null) for (var k in mod) if (Object.hasOwnProperty.call(mod, k)) result[k] = mod[k];
-    result["default"] = mod;
-    return result;
-};
-var _this = this;
-Object.defineProperty(exports, "__esModule", { value: true });
-var pando_js_1 = __importDefault(__webpack_require__(2));
+var repository_1 = __importDefault(__webpack_require__(2));
 var display = __importStar(__webpack_require__(1));
 var chalk_1 = __importDefault(__webpack_require__(3));
 var yargs_1 = __importDefault(__webpack_require__(0));
 var builder = function () {
     return yargs_1.default.help().version(false);
 };
-var handler = function (argv) { return __awaiter(_this, void 0, void 0, function () {
-    var pando, repository, branch, status_1, _i, _a, path, _b, _c, path, _d, _e, path, err_1;
-    return __generator(this, function (_f) {
-        switch (_f.label) {
+var handler = function () { return __awaiter(_this, void 0, void 0, function () {
+    var repository, fiber, status_1, _i, _a, file, _b, _c, file, err_1;
+    return __generator(this, function (_d) {
+        switch (_d.label) {
             case 0:
-                _f.trys.push([0, 4, , 5]);
-                return [4 /*yield*/, pando_js_1.default.load()];
+                _d.trys.push([0, 4, , 5]);
+                return [4 /*yield*/, repository_1.default.load()];
             case 1:
-                pando = _f.sent();
-                return [4 /*yield*/, pando.repositories.load()];
+                repository = _d.sent();
+                return [4 /*yield*/, repository.fibers.current()];
             case 2:
-                repository = _f.sent();
-                branch = repository.currentBranchName;
-                return [4 /*yield*/, repository.status()
-                    /* tslint:disable:no-console */
-                ];
+                fiber = _d.sent();
+                return [4 /*yield*/, fiber.status()];
             case 3:
-                status_1 = _f.sent();
-                /* tslint:disable:no-console */
-                console.log('[' + chalk_1.default.magenta(branch) + ']');
-                console.log();
-                console.log(chalk_1.default.grey('Modifications to be snapshot'));
-                for (_i = 0, _a = status_1.unsnapshot; _i < _a.length; _i++) {
-                    path = _a[_i];
-                    console.log('\t* ' + chalk_1.default.green(path));
+                status_1 = _d.sent();
+                if (status_1.modified.length > 0) {
+                    console.log(chalk_1.default.green('Tracked files with modifications:'));
+                    console.log('\t➜ these files will be automatically considered for snapshot');
+                    console.log("\t➜ use pando untrack <f> if you don't want to track modifications to file f");
+                    console.log('');
+                    for (_i = 0, _a = status_1.modified; _i < _a.length; _i++) {
+                        file = _a[_i];
+                        console.log('\t\t' + file);
+                    }
                 }
-                console.log();
-                console.log(chalk_1.default.grey('Modifications not staged for snapshot'));
-                for (_b = 0, _c = status_1.modified; _b < _c.length; _b++) {
-                    path = _c[_b];
-                    console.log('\t* ' + chalk_1.default.red(path));
+                if (status_1.untracked.length > 0) {
+                    console.log(chalk_1.default.green('Untracked files:'));
+                    console.log("\t➜ these won't be considered for snapshot");
+                    console.log("\t➜ use pando track <f> if you want to track modifications to file f");
+                    console.log('');
+                    for (_b = 0, _c = status_1.untracked; _b < _c.length; _b++) {
+                        file = _c[_b];
+                        console.log('\t\t' + file);
+                    }
                 }
-                console.log();
-                console.log(chalk_1.default.grey('Untracked files'));
-                for (_d = 0, _e = status_1.untracked; _d < _e.length; _d++) {
-                    path = _e[_d];
-                    console.log('\t* ' + path);
-                }
-                console.log();
                 return [3 /*break*/, 5];
             case 4:
-                err_1 = _f.sent();
+                err_1 = _d.sent();
                 display.error(err_1.message);
                 return [3 /*break*/, 5];
             case 5: return [2 /*return*/];
@@ -1248,7 +1172,7 @@ var handler = function (argv) { return __awaiter(_this, void 0, void 0, function
 /* tslint:disable:object-literal-sort-keys */
 exports.status = {
     command: 'status',
-    desc: 'Show working tree status',
+    desc: 'Show repository status',
     builder: builder,
     handler: handler
 };
@@ -1256,7 +1180,7 @@ exports.status = {
 
 
 /***/ }),
-/* 20 */
+/* 17 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -1308,614 +1232,47 @@ var __importStar = (this && this.__importStar) || function (mod) {
 };
 var _this = this;
 Object.defineProperty(exports, "__esModule", { value: true });
-var pando_js_1 = __importDefault(__webpack_require__(2));
-var display = __importStar(__webpack_require__(1));
-var yargs_1 = __importDefault(__webpack_require__(0));
-var builder = function () {
-    return yargs_1.default.help().version(false);
-};
-var handler = function (argv) { return __awaiter(_this, void 0, void 0, function () {
-    var pando, repository, err_1;
-    return __generator(this, function (_a) {
-        switch (_a.label) {
-            case 0:
-                _a.trys.push([0, 4, , 5]);
-                return [4 /*yield*/, pando_js_1.default.load()];
-            case 1:
-                pando = _a.sent();
-                return [4 /*yield*/, pando.repositories.load()];
-            case 2:
-                repository = _a.sent();
-                return [4 /*yield*/, repository.pull(argv.remote, argv.branch)];
-            case 3:
-                _a.sent();
-                display.status('pulled');
-                return [3 /*break*/, 5];
-            case 4:
-                err_1 = _a.sent();
-                display.error(err_1.message);
-                return [3 /*break*/, 5];
-            case 5: return [2 /*return*/];
-        }
-    });
-}); };
-/* tslint:disable:object-literal-sort-keys */
-exports.pull = {
-    command: 'pull <remote> <branch>',
-    desc: 'Pull modifications from remote branch',
-    builder: builder,
-    handler: handler
-};
-/* tslint:enable:object-literal-sort-keys */
-
-
-/***/ }),
-/* 21 */
-/***/ (function(module, exports, __webpack_require__) {
-
-"use strict";
-
-var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
-    return new (P || (P = Promise))(function (resolve, reject) {
-        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
-        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
-        function step(result) { result.done ? resolve(result.value) : new P(function (resolve) { resolve(result.value); }).then(fulfilled, rejected); }
-        step((generator = generator.apply(thisArg, _arguments || [])).next());
-    });
-};
-var __generator = (this && this.__generator) || function (thisArg, body) {
-    var _ = { label: 0, sent: function() { if (t[0] & 1) throw t[1]; return t[1]; }, trys: [], ops: [] }, f, y, t, g;
-    return g = { next: verb(0), "throw": verb(1), "return": verb(2) }, typeof Symbol === "function" && (g[Symbol.iterator] = function() { return this; }), g;
-    function verb(n) { return function (v) { return step([n, v]); }; }
-    function step(op) {
-        if (f) throw new TypeError("Generator is already executing.");
-        while (_) try {
-            if (f = 1, y && (t = op[0] & 2 ? y["return"] : op[0] ? y["throw"] || ((t = y["return"]) && t.call(y), 0) : y.next) && !(t = t.call(y, op[1])).done) return t;
-            if (y = 0, t) op = [op[0] & 2, t.value];
-            switch (op[0]) {
-                case 0: case 1: t = op; break;
-                case 4: _.label++; return { value: op[1], done: false };
-                case 5: _.label++; y = op[1]; op = [0]; continue;
-                case 7: op = _.ops.pop(); _.trys.pop(); continue;
-                default:
-                    if (!(t = _.trys, t = t.length > 0 && t[t.length - 1]) && (op[0] === 6 || op[0] === 2)) { _ = 0; continue; }
-                    if (op[0] === 3 && (!t || (op[1] > t[0] && op[1] < t[3]))) { _.label = op[1]; break; }
-                    if (op[0] === 6 && _.label < t[1]) { _.label = t[1]; t = op; break; }
-                    if (t && _.label < t[2]) { _.label = t[2]; _.ops.push(op); break; }
-                    if (t[2]) _.ops.pop();
-                    _.trys.pop(); continue;
-            }
-            op = body.call(thisArg, _);
-        } catch (e) { op = [6, e]; y = 0; } finally { f = t = 0; }
-        if (op[0] & 5) throw op[1]; return { value: op[0] ? op[1] : void 0, done: true };
-    }
-};
-var __importDefault = (this && this.__importDefault) || function (mod) {
-    return (mod && mod.__esModule) ? mod : { "default": mod };
-};
-var __importStar = (this && this.__importStar) || function (mod) {
-    if (mod && mod.__esModule) return mod;
-    var result = {};
-    if (mod != null) for (var k in mod) if (Object.hasOwnProperty.call(mod, k)) result[k] = mod[k];
-    result["default"] = mod;
-    return result;
-};
-var _this = this;
-Object.defineProperty(exports, "__esModule", { value: true });
-var pando_js_1 = __importDefault(__webpack_require__(2));
-var display = __importStar(__webpack_require__(1));
-var yargs_1 = __importDefault(__webpack_require__(0));
-var builder = function () {
-    return yargs_1.default.help().version(false);
-};
-var handler = function (argv) { return __awaiter(_this, void 0, void 0, function () {
-    var pando, repository, receipt, err_1;
-    return __generator(this, function (_a) {
-        switch (_a.label) {
-            case 0:
-                _a.trys.push([0, 4, , 5]);
-                return [4 /*yield*/, pando_js_1.default.load()];
-            case 1:
-                pando = _a.sent();
-                return [4 /*yield*/, pando.repositories.load()];
-            case 2:
-                repository = _a.sent();
-                return [4 /*yield*/, repository.push(argv.remote, argv.branch)];
-            case 3:
-                receipt = _a.sent();
-                display.status('pushed', receipt.tx);
-                return [3 /*break*/, 5];
-            case 4:
-                err_1 = _a.sent();
-                display.error(err_1.message);
-                return [3 /*break*/, 5];
-            case 5: return [2 /*return*/];
-        }
-    });
-}); };
-/* tslint:disable:object-literal-sort-keys */
-exports.push = {
-    command: 'push <remote> <branch>',
-    desc: 'Push modifications to remote',
-    builder: builder,
-    handler: handler
-};
-/* tslint:enable:object-literal-sort-keys */
-
-
-/***/ }),
-/* 22 */
-/***/ (function(module, exports, __webpack_require__) {
-
-"use strict";
-
-var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
-    return new (P || (P = Promise))(function (resolve, reject) {
-        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
-        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
-        function step(result) { result.done ? resolve(result.value) : new P(function (resolve) { resolve(result.value); }).then(fulfilled, rejected); }
-        step((generator = generator.apply(thisArg, _arguments || [])).next());
-    });
-};
-var __generator = (this && this.__generator) || function (thisArg, body) {
-    var _ = { label: 0, sent: function() { if (t[0] & 1) throw t[1]; return t[1]; }, trys: [], ops: [] }, f, y, t, g;
-    return g = { next: verb(0), "throw": verb(1), "return": verb(2) }, typeof Symbol === "function" && (g[Symbol.iterator] = function() { return this; }), g;
-    function verb(n) { return function (v) { return step([n, v]); }; }
-    function step(op) {
-        if (f) throw new TypeError("Generator is already executing.");
-        while (_) try {
-            if (f = 1, y && (t = op[0] & 2 ? y["return"] : op[0] ? y["throw"] || ((t = y["return"]) && t.call(y), 0) : y.next) && !(t = t.call(y, op[1])).done) return t;
-            if (y = 0, t) op = [op[0] & 2, t.value];
-            switch (op[0]) {
-                case 0: case 1: t = op; break;
-                case 4: _.label++; return { value: op[1], done: false };
-                case 5: _.label++; y = op[1]; op = [0]; continue;
-                case 7: op = _.ops.pop(); _.trys.pop(); continue;
-                default:
-                    if (!(t = _.trys, t = t.length > 0 && t[t.length - 1]) && (op[0] === 6 || op[0] === 2)) { _ = 0; continue; }
-                    if (op[0] === 3 && (!t || (op[1] > t[0] && op[1] < t[3]))) { _.label = op[1]; break; }
-                    if (op[0] === 6 && _.label < t[1]) { _.label = t[1]; t = op; break; }
-                    if (t && _.label < t[2]) { _.label = t[2]; _.ops.push(op); break; }
-                    if (t[2]) _.ops.pop();
-                    _.trys.pop(); continue;
-            }
-            op = body.call(thisArg, _);
-        } catch (e) { op = [6, e]; y = 0; } finally { f = t = 0; }
-        if (op[0] & 5) throw op[1]; return { value: op[0] ? op[1] : void 0, done: true };
-    }
-};
-var __importDefault = (this && this.__importDefault) || function (mod) {
-    return (mod && mod.__esModule) ? mod : { "default": mod };
-};
-var __importStar = (this && this.__importStar) || function (mod) {
-    if (mod && mod.__esModule) return mod;
-    var result = {};
-    if (mod != null) for (var k in mod) if (Object.hasOwnProperty.call(mod, k)) result[k] = mod[k];
-    result["default"] = mod;
-    return result;
-};
-var _this = this;
-Object.defineProperty(exports, "__esModule", { value: true });
-var pando_js_1 = __importDefault(__webpack_require__(2));
-var display = __importStar(__webpack_require__(1));
-var yargs_1 = __importDefault(__webpack_require__(0));
-var builder = function () {
-    return yargs_1.default.help().version(false);
-};
-var handler = function (argv) { return __awaiter(_this, void 0, void 0, function () {
-    var pando, repository, heads, err_1;
-    return __generator(this, function (_a) {
-        switch (_a.label) {
-            case 0:
-                _a.trys.push([0, 4, , 5]);
-                return [4 /*yield*/, pando_js_1.default.load()];
-            case 1:
-                pando = _a.sent();
-                return [4 /*yield*/, pando.repositories.load()];
-            case 2:
-                repository = _a.sent();
-                return [4 /*yield*/, repository.fetch(argv.remotes)];
-            case 3:
-                heads = _a.sent();
-                display.status('fetched');
-                return [3 /*break*/, 5];
-            case 4:
-                err_1 = _a.sent();
-                display.error(err_1.message);
-                return [3 /*break*/, 5];
-            case 5: return [2 /*return*/];
-        }
-    });
-}); };
-/* tslint:disable:object-literal-sort-keys */
-exports.fetch = {
-    command: 'fetch <remotes...>',
-    desc: 'Fetch branches from one or more other repositories',
-    builder: builder,
-    handler: handler
-};
-/* tslint:enable:object-literal-sort-keys */
-
-
-/***/ }),
-/* 23 */
-/***/ (function(module, exports, __webpack_require__) {
-
-"use strict";
-
-var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
-    return new (P || (P = Promise))(function (resolve, reject) {
-        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
-        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
-        function step(result) { result.done ? resolve(result.value) : new P(function (resolve) { resolve(result.value); }).then(fulfilled, rejected); }
-        step((generator = generator.apply(thisArg, _arguments || [])).next());
-    });
-};
-var __generator = (this && this.__generator) || function (thisArg, body) {
-    var _ = { label: 0, sent: function() { if (t[0] & 1) throw t[1]; return t[1]; }, trys: [], ops: [] }, f, y, t, g;
-    return g = { next: verb(0), "throw": verb(1), "return": verb(2) }, typeof Symbol === "function" && (g[Symbol.iterator] = function() { return this; }), g;
-    function verb(n) { return function (v) { return step([n, v]); }; }
-    function step(op) {
-        if (f) throw new TypeError("Generator is already executing.");
-        while (_) try {
-            if (f = 1, y && (t = op[0] & 2 ? y["return"] : op[0] ? y["throw"] || ((t = y["return"]) && t.call(y), 0) : y.next) && !(t = t.call(y, op[1])).done) return t;
-            if (y = 0, t) op = [op[0] & 2, t.value];
-            switch (op[0]) {
-                case 0: case 1: t = op; break;
-                case 4: _.label++; return { value: op[1], done: false };
-                case 5: _.label++; y = op[1]; op = [0]; continue;
-                case 7: op = _.ops.pop(); _.trys.pop(); continue;
-                default:
-                    if (!(t = _.trys, t = t.length > 0 && t[t.length - 1]) && (op[0] === 6 || op[0] === 2)) { _ = 0; continue; }
-                    if (op[0] === 3 && (!t || (op[1] > t[0] && op[1] < t[3]))) { _.label = op[1]; break; }
-                    if (op[0] === 6 && _.label < t[1]) { _.label = t[1]; t = op; break; }
-                    if (t && _.label < t[2]) { _.label = t[2]; _.ops.push(op); break; }
-                    if (t[2]) _.ops.pop();
-                    _.trys.pop(); continue;
-            }
-            op = body.call(thisArg, _);
-        } catch (e) { op = [6, e]; y = 0; } finally { f = t = 0; }
-        if (op[0] & 5) throw op[1]; return { value: op[0] ? op[1] : void 0, done: true };
-    }
-};
-var __importStar = (this && this.__importStar) || function (mod) {
-    if (mod && mod.__esModule) return mod;
-    var result = {};
-    if (mod != null) for (var k in mod) if (Object.hasOwnProperty.call(mod, k)) result[k] = mod[k];
-    result["default"] = mod;
-    return result;
-};
-var __importDefault = (this && this.__importDefault) || function (mod) {
-    return (mod && mod.__esModule) ? mod : { "default": mod };
-};
-var _this = this;
-Object.defineProperty(exports, "__esModule", { value: true });
-var config = __importStar(__webpack_require__(4));
-var pando_js_1 = __importDefault(__webpack_require__(2));
-var display = __importStar(__webpack_require__(1));
-var yargs_1 = __importDefault(__webpack_require__(0));
-var builder = function () {
-    return yargs_1.default.help().version(false);
-};
-var handler = function (argv) { return __awaiter(_this, void 0, void 0, function () {
-    var pando, repository, err_1;
-    return __generator(this, function (_a) {
-        switch (_a.label) {
-            case 0:
-                _a.trys.push([0, 5, , 6]);
-                if (!!config.exists()) return [3 /*break*/, 1];
-                display.error('pando not configured yet');
-                display.error('run pando config --global');
-                return [3 /*break*/, 4];
-            case 1: return [4 /*yield*/, pando_js_1.default.create(config.load())];
-            case 2:
-                pando = _a.sent();
-                return [4 /*yield*/, pando.repositories.clone(argv.address)];
-            case 3:
-                repository = _a.sent();
-                display.status('cloned');
-                _a.label = 4;
-            case 4: return [3 /*break*/, 6];
-            case 5:
-                err_1 = _a.sent();
-                display.error(err_1.message);
-                return [3 /*break*/, 6];
-            case 6: return [2 /*return*/];
-        }
-    });
-}); };
-/* tslint:disable:object-literal-sort-keys */
-exports.clone = {
-    command: 'clone <address>',
-    desc: 'Clone remote repository',
-    builder: builder,
-    handler: handler
-};
-/* tslint:enable:object-literal-sort-keys */
-
-
-/***/ }),
-/* 24 */
-/***/ (function(module, exports, __webpack_require__) {
-
-"use strict";
-
-var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
-    return new (P || (P = Promise))(function (resolve, reject) {
-        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
-        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
-        function step(result) { result.done ? resolve(result.value) : new P(function (resolve) { resolve(result.value); }).then(fulfilled, rejected); }
-        step((generator = generator.apply(thisArg, _arguments || [])).next());
-    });
-};
-var __generator = (this && this.__generator) || function (thisArg, body) {
-    var _ = { label: 0, sent: function() { if (t[0] & 1) throw t[1]; return t[1]; }, trys: [], ops: [] }, f, y, t, g;
-    return g = { next: verb(0), "throw": verb(1), "return": verb(2) }, typeof Symbol === "function" && (g[Symbol.iterator] = function() { return this; }), g;
-    function verb(n) { return function (v) { return step([n, v]); }; }
-    function step(op) {
-        if (f) throw new TypeError("Generator is already executing.");
-        while (_) try {
-            if (f = 1, y && (t = op[0] & 2 ? y["return"] : op[0] ? y["throw"] || ((t = y["return"]) && t.call(y), 0) : y.next) && !(t = t.call(y, op[1])).done) return t;
-            if (y = 0, t) op = [op[0] & 2, t.value];
-            switch (op[0]) {
-                case 0: case 1: t = op; break;
-                case 4: _.label++; return { value: op[1], done: false };
-                case 5: _.label++; y = op[1]; op = [0]; continue;
-                case 7: op = _.ops.pop(); _.trys.pop(); continue;
-                default:
-                    if (!(t = _.trys, t = t.length > 0 && t[t.length - 1]) && (op[0] === 6 || op[0] === 2)) { _ = 0; continue; }
-                    if (op[0] === 3 && (!t || (op[1] > t[0] && op[1] < t[3]))) { _.label = op[1]; break; }
-                    if (op[0] === 6 && _.label < t[1]) { _.label = t[1]; t = op; break; }
-                    if (t && _.label < t[2]) { _.label = t[2]; _.ops.push(op); break; }
-                    if (t[2]) _.ops.pop();
-                    _.trys.pop(); continue;
-            }
-            op = body.call(thisArg, _);
-        } catch (e) { op = [6, e]; y = 0; } finally { f = t = 0; }
-        if (op[0] & 5) throw op[1]; return { value: op[0] ? op[1] : void 0, done: true };
-    }
-};
-var __importDefault = (this && this.__importDefault) || function (mod) {
-    return (mod && mod.__esModule) ? mod : { "default": mod };
-};
-var __importStar = (this && this.__importStar) || function (mod) {
-    if (mod && mod.__esModule) return mod;
-    var result = {};
-    if (mod != null) for (var k in mod) if (Object.hasOwnProperty.call(mod, k)) result[k] = mod[k];
-    result["default"] = mod;
-    return result;
-};
-var _this = this;
-Object.defineProperty(exports, "__esModule", { value: true });
-var pando_js_1 = __importDefault(__webpack_require__(2));
-var display = __importStar(__webpack_require__(1));
-var yargs_1 = __importDefault(__webpack_require__(0));
-var builder = function () {
-    return yargs_1.default
-        .option('message', {
-        alias: 'm',
-        description: 'A message describing the snapshot',
-        required: true
-    })
-        .help()
-        .version(false);
-};
-var handler = function (argv) { return __awaiter(_this, void 0, void 0, function () {
-    var pando, repository, snapshot_1, cid, err_1;
-    return __generator(this, function (_a) {
-        switch (_a.label) {
-            case 0:
-                _a.trys.push([0, 5, , 6]);
-                return [4 /*yield*/, pando_js_1.default.load()];
-            case 1:
-                pando = _a.sent();
-                return [4 /*yield*/, pando.repositories.load()];
-            case 2:
-                repository = _a.sent();
-                return [4 /*yield*/, repository.snapshot(argv.message)];
-            case 3:
-                snapshot_1 = _a.sent();
-                return [4 /*yield*/, snapshot_1.cid()];
-            case 4:
-                cid = _a.sent();
-                display.status('snapshot', cid.toBaseEncodedString());
-                return [3 /*break*/, 6];
-            case 5:
-                err_1 = _a.sent();
-                display.error(err_1.message);
-                return [3 /*break*/, 6];
-            case 6: return [2 /*return*/];
-        }
-    });
-}); };
-exports.snapshot = {
-    command: 'snapshot',
-    aliases: ['commit'],
-    desc: 'Snapshot modifications',
-    builder: builder,
-    handler: handler
-};
-
-
-/***/ }),
-/* 25 */
-/***/ (function(module, exports, __webpack_require__) {
-
-"use strict";
-
-var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
-    return new (P || (P = Promise))(function (resolve, reject) {
-        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
-        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
-        function step(result) { result.done ? resolve(result.value) : new P(function (resolve) { resolve(result.value); }).then(fulfilled, rejected); }
-        step((generator = generator.apply(thisArg, _arguments || [])).next());
-    });
-};
-var __generator = (this && this.__generator) || function (thisArg, body) {
-    var _ = { label: 0, sent: function() { if (t[0] & 1) throw t[1]; return t[1]; }, trys: [], ops: [] }, f, y, t, g;
-    return g = { next: verb(0), "throw": verb(1), "return": verb(2) }, typeof Symbol === "function" && (g[Symbol.iterator] = function() { return this; }), g;
-    function verb(n) { return function (v) { return step([n, v]); }; }
-    function step(op) {
-        if (f) throw new TypeError("Generator is already executing.");
-        while (_) try {
-            if (f = 1, y && (t = op[0] & 2 ? y["return"] : op[0] ? y["throw"] || ((t = y["return"]) && t.call(y), 0) : y.next) && !(t = t.call(y, op[1])).done) return t;
-            if (y = 0, t) op = [op[0] & 2, t.value];
-            switch (op[0]) {
-                case 0: case 1: t = op; break;
-                case 4: _.label++; return { value: op[1], done: false };
-                case 5: _.label++; y = op[1]; op = [0]; continue;
-                case 7: op = _.ops.pop(); _.trys.pop(); continue;
-                default:
-                    if (!(t = _.trys, t = t.length > 0 && t[t.length - 1]) && (op[0] === 6 || op[0] === 2)) { _ = 0; continue; }
-                    if (op[0] === 3 && (!t || (op[1] > t[0] && op[1] < t[3]))) { _.label = op[1]; break; }
-                    if (op[0] === 6 && _.label < t[1]) { _.label = t[1]; t = op; break; }
-                    if (t && _.label < t[2]) { _.label = t[2]; _.ops.push(op); break; }
-                    if (t[2]) _.ops.pop();
-                    _.trys.pop(); continue;
-            }
-            op = body.call(thisArg, _);
-        } catch (e) { op = [6, e]; y = 0; } finally { f = t = 0; }
-        if (op[0] & 5) throw op[1]; return { value: op[0] ? op[1] : void 0, done: true };
-    }
-};
-var __importDefault = (this && this.__importDefault) || function (mod) {
-    return (mod && mod.__esModule) ? mod : { "default": mod };
-};
-var __importStar = (this && this.__importStar) || function (mod) {
-    if (mod && mod.__esModule) return mod;
-    var result = {};
-    if (mod != null) for (var k in mod) if (Object.hasOwnProperty.call(mod, k)) result[k] = mod[k];
-    result["default"] = mod;
-    return result;
-};
-var _this = this;
-Object.defineProperty(exports, "__esModule", { value: true });
-var pando_js_1 = __importDefault(__webpack_require__(2));
-var display = __importStar(__webpack_require__(1));
-var yargs_1 = __importDefault(__webpack_require__(0));
-var builder = function () {
-    return yargs_1.default.help().version(false);
-};
-var handler = function (argv) { return __awaiter(_this, void 0, void 0, function () {
-    var pando, repository, err_1;
-    return __generator(this, function (_a) {
-        switch (_a.label) {
-            case 0:
-                _a.trys.push([0, 4, , 5]);
-                return [4 /*yield*/, pando_js_1.default.load()];
-            case 1:
-                pando = _a.sent();
-                return [4 /*yield*/, pando.repositories.load()];
-            case 2:
-                repository = _a.sent();
-                return [4 /*yield*/, repository.stage(argv.files)];
-            case 3:
-                _a.sent();
-                display.status('staged');
-                return [3 /*break*/, 5];
-            case 4:
-                err_1 = _a.sent();
-                display.error(err_1.message);
-                return [3 /*break*/, 5];
-            case 5: return [2 /*return*/];
-        }
-    });
-}); };
-/* tslint:disable:object-literal-sort-keys */
-exports.stage = {
-    command: 'stage <files...>',
-    aliases: ['add'],
-    desc: 'Stage modifications',
-    builder: builder,
-    handler: handler
-};
-/* tslint:enable:object-literal-sort-keys */
-
-
-/***/ }),
-/* 26 */
-/***/ (function(module, exports, __webpack_require__) {
-
-"use strict";
-
-var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
-    return new (P || (P = Promise))(function (resolve, reject) {
-        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
-        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
-        function step(result) { result.done ? resolve(result.value) : new P(function (resolve) { resolve(result.value); }).then(fulfilled, rejected); }
-        step((generator = generator.apply(thisArg, _arguments || [])).next());
-    });
-};
-var __generator = (this && this.__generator) || function (thisArg, body) {
-    var _ = { label: 0, sent: function() { if (t[0] & 1) throw t[1]; return t[1]; }, trys: [], ops: [] }, f, y, t, g;
-    return g = { next: verb(0), "throw": verb(1), "return": verb(2) }, typeof Symbol === "function" && (g[Symbol.iterator] = function() { return this; }), g;
-    function verb(n) { return function (v) { return step([n, v]); }; }
-    function step(op) {
-        if (f) throw new TypeError("Generator is already executing.");
-        while (_) try {
-            if (f = 1, y && (t = op[0] & 2 ? y["return"] : op[0] ? y["throw"] || ((t = y["return"]) && t.call(y), 0) : y.next) && !(t = t.call(y, op[1])).done) return t;
-            if (y = 0, t) op = [op[0] & 2, t.value];
-            switch (op[0]) {
-                case 0: case 1: t = op; break;
-                case 4: _.label++; return { value: op[1], done: false };
-                case 5: _.label++; y = op[1]; op = [0]; continue;
-                case 7: op = _.ops.pop(); _.trys.pop(); continue;
-                default:
-                    if (!(t = _.trys, t = t.length > 0 && t[t.length - 1]) && (op[0] === 6 || op[0] === 2)) { _ = 0; continue; }
-                    if (op[0] === 3 && (!t || (op[1] > t[0] && op[1] < t[3]))) { _.label = op[1]; break; }
-                    if (op[0] === 6 && _.label < t[1]) { _.label = t[1]; t = op; break; }
-                    if (t && _.label < t[2]) { _.label = t[2]; _.ops.push(op); break; }
-                    if (t[2]) _.ops.pop();
-                    _.trys.pop(); continue;
-            }
-            op = body.call(thisArg, _);
-        } catch (e) { op = [6, e]; y = 0; } finally { f = t = 0; }
-        if (op[0] & 5) throw op[1]; return { value: op[0] ? op[1] : void 0, done: true };
-    }
-};
-var __importStar = (this && this.__importStar) || function (mod) {
-    if (mod && mod.__esModule) return mod;
-    var result = {};
-    if (mod != null) for (var k in mod) if (Object.hasOwnProperty.call(mod, k)) result[k] = mod[k];
-    result["default"] = mod;
-    return result;
-};
-var __importDefault = (this && this.__importDefault) || function (mod) {
-    return (mod && mod.__esModule) ? mod : { "default": mod };
-};
-var _this = this;
-Object.defineProperty(exports, "__esModule", { value: true });
-var config = __importStar(__webpack_require__(4));
-var pando_js_1 = __importDefault(__webpack_require__(2));
+var repository_1 = __importDefault(__webpack_require__(2));
 var display = __importStar(__webpack_require__(1));
 var yargs_1 = __importDefault(__webpack_require__(0));
 var builder = function () {
     return yargs_1.default.help().version(false);
 };
 var handler = function () { return __awaiter(_this, void 0, void 0, function () {
-    var pando, repository, err_1;
     return __generator(this, function (_a) {
         switch (_a.label) {
-            case 0:
-                _a.trys.push([0, 5, , 6]);
-                if (!!config.exists()) return [3 /*break*/, 1];
-                display.error('Pando not configured yet');
-                display.error('Run pando config --global');
-                return [3 /*break*/, 4];
-            case 1: return [4 /*yield*/, pando_js_1.default.create(config.load())];
-            case 2:
-                pando = _a.sent();
-                return [4 /*yield*/, pando.repositories.create()];
-            case 3:
-                repository = _a.sent();
-                display.status('initialized', process.cwd());
-                _a.label = 4;
-            case 4: return [3 /*break*/, 6];
-            case 5:
-                err_1 = _a.sent();
-                display.error(err_1.message);
-                return [3 /*break*/, 6];
-            case 6: return [2 /*return*/];
+            case 0: 
+            // try {
+            //   if (!config.exists()) {
+            //     display.error('Pando not configured yet')
+            //     display.error('Run pando config --global')
+            //   } else {
+            //     const pando = await Pando.create(config.load())
+            //     const repository = await pando.repositories.create()
+            //
+            //     display.status('initialized', process.cwd())
+            //   }
+            // } catch (err) {
+            //   display.error(err.message)
+            // }
+            return [4 /*yield*/, repository_1.default.create()];
+            case 1:
+                // try {
+                //   if (!config.exists()) {
+                //     display.error('Pando not configured yet')
+                //     display.error('Run pando config --global')
+                //   } else {
+                //     const pando = await Pando.create(config.load())
+                //     const repository = await pando.repositories.create()
+                //
+                //     display.status('initialized', process.cwd())
+                //   }
+                // } catch (err) {
+                //   display.error(err.message)
+                // }
+                _a.sent();
+                display.success('Pando repository initialized');
+                return [2 /*return*/];
         }
     });
 }); };
@@ -1931,412 +1288,7 @@ exports.init = {
 
 
 /***/ }),
-/* 27 */
-/***/ (function(module, exports) {
-
-module.exports = require("web3");
-
-/***/ }),
-/* 28 */
-/***/ (function(module, exports) {
-
-module.exports = require("truffle-hdwallet-provider");
-
-/***/ }),
-/* 29 */
-/***/ (function(module, exports) {
-
-module.exports = require("inquirer");
-
-/***/ }),
-/* 30 */
-/***/ (function(module, exports, __webpack_require__) {
-
-"use strict";
-
-var __assign = (this && this.__assign) || Object.assign || function(t) {
-    for (var s, i = 1, n = arguments.length; i < n; i++) {
-        s = arguments[i];
-        for (var p in s) if (Object.prototype.hasOwnProperty.call(s, p))
-            t[p] = s[p];
-    }
-    return t;
-};
-var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
-    return new (P || (P = Promise))(function (resolve, reject) {
-        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
-        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
-        function step(result) { result.done ? resolve(result.value) : new P(function (resolve) { resolve(result.value); }).then(fulfilled, rejected); }
-        step((generator = generator.apply(thisArg, _arguments || [])).next());
-    });
-};
-var __generator = (this && this.__generator) || function (thisArg, body) {
-    var _ = { label: 0, sent: function() { if (t[0] & 1) throw t[1]; return t[1]; }, trys: [], ops: [] }, f, y, t, g;
-    return g = { next: verb(0), "throw": verb(1), "return": verb(2) }, typeof Symbol === "function" && (g[Symbol.iterator] = function() { return this; }), g;
-    function verb(n) { return function (v) { return step([n, v]); }; }
-    function step(op) {
-        if (f) throw new TypeError("Generator is already executing.");
-        while (_) try {
-            if (f = 1, y && (t = op[0] & 2 ? y["return"] : op[0] ? y["throw"] || ((t = y["return"]) && t.call(y), 0) : y.next) && !(t = t.call(y, op[1])).done) return t;
-            if (y = 0, t) op = [op[0] & 2, t.value];
-            switch (op[0]) {
-                case 0: case 1: t = op; break;
-                case 4: _.label++; return { value: op[1], done: false };
-                case 5: _.label++; y = op[1]; op = [0]; continue;
-                case 7: op = _.ops.pop(); _.trys.pop(); continue;
-                default:
-                    if (!(t = _.trys, t = t.length > 0 && t[t.length - 1]) && (op[0] === 6 || op[0] === 2)) { _ = 0; continue; }
-                    if (op[0] === 3 && (!t || (op[1] > t[0] && op[1] < t[3]))) { _.label = op[1]; break; }
-                    if (op[0] === 6 && _.label < t[1]) { _.label = t[1]; t = op; break; }
-                    if (t && _.label < t[2]) { _.label = t[2]; _.ops.push(op); break; }
-                    if (t[2]) _.ops.pop();
-                    _.trys.pop(); continue;
-            }
-            op = body.call(thisArg, _);
-        } catch (e) { op = [6, e]; y = 0; } finally { f = t = 0; }
-        if (op[0] & 5) throw op[1]; return { value: op[0] ? op[1] : void 0, done: true };
-    }
-};
-var __importStar = (this && this.__importStar) || function (mod) {
-    if (mod && mod.__esModule) return mod;
-    var result = {};
-    if (mod != null) for (var k in mod) if (Object.hasOwnProperty.call(mod, k)) result[k] = mod[k];
-    result["default"] = mod;
-    return result;
-};
-var __importDefault = (this && this.__importDefault) || function (mod) {
-    return (mod && mod.__esModule) ? mod : { "default": mod };
-};
-var _this = this;
-Object.defineProperty(exports, "__esModule", { value: true });
-var inquirer = __importStar(__webpack_require__(29));
-var truffle_hdwallet_provider_1 = __importDefault(__webpack_require__(28));
-var web3_1 = __importDefault(__webpack_require__(27));
-exports.questions = {
-    /* tslint:disable:object-literal-sort-keys */
-    signer: {
-        name: 'type',
-        type: 'list',
-        message: 'Account type',
-        choices: ['Unlocked account', 'HD wallet / mnemonic']
-    },
-    mnemonic: {
-        name: 'words',
-        type: 'input',
-        message: 'Mnemonic: '
-    },
-    ethereum: {
-        name: 'ethereum.gateway',
-        type: 'input',
-        message: 'Ethereum node URL: ',
-        default: 'http://localhost:8545',
-        validate: function (value) { return __awaiter(_this, void 0, void 0, function () {
-            var regex, provider, web3, err_1;
-            return __generator(this, function (_a) {
-                switch (_a.label) {
-                    case 0:
-                        regex = new RegExp(/(?:^|\s)((https?:\/\/)?(?:localhost|[\w-]+(?:\.[\w-]+)+)(:\d+)?(\/\S*)?)/);
-                        if (!value.match(regex)) return [3 /*break*/, 5];
-                        provider = new web3_1.default.providers.HttpProvider(value);
-                        web3 = new web3_1.default(provider);
-                        _a.label = 1;
-                    case 1:
-                        _a.trys.push([1, 3, , 4]);
-                        return [4 /*yield*/, web3.eth.getAccounts()];
-                    case 2:
-                        _a.sent();
-                        return [2 /*return*/, true];
-                    case 3:
-                        err_1 = _a.sent();
-                        return [2 /*return*/, 'Unable to connect to ' + value];
-                    case 4: return [3 /*break*/, 6];
-                    case 5: return [2 /*return*/, 'Invalid URL'];
-                    case 6: return [2 /*return*/];
-                }
-            });
-        }); }
-    },
-    /* tslint:disable:object-literal-sort-keys */
-    ipfs: {
-        name: 'ipfs.gateway',
-        type: 'input',
-        message: 'IPFS node URL: ',
-        default: 'http://localhost:5001',
-        validate: function (value) { return __awaiter(_this, void 0, void 0, function () {
-            var regex;
-            return __generator(this, function (_a) {
-                regex = new RegExp(/(?:^|\s)((https?:\/\/)?(?:localhost|[\w-]+(?:\.[\w-]+)+)(:\d+)?(\/\S*)?)/);
-                if (value.match(regex)) {
-                    return [2 /*return*/, true];
-                }
-                else {
-                    return [2 /*return*/, 'Invalid URL'];
-                }
-                return [2 /*return*/];
-            });
-        }); }
-    },
-    author: function (provider) { return __awaiter(_this, void 0, void 0, function () {
-        var question;
-        var _this = this;
-        return __generator(this, function (_a) {
-            question = {
-                name: 'author.account',
-                type: 'list',
-                message: 'Account: ',
-                choices: function () { return __awaiter(_this, void 0, void 0, function () {
-                    var web3, accounts;
-                    return __generator(this, function (_a) {
-                        switch (_a.label) {
-                            case 0:
-                                web3 = new web3_1.default(provider);
-                                return [4 /*yield*/, web3.eth.getAccounts()];
-                            case 1:
-                                accounts = _a.sent();
-                                return [2 /*return*/, accounts];
-                        }
-                    });
-                }); },
-                default: 0
-            };
-            return [2 /*return*/, question];
-        });
-    }); }
-};
-exports.prompt = {
-    configure: function () { return __awaiter(_this, void 0, void 0, function () {
-        var provider, author, ipfs, ethereum, signer, _a, _b, mnemonic, _c, _d, web3, _e;
-        return __generator(this, function (_f) {
-            switch (_f.label) {
-                case 0:
-                    author = { author: { account: '' } };
-                    return [4 /*yield*/, inquirer.prompt(exports.questions.ipfs)];
-                case 1:
-                    ipfs = _f.sent();
-                    return [4 /*yield*/, inquirer.prompt(exports.questions.ethereum)];
-                case 2:
-                    ethereum = _f.sent();
-                    return [4 /*yield*/, inquirer.prompt(exports.questions.signer)];
-                case 3:
-                    signer = _f.sent();
-                    if (!(signer.type === 'Unlocked account')) return [3 /*break*/, 6];
-                    provider = new web3_1.default.providers.HttpProvider(ethereum.gateway);
-                    _b = (_a = inquirer).prompt;
-                    return [4 /*yield*/, exports.questions.author(provider)];
-                case 4: return [4 /*yield*/, _b.apply(_a, [_f.sent()])];
-                case 5:
-                    author = _f.sent();
-                    return [3 /*break*/, 10];
-                case 6:
-                    if (!(signer.type === 'HD wallet / mnemonic')) return [3 /*break*/, 10];
-                    _d = (_c = inquirer).prompt;
-                    return [4 /*yield*/, exports.questions.mnemonic];
-                case 7: return [4 /*yield*/, _d.apply(_c, [_f.sent()])];
-                case 8:
-                    mnemonic = _f.sent();
-                    ethereum.ethereum.mnemonic = mnemonic.words;
-                    provider = new truffle_hdwallet_provider_1.default(mnemonic.words, ethereum.gateway);
-                    web3 = new web3_1.default(provider);
-                    _e = author.author;
-                    return [4 /*yield*/, web3.eth.getAccounts()];
-                case 9:
-                    _e.account = (_f.sent())[0];
-                    _f.label = 10;
-                case 10: return [2 /*return*/, __assign({}, author, ethereum, ipfs)];
-            }
-        });
-    }); }
-};
-/* tslint:enable:object-literal-sort-keys */
-exports.default = exports.prompt;
-
-
-/***/ }),
-/* 31 */
-/***/ (function(module, exports) {
-
-module.exports = require("path");
-
-/***/ }),
-/* 32 */
-/***/ (function(module, exports) {
-
-module.exports = require("os");
-
-/***/ }),
-/* 33 */
-/***/ (function(module, exports) {
-
-module.exports = require("js-yaml");
-
-/***/ }),
-/* 34 */
-/***/ (function(module, exports, __webpack_require__) {
-
-"use strict";
-
-var __importDefault = (this && this.__importDefault) || function (mod) {
-    return (mod && mod.__esModule) ? mod : { "default": mod };
-};
-var __importStar = (this && this.__importStar) || function (mod) {
-    if (mod && mod.__esModule) return mod;
-    var result = {};
-    if (mod != null) for (var k in mod) if (Object.hasOwnProperty.call(mod, k)) result[k] = mod[k];
-    result["default"] = mod;
-    return result;
-};
-Object.defineProperty(exports, "__esModule", { value: true });
-var js_yaml_1 = __importDefault(__webpack_require__(33));
-var fs = __importStar(__webpack_require__(5));
-exports.read = function (path) {
-    return js_yaml_1.default.safeLoad(fs.read(path));
-};
-exports.write = function (path, data, opts) {
-    return fs.write(path, js_yaml_1.default.safeDump(data, opts));
-};
-
-
-/***/ }),
-/* 35 */
-/***/ (function(module, exports) {
-
-module.exports = require("fs");
-
-/***/ }),
-/* 36 */
-/***/ (function(module, exports, __webpack_require__) {
-
-"use strict";
-
-var __importStar = (this && this.__importStar) || function (mod) {
-    if (mod && mod.__esModule) return mod;
-    var result = {};
-    if (mod != null) for (var k in mod) if (Object.hasOwnProperty.call(mod, k)) result[k] = mod[k];
-    result["default"] = mod;
-    return result;
-};
-Object.defineProperty(exports, "__esModule", { value: true });
-var fs = __importStar(__webpack_require__(5));
-exports.fs = fs;
-var yaml = __importStar(__webpack_require__(34));
-exports.yaml = yaml;
-
-
-/***/ }),
-/* 37 */
-/***/ (function(module, exports, __webpack_require__) {
-
-"use strict";
-
-var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
-    return new (P || (P = Promise))(function (resolve, reject) {
-        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
-        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
-        function step(result) { result.done ? resolve(result.value) : new P(function (resolve) { resolve(result.value); }).then(fulfilled, rejected); }
-        step((generator = generator.apply(thisArg, _arguments || [])).next());
-    });
-};
-var __generator = (this && this.__generator) || function (thisArg, body) {
-    var _ = { label: 0, sent: function() { if (t[0] & 1) throw t[1]; return t[1]; }, trys: [], ops: [] }, f, y, t, g;
-    return g = { next: verb(0), "throw": verb(1), "return": verb(2) }, typeof Symbol === "function" && (g[Symbol.iterator] = function() { return this; }), g;
-    function verb(n) { return function (v) { return step([n, v]); }; }
-    function step(op) {
-        if (f) throw new TypeError("Generator is already executing.");
-        while (_) try {
-            if (f = 1, y && (t = op[0] & 2 ? y["return"] : op[0] ? y["throw"] || ((t = y["return"]) && t.call(y), 0) : y.next) && !(t = t.call(y, op[1])).done) return t;
-            if (y = 0, t) op = [op[0] & 2, t.value];
-            switch (op[0]) {
-                case 0: case 1: t = op; break;
-                case 4: _.label++; return { value: op[1], done: false };
-                case 5: _.label++; y = op[1]; op = [0]; continue;
-                case 7: op = _.ops.pop(); _.trys.pop(); continue;
-                default:
-                    if (!(t = _.trys, t = t.length > 0 && t[t.length - 1]) && (op[0] === 6 || op[0] === 2)) { _ = 0; continue; }
-                    if (op[0] === 3 && (!t || (op[1] > t[0] && op[1] < t[3]))) { _.label = op[1]; break; }
-                    if (op[0] === 6 && _.label < t[1]) { _.label = t[1]; t = op; break; }
-                    if (t && _.label < t[2]) { _.label = t[2]; _.ops.push(op); break; }
-                    if (t[2]) _.ops.pop();
-                    _.trys.pop(); continue;
-            }
-            op = body.call(thisArg, _);
-        } catch (e) { op = [6, e]; y = 0; } finally { f = t = 0; }
-        if (op[0] & 5) throw op[1]; return { value: op[0] ? op[1] : void 0, done: true };
-    }
-};
-var __importStar = (this && this.__importStar) || function (mod) {
-    if (mod && mod.__esModule) return mod;
-    var result = {};
-    if (mod != null) for (var k in mod) if (Object.hasOwnProperty.call(mod, k)) result[k] = mod[k];
-    result["default"] = mod;
-    return result;
-};
-var __importDefault = (this && this.__importDefault) || function (mod) {
-    return (mod && mod.__esModule) ? mod : { "default": mod };
-};
-var _this = this;
-Object.defineProperty(exports, "__esModule", { value: true });
-var config = __importStar(__webpack_require__(4));
-var pando_js_1 = __importDefault(__webpack_require__(2));
-var display = __importStar(__webpack_require__(1));
-var inquirer_1 = __importDefault(__webpack_require__(30));
-var yargs_1 = __importDefault(__webpack_require__(0));
-var builder = function () {
-    return yargs_1.default
-        .option('global', {
-        alias: 'g',
-        describe: 'Configure pando globally',
-        type: 'boolean'
-    })
-        .help()
-        .version(false);
-};
-var handler = function (argv) { return __awaiter(_this, void 0, void 0, function () {
-    var configuration, configuration, pando, repository, err_1;
-    return __generator(this, function (_a) {
-        switch (_a.label) {
-            case 0:
-                _a.trys.push([0, 7, , 8]);
-                if (!argv.global) return [3 /*break*/, 2];
-                return [4 /*yield*/, inquirer_1.default.configure()];
-            case 1:
-                configuration = _a.sent();
-                config.save(configuration);
-                return [3 /*break*/, 6];
-            case 2: return [4 /*yield*/, inquirer_1.default.configure()];
-            case 3:
-                configuration = _a.sent();
-                return [4 /*yield*/, pando_js_1.default.create(configuration)];
-            case 4:
-                pando = _a.sent();
-                return [4 /*yield*/, pando.repositories.load()];
-            case 5:
-                repository = _a.sent();
-                repository.config = configuration;
-                _a.label = 6;
-            case 6:
-                display.status('updated');
-                return [3 /*break*/, 8];
-            case 7:
-                err_1 = _a.sent();
-                display.error(err_1.message);
-                return [3 /*break*/, 8];
-            case 8: return [2 /*return*/];
-        }
-    });
-}); };
-/* tslint:disable:object-literal-sort-keys */
-exports.configure = {
-    command: 'configure',
-    aliases: ['config'],
-    desc: 'Configure pando',
-    builder: builder,
-    handler: handler
-};
-/* tslint:enable:object-literal-sort-keys */
-
-
-/***/ }),
-/* 38 */
+/* 18 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -2345,22 +1297,28 @@ function __export(m) {
     for (var p in m) if (!exports.hasOwnProperty(p)) exports[p] = m[p];
 }
 Object.defineProperty(exports, "__esModule", { value: true });
-__export(__webpack_require__(37));
-__export(__webpack_require__(26));
-__export(__webpack_require__(25));
-__export(__webpack_require__(24));
-__export(__webpack_require__(23));
-__export(__webpack_require__(22));
-__export(__webpack_require__(21));
-__export(__webpack_require__(20));
-__export(__webpack_require__(19));
-__export(__webpack_require__(18));
 __export(__webpack_require__(17));
-__export(__webpack_require__(12));
+__export(__webpack_require__(16));
+__export(__webpack_require__(15));
+__export(__webpack_require__(14));
+__export(__webpack_require__(13));
+__export(__webpack_require__(8));
+__export(__webpack_require__(7));
+__export(__webpack_require__(6));
+__export(__webpack_require__(5));
+// export * from './snapshot'
+// export * from './clone'
+// export * from './fetch'
+// export * from './push'
+// export * from './pull'
+// export * from './status'
+// export * from './log'
+// export * from './branch'
+// export * from './remote'
 
 
 /***/ }),
-/* 39 */
+/* 19 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -2377,21 +1335,29 @@ var __importStar = (this && this.__importStar) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 var yargs_1 = __importDefault(__webpack_require__(0));
-var commands = __importStar(__webpack_require__(38));
+var commands = __importStar(__webpack_require__(18));
 var argv = yargs_1.default
     .usage('pando <command>')
-    .command(commands.configure)
+    // .command(commands.configure)
     .command(commands.init)
-    .command(commands.stage)
-    .command(commands.snapshot)
-    .command(commands.fetch)
-    .command(commands.push)
-    .command(commands.pull)
+    .command(commands.track)
+    .command(commands.untrack)
     .command(commands.status)
+    .command(commands.fibers)
+    .command(commands.switch_)
+    .command(commands.snapshot)
     .command(commands.log)
-    .command(commands.branch)
-    .command(commands.remote)
-    .command(commands.clone)
+    .command(commands.revert)
+    // .command(commands.stage)
+    // .command(commands.snapshot)
+    // .command(commands.fetch)
+    // .command(commands.push)
+    // .command(commands.pull)
+    // .command(commands.status)
+    // .command(commands.log)
+    // .command(commands.branch)
+    // .command(commands.remote)
+    // .command(commands.clone)
     .demandCommand(1, 'No command provided')
     .strict()
     .help()

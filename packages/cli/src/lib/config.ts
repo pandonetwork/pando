@@ -2,6 +2,7 @@ import * as utils from '@utils'
 import os from 'os'
 import npath from 'path'
 
+
 export const path = npath.join(os.homedir(), '.pandoconfig')
 
 export const exists = (): boolean => {

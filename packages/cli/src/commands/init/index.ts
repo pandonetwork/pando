@@ -1,5 +1,4 @@
-import * as config from '@lib/config'
-import Pando from '@pando/pando.js'
+import Repository from '@pando/repository'
 import * as display from '@ui/display'
 import chalk from 'chalk'
 import yargs from 'yargs'
@@ -9,19 +8,21 @@ const builder = () => {
 }
 
 const handler = async () => {
-  try {
-    if (!config.exists()) {
-      display.error('Pando not configured yet')
-      display.error('Run pando config --global')
-    } else {
-      const pando = await Pando.create(config.load())
-      const repository = await pando.repositories.create()
-
-      display.status('initialized', process.cwd())
-    }
-  } catch (err) {
-    display.error(err.message)
-  }
+  // try {
+  //   if (!config.exists()) {
+  //     display.error('Pando not configured yet')
+  //     display.error('Run pando config --global')
+  //   } else {
+  //     const pando = await Pando.create(config.load())
+  //     const repository = await pando.repositories.create()
+  //
+  //     display.status('initialized', process.cwd())
+  //   }
+  // } catch (err) {
+  //   display.error(err.message)
+  // }
+  await Repository.create()
+  display.success('Pando repository initialized')
 }
 
 /* tslint:disable:object-literal-sort-keys */
