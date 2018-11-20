@@ -37,6 +37,6 @@ set +e
 if [ "$SOLIDITY_COVERAGE" = true ]; then
   npx solidity-coverage "$@"
 elif [ "$TRUFFLE_TEST" = true ]; then
-  npx darq-truffle test --network rpc "$@"
+  npx ./node_modules/.bin/truffle test ./test/index.js --network rpc "$@"
 fi
 kill -9 $testrpc_pid
