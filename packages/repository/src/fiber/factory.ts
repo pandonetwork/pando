@@ -6,6 +6,7 @@ import klaw from 'klaw'
 import through2 from 'through2'
 import fs from 'fs-extra'
 import stream from 'stream'
+import PandoError from '../error'
 
 
 export default class FiberFactory {
@@ -30,7 +31,7 @@ export default class FiberFactory {
                 })
                 .on('end', () => {
                     if (typeof uuid === 'undefined') {
-                        reject(new Error('Unknown fiber ' + name))
+                        reject(new PandoError('E_FIBER_NOT_FOUND', name))
                     } else {
                         resolve(uuid)
                     }

@@ -56,6 +56,7 @@ var klaw_1 = __importDefault(require("klaw"));
 var through2_1 = __importDefault(require("through2"));
 var fs_extra_1 = __importDefault(require("fs-extra"));
 var stream_1 = __importDefault(require("stream"));
+var error_1 = __importDefault(require("../error"));
 var FiberFactory = /** @class */ (function () {
     function FiberFactory(repository) {
         this.repository = repository;
@@ -77,7 +78,7 @@ var FiberFactory = /** @class */ (function () {
                         })
                             .on('end', function () {
                             if (typeof uuid === 'undefined') {
-                                reject(new Error('Unknown fiber ' + name));
+                                reject(new error_1.default('E_FIBER_NOT_FOUND', name));
                             }
                             else {
                                 resolve(uuid);

@@ -135,19 +135,16 @@ export default class Fiber {
     public async revert(id: number, paths: string[] = ['']): Promise<any> {
 
         let snapshot = await this.snapshots.get(id)
-
-        console.log(snapshot)
-
         let promises: any[] = []
-
         let files: any[] = []
 
         for (let path of paths) {
             path = npath.relative(this.repository.paths.root, path)
             const tree = await this.repository.node.files.get(snapshot.tree + '/' + path)
 
+
             if (tree.length <= 0) {
-                throw new Error('Path ' + path + ' does not exist in snapshot ' + id)
+                throw new PandoError('E_ENTRY_NOT_FOUND_IN_SNAPSHOT', path, id)
             } else {
                 for (let file of tree) {
                     if (file.type === 'file') {
@@ -159,14 +156,10 @@ export default class Fiber {
 
         files = _.uniqBy(files, 'destination')
 
-        // Snapshots before we revert
-        // Save files before we revert
+        await this.snapshot('Automatic snapshot before reverting to snapshot #' + id)
 
         for (let file of files) {
-            // console.log('destination: '+ file.destination)
-            // console.log('content: ' + file.content.toString())
-            // ADD the repository root !
-            promises.push(fs.ensureFile(file.destination).then(() => fs.writeFile(npath.join(this.repository.paths.root, file.destination), file.content)))
+            promises.push(fs.ensureFile(npath.join(this.repository.paths.root, file.destination)).then(() => fs.writeFile(npath.join(this.repository.paths.root, file.destination), file.content)))
         }
 
 

@@ -206,14 +206,13 @@ var Fiber = /** @class */ (function () {
     Fiber.prototype.revert = function (id, paths) {
         if (paths === void 0) { paths = ['']; }
         return __awaiter(this, void 0, void 0, function () {
-            var snapshot, promises, files, _i, paths_1, path, tree, _a, tree_1, file, _loop_1, _b, files_1, file;
+            var snapshot, promises, files, _i, paths_1, path, tree, _a, tree_1, file, _loop_1, this_1, _b, files_1, file;
             var _this = this;
             return __generator(this, function (_c) {
                 switch (_c.label) {
                     case 0: return [4 /*yield*/, this.snapshots.get(id)];
                     case 1:
                         snapshot = _c.sent();
-                        console.log(snapshot);
                         promises = [];
                         files = [];
                         _i = 0, paths_1 = paths;
@@ -226,7 +225,7 @@ var Fiber = /** @class */ (function () {
                     case 3:
                         tree = _c.sent();
                         if (tree.length <= 0) {
-                            throw new Error('Path ' + path + ' does not exist in snapshot ' + id);
+                            throw new error_1.default('E_ENTRY_NOT_FOUND_IN_SNAPSHOT', path, id);
                         }
                         else {
                             for (_a = 0, tree_1 = tree; _a < tree_1.length; _a++) {
@@ -242,20 +241,19 @@ var Fiber = /** @class */ (function () {
                         return [3 /*break*/, 2];
                     case 5:
                         files = _.uniqBy(files, 'destination');
+                        return [4 /*yield*/, this.snapshot('Automatic snapshot before reverting to snapshot #' + id)];
+                    case 6:
+                        _c.sent();
                         _loop_1 = function (file) {
-                            // console.log('destination: '+ file.destination)
-                            // console.log('content: ' + file.content.toString())
-                            // ADD the repository root !
-                            promises.push(fs_extra_1.default.ensureFile(file.destination).then(function () { return fs_extra_1.default.writeFile(path_1.default.join(_this.repository.paths.root, file.destination), file.content); }));
+                            promises.push(fs_extra_1.default.ensureFile(path_1.default.join(this_1.repository.paths.root, file.destination)).then(function () { return fs_extra_1.default.writeFile(path_1.default.join(_this.repository.paths.root, file.destination), file.content); }));
                         };
-                        // Snapshots before we revert
-                        // Save files before we revert
+                        this_1 = this;
                         for (_b = 0, files_1 = files; _b < files_1.length; _b++) {
                             file = files_1[_b];
                             _loop_1(file);
                         }
                         return [4 /*yield*/, Promise.all(promises)];
-                    case 6:
+                    case 7:
                         _c.sent();
                         return [2 /*return*/];
                 }
