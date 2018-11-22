@@ -142,6 +142,8 @@ export default class Fiber {
             path = npath.relative(this.repository.paths.root, path)
             const tree = await this.repository.node.files.get(snapshot.tree + '/' + path)
 
+            console.log(tree)
+
 
             if (tree.length <= 0) {
                 throw new PandoError('E_ENTRY_NOT_FOUND_IN_SNAPSHOT', path, id)

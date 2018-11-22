@@ -385,7 +385,9 @@ describe('@pando/repository/fibers', () => {
             })
 
             it('it should fulfill', async () => {
-                await master.revert(0, [path.join('test', 'fixtures', 'test.md'), path.join('test', 'fixtures', 'dir', 'sub')])
+                // await master.revert(0, [path.join('test', 'fixtures', 'test.md'), path.join('test', 'fixtures', 'dir', 'sub')])
+                await master.revert(0, [path.join('test', 'fixtures')])
+
             })
 
 

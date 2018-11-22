@@ -224,6 +224,7 @@ var Fiber = /** @class */ (function () {
                         return [4 /*yield*/, this.repository.node.files.get(snapshot.tree + '/' + path)];
                     case 3:
                         tree = _c.sent();
+                        console.log(tree);
                         if (tree.length <= 0) {
                             throw new error_1.default('E_ENTRY_NOT_FOUND_IN_SNAPSHOT', path, id);
                         }
