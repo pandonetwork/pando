@@ -73,7 +73,7 @@ contract PandoAPI is AragonApp {
         _mergeRFI(_RFIid);
     }
 
-    function rejectRFI(uint256 _RFIid)public isInitialized auth(REJECT_RFI_ROLE) {
+    function rejectRFI(uint256 _RFIid) public isInitialized auth(REJECT_RFI_ROLE) {
         require(canRejectRFI(_RFIid), "cannot reject RFI");
         _rejectRFI(_RFIid);
     }
