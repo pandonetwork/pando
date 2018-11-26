@@ -1,8 +1,12 @@
 export const imports = {
   'src/index.mdx': () =>
     import(/* webpackPrefetch: true, webpackChunkName: "src-index" */ 'src/index.mdx'),
-  'src/architecture/index.mdx': () =>
-    import(/* webpackPrefetch: true, webpackChunkName: "src-architecture-index" */ 'src/architecture/index.mdx'),
+  'src/architecture/1 - overview.mdx': () =>
+    import(/* webpackPrefetch: true, webpackChunkName: "src-architecture-1-overview" */ 'src/architecture/1 - overview.mdx'),
+  'src/architecture/2 - organisms.mdx': () =>
+    import(/* webpackPrefetch: true, webpackChunkName: "src-architecture-2-organisms" */ 'src/architecture/2 - organisms.mdx'),
+  'src/architecture/3 - factory.mdx': () =>
+    import(/* webpackPrefetch: true, webpackChunkName: "src-architecture-3-factory" */ 'src/architecture/3 - factory.mdx'),
   'src/cli/index.mdx': () =>
     import(/* webpackPrefetch: true, webpackChunkName: "src-cli-index" */ 'src/cli/index.mdx'),
   'src/components/Alert.mdx': () =>

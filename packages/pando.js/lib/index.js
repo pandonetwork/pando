@@ -47,6 +47,7 @@ var _artifacts = [
     'Pando',
     'PandoLineage',
     'PandoGenesis',
+    ''
 ].map(function (name) { return require("@pando/core/build/contracts/" + name + ".json"); });
 var _defaults = function (options) {
     if (typeof options.ethereum.provider !== 'undefined') {

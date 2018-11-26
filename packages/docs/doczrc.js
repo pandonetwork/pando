@@ -5,7 +5,7 @@ module.exports = {
     head: {
       links: [{
         rel: 'stylesheet',
-        href: 'https://fonts.googleapis.com/css?family=Roboto:100'
+        href: 'https://fonts.googleapis.com/css?family=Roboto+Condensed:300|Roboto+Mono:100|Roboto:100'
       }]
     }
   },
@@ -28,6 +28,28 @@ module.exports = {
               lineHeight: 1.6,
               fontSize: 15
         },
+        h2: {
+            fontFamily: "'Playfair Display', serif"
+        },
+        h3: {
+            display: 'inline',
+            // fontFamily: "'Roboto Condensed', sans-serif",
+            fontFamily: "'Playfair Display', serif",
+            fontSize: 16,
+            fontWeight: 'light',
+            backgroundColor: '#5ff6b0',
+            color: '#13161f',
+            padding: '3px 5px'
+        },
+        code: {
+            margin: '0 3px',
+            padding: '2px 4px',
+            borderRadius: '3px',
+            fontFamily: '"Roboto Mono", monospace',
+            fontWeight: 'bold'
+
+            // fontSize: '0.85em'
+        }
     }
   }
 }

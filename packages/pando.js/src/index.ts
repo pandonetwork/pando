@@ -11,6 +11,7 @@ const _artifacts = [
     'Pando',
     'PandoLineage',
     'PandoGenesis',
+    ''
 ].map((name) => require(`@pando/core/build/contracts/${name}.json`))
 
 const _defaults  = (options: PandoOptions): PandoOptions => {
