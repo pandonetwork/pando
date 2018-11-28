@@ -1,5 +1,5 @@
-var CounterApp = artifacts.require('CounterApp.sol')
+var Colony = artifacts.require('Colony.sol')
 
-module.exports = function (deployer) {
-  deployer.deploy(CounterApp)
+module.exports = (deployer) => {
+  deployer.deploy(Colony)
 }
