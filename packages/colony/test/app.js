@@ -39,13 +39,14 @@ contract('PandoAPI', accounts => {
         await acl.createPermission(root, dao.address, await dao.APP_MANAGER_ROLE(), root, { from: root })
 
         // Genesis
-        let params = web3.eth.abi.encodeParameter('address', '0x5f6f7e8cc7346a11ca2def8f827b7a0b612c56a1')
+        // let params = web3.eth.abi.encodeParameter('address', '0x5f6f7e8cc7346a11ca2def8f827b7a0b612c56a1')
 
 
         const receipt_2 = await dao.methods['newAppInstance(bytes32,address)']('0x0002', (await Colony.new()).address)
         const colony   = await Colony.at(receipt_2.logs.filter(l => l.event == 'NewAppProxy')[0].args.proxy)
         await colony.initialize('0x5f6f7e8cc7346a11ca2def8f827b7a0b612c56a1')
 
+        await acl.grantPermission(colony.address, dao.address, await dao.APP_MANAGER_ROLE(), { from: root})
 
         // // Genesis
         // const receipt_2 = await dao.newAppInstance('0x0001', (await PandoGenesis.new()).address, { from: root })
@@ -85,15 +86,27 @@ contract('PandoAPI', accounts => {
 
     context('#initialize', () => {
       it('should initialize PandoAPI', async () => {
-        let ens = await colony.ens()
-        let resolver = await colony.resolver()
-        let appId= await colony.organismAppId()
-        let base = await colony.organismBase()
 
-        console.log(ens)
-        console.log(resolver)
-        console.log(appId)
-        console.log(base)
+
+        let lineage_base = await colony.lineageBase()
+        let genesis_base = await colony.genesisBase()
+        let organism_base = await colony.organismBase()
+
+        console.log('Lineage: ' + lineage_base)
+        console.log('Genesis: ' + genesis_base)
+
+        console.log('Organism: ' + organism_base)
+      })
+    })
+
+    context('#deployOrganism', () => {
+      it('it should deploy blabla', async () => {
+        const receipt = await colony.deploy()
+
+        const address = receipt.logs.filter(l => l.event == 'DeployOrganism')[0].args.organism
+
+        console.log(address)
+
       })
     })
 })
