@@ -4,13 +4,13 @@ const RegistryFactory = artifacts.require('@aragon/os/contracts/factory/EVMScrip
 const DAOFactory      = artifacts.require('@aragon/core/contracts/factory/DAOFactory')
 const Genesis         = artifacts.require('Genesis')
 
-const { ADDR_NULL }    = require('../helpers/address')
-const { HASH_NULL }    = require('../helpers/hash')
+const { ADDR_NULL }    = require('@pando/helpers/address')
+const { HASH_NULL }    = require('@pando/helpers/hash')
 const { assertRevert } = require('@aragon/test-helpers/assertThrow')
 const blocknumber      = require('@aragon/test-helpers/blockNumber')(web3)
 
 
-contract('PandoGenesis', accounts => {
+contract('Genesis', accounts => {
     let factory, dao, genesis
 
     const root         = accounts[0]
@@ -18,7 +18,7 @@ contract('PandoGenesis', accounts => {
     const authorized   = accounts[2]
     const unauthorized = accounts[3]
 
-    const iid_0             = { api: ADDR_NULL, hash: HASH_NULL }
+    const iid_0             = { organism: ADDR_NULL, hash: HASH_NULL }
     const individuation     = { origin: origin, tree: 'QwAwesomeIPFSHash', message: 'First individuation', metadata: '0x1987', parents: [iid_0] }
 
     const deploy = async () => {
@@ -28,8 +28,8 @@ contract('PandoGenesis', accounts => {
         const acl       = await ACL.at(await dao.acl())
         await acl.createPermission(root, dao.address, await dao.APP_MANAGER_ROLE(), root, { from: root })
         // Genesis
-        const receipt_2 = await dao.newAppInstance('0x0001', (await PandoGenesis.new()).address, { from: root })
-        const genesis   = await PandoGenesis.at(receipt_2.logs.filter(l => l.event == 'NewAppProxy')[0].args.proxy)
+        const receipt_2 = await dao.methods['newAppInstance(bytes32,address)']('0x0001', (await Genesis.new()).address, { from: root })
+        const genesis   = await Genesis.at(receipt_2.logs.filter(l => l.event == 'NewAppProxy')[0].args.proxy)
         await acl.createPermission(authorized, genesis.address, await genesis.INDIVIDUATE_ROLE(), root, { from: root })
         await genesis.initialize({ from: root })
 
