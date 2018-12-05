@@ -55,14 +55,6 @@ Options:
 
 ### Initialization
 
-#### `pando init`
-
-```
-$ pando init
-```
-
-Creates a new repository in the current working directory.
-
 #### `pando config`
 
 ```
@@ -70,6 +62,14 @@ $ pando config [--global]
 ```
 
 Configures pando either globally or locally. This command will allow you to choose for an ethereum node, an ethereum account and an IPFS node.
+
+#### `pando init`
+
+```
+$ pando init
+```
+
+Creates a new repository in the current working directory.
 
 ### Remotes
 
