@@ -4,18 +4,21 @@ const RegistryFactory = artifacts.require('@aragon/os/contracts/factory/EVMScrip
 const DAOFactory      = artifacts.require('@aragon/core/contracts/factory/DAOFactory')
 // const MiniMeToken     = artifacts.require('@aragon/core/contracts/lib/minime/MiniMeToken')
 const Colony          = artifacts.require('Colony')
-// const PandoLineage    = artifacts.require('PandoLineage')
-// const PandoAPI        = artifacts.require('PandoAPI')
+const Organism        = artifacts.require('@pando/organism/contracts/core/Organism')
+const Lineage         = artifacts.require('@pando/organism/contracts/core/Lineage')
+const Genesis         = artifacts.require('@pando/organism/contracts/core/Genesis')
 
-const { ADDR_NULL }    = require('./helpers/address')
-const { HASH_NULL }    = require('./helpers/hash')
-const { RFI_STATE }    = require('./helpers/state')
-const { RFL_STATE }    = require('./helpers/state')
+const { ADDR_NULL }    = require('@pando/helpers/address')
+const { HASH_NULL }    = require('@pando/helpers/hash')
+
 const { assertRevert } = require('@aragon/test-helpers/assertThrow')
 const blocknumber      = require('@aragon/test-helpers/blockNumber')(web3)
 
+const chai = require('chai')
 
-contract('PandoAPI', accounts => {
+chai.should()
+
+contract('Colony', accounts => {
     let factory, dao, colony
 
     const root         = accounts[0]
@@ -106,6 +109,23 @@ contract('PandoAPI', accounts => {
         const address = receipt.logs.filter(l => l.event == 'DeployOrganism')[0].args.organism
 
         console.log(address)
+
+      }),
+      it('it should initialize organism', async () => {
+        const receipt = await colony.deploy()
+        const address = receipt.logs.filter(l => l.event == 'DeployOrganism')[0].args.organism
+
+        const organism = await Organism.at(address)
+        const lineage  = await Lineage.at(await organism.lineage())
+        const genesis  = await Genesis.at(await organism.genesis())
+
+        lineage.address.should.not.equal(ADDR_NULL)
+        genesis.address.should.not.equal(ADDR_NULL)
+
+
+        // return assertRevert(async () => {
+        //     await organism.initialize(genesis.address, lineage.address, { from: root })
+        // })
 
       })
     })
