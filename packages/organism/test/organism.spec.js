@@ -3,6 +3,7 @@ const ACL             = artifacts.require('@aragon/core/contracts/acl/ACL')
 const RegistryFactory = artifacts.require('@aragon/os/contracts/factory/EVMScriptRegistryFactory')
 const DAOFactory      = artifacts.require('@aragon/core/contracts/factory/DAOFactory')
 const MiniMeToken     = artifacts.require('@aragon/core/contracts/lib/minime/MiniMeToken')
+const Pando           = artifacts.require('Pando')
 const Lineage         = artifacts.require('Lineage')
 const Genesis         = artifacts.require('Genesis')
 const Organism        = artifacts.require('Organism')
@@ -16,7 +17,7 @@ const blocknumber      = require('@aragon/test-helpers/blockNumber')(web3)
 
 
 contract('Organism', accounts => {
-    let factory, dao, token, genesis, lineage, organism
+    let factory, dao, token, pando, genesis, lineage, organism
 
     const root         = accounts[0]
     const origin       = accounts[1]
@@ -25,7 +26,7 @@ contract('Organism', accounts => {
     const unauthorized = accounts[4]
 
     const iid_0         = { organism: ADDR_NULL, hash: HASH_NULL }
-    const individuation = { origin: origin, tree: 'QwAwesomeIPFSHash', message: 'First individuation', metadata: '0x1987', parents: [iid_0] }
+    const individuation = { metadata: 'QwAwesomeIPFSHash' }
     const lineage_0     = { destination: origin, minimum: 0, metadata: '0x1987' }
     const lineage_1     = { destination: dependency, minimum: 15, metadata: '0x1987' }
 
@@ -66,15 +67,17 @@ contract('Organism', accounts => {
         const dao       = await Kernel.at(receipt_1.logs.filter(l => l.event == 'DeployDAO')[0].args.dao)
         const acl       = await ACL.at(await dao.acl())
         await acl.createPermission(root, dao.address, await dao.APP_MANAGER_ROLE(), root, { from: root })
+        // Pando Lib
+        const pando = await Pando.new()
+
         // Genesis
         const receipt_2 = await dao.methods['newAppInstance(bytes32,address)']('0x0001', (await Genesis.new()).address, { from: root })
         const genesis   = await Genesis.at(receipt_2.logs.filter(l => l.event == 'NewAppProxy')[0].args.proxy)
-        await genesis.initialize()
+
         // Lineage
         const receipt_3 = await dao.methods['newAppInstance(bytes32,address)']('0x0002', (await Lineage.new()).address, { from: root })
         const lineage   = await Lineage.at(receipt_3.logs.filter(l => l.event == 'NewAppProxy')[0].args.proxy)
-        await token.changeController(lineage.address)
-        await lineage.initialize(token.address)
+
         // Organism
         const receipt_4 = await dao.methods['newAppInstance(bytes32,address)']('0x0003', (await Organism.new()).address, { from: root })
         const organism       = await Organism.at(receipt_4.logs.filter(l => l.event == 'NewAppProxy')[0].args.proxy)
@@ -86,9 +89,15 @@ contract('Organism', accounts => {
         await acl.createPermission(authorized, organism.address, await organism.REJECT_RFI_ROLE(), root, { from: root })
         await acl.createPermission(authorized, organism.address, await organism.ACCEPT_RFL_ROLE(), root, { from: root })
         await acl.createPermission(authorized, organism.address, await organism.REJECT_RFL_ROLE(), root, { from: root })
-        await organism.initialize(genesis.address, lineage.address, { from: root })
 
-        return { dao, token, genesis, lineage, organism }
+        await token.changeController(lineage.address)
+        await lineage.initialize(token.address)
+
+        await genesis.initialize(pando.address)
+
+        await organism.initialize(pando.address, genesis.address, lineage.address, { from: root })
+
+        return { dao, token, pando, genesis, lineage, organism }
     }
 
     before(async () => {
@@ -99,11 +108,12 @@ contract('Organism', accounts => {
     })
 
     beforeEach(async () => {
-        ;({ dao, token, genesis, lineage, organism } = await deploy())
+        ;({ dao, token, pando, genesis, lineage, organism } = await deploy())
     })
 
     context('#initialize', () => {
         it('should initialize organism', async () => {
+            const pando_address = await organism.pando()
             const genesis_address = await organism.genesis()
             const lineage_address = await organism.lineage()
 
@@ -113,7 +123,7 @@ contract('Organism', accounts => {
 
         it('should revert on reinitialization', async () => {
             return assertRevert(async () => {
-                await organism.initialize(genesis.address, lineage.address, { from: root })
+                await organism.initialize(pando.address, genesis.address, lineage.address, { from: root })
             })
         })
     })
@@ -133,12 +143,7 @@ contract('Organism', accounts => {
 
                     const RFI = await organism.getRFI(1)
 
-                    assert.equal(RFI.individuation.origin, individuation.origin)
-                    assert.equal(RFI.individuation.tree, individuation.tree)
-                    assert.equal(RFI.individuation.message, individuation.message)
                     assert.equal(RFI.individuation.metadata, individuation.metadata)
-                    assert.equal(RFI.individuation.parents[0].organism,  individuation.parents[0].organism)
-                    assert.equal(RFI.individuation.parents[0].hash, individuation.parents[0].hash)
                     assert.equal(RFI.blockstamp, await blocknumber())
                     assert.equal(RFI.state, RFI_STATE.PENDING)
                     assert.equal(RFI.RFLids[0], 1)
@@ -198,7 +203,7 @@ contract('Organism', accounts => {
                                 await organism.mergeRFI(1, { from: authorized })
 
                                 const head = await organism.head()
-                                const hash = await organism.getIndividuationHash([origin, await blocknumber(), 'QwAwesomeIPFSHash', 'First individuation', '0x1987', [iid_0]])
+                                const hash = await organism.getIndividuationHash([await blocknumber(), 'QwAwesomeIPFSHash'])
 
                                 assert.equal(head, hash)
                             })

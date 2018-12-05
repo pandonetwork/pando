@@ -4,12 +4,14 @@ pragma experimental ABIEncoderV2;
 /* import "@aragon/apps-shared-minime/contracts/ITokenController.sol";
 import "@aragon/apps-shared-minime/contracts/MiniMeToken.sol"; */
 import "@aragon/os/contracts/apps/AragonApp.sol";
-import "../lib/Pando.sol";
+import "@pando/core/contracts/organism/IOrganism.sol";
+import "@pando/core/contracts/lib/Pando.sol";
+
 import "./Genesis.sol";
 import "./Lineage.sol";
 
 
-contract Organism is AragonApp {
+contract Organism is IOrganism, AragonApp {
     bytes32 constant public CREATE_RFI_ROLE  = keccak256("CREATE_RFI_ROLE");
     bytes32 constant public MERGE_RFI_ROLE   = keccak256("MERGE_RFI_ROLE");
     bytes32 constant public REJECT_RFI_ROLE  = keccak256("REJECT_RFI_ROLE");

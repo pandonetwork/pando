@@ -1,1 +1,1 @@
-import "../../../contracts/core/Organism.sol";
+import "../../../contracts/Organism.sol";

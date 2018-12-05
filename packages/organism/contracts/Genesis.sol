@@ -2,25 +2,24 @@ pragma solidity ^0.4.24;
 pragma experimental ABIEncoderV2;
 
 import "@aragon/os/contracts/apps/AragonApp.sol";
+import "@pando/core/contracts/lib/Pando.sol";
+import "@pando/core/contracts/organism/IGenesis.sol";
 
-import "./Organism.sol";
-import "../lib/Pando.sol";
 
-
-contract Genesis is AragonApp {
+contract Genesis is IGenesis, AragonApp {
 
     bytes32 constant public INDIVIDUATE_ROLE = keccak256("INDIVIDUATE_ROLE");
 
-    Organism public organism;
+    Pando public pando;
     bytes32 public head;
     mapping(bytes32 => Pando.Individuation) public individuations;
 
     event Individuate(bytes32 hash);
 
 
-    function initialize(Organism _organism) external onlyInit {
+    function initialize(Pando _pando) external onlyInit {
         initialized();
-        organism = _organism;
+        pando = _pando;
     }
 
     function individuate(Pando.IIndividuation _individuation) public auth(INDIVIDUATE_ROLE) {
@@ -29,7 +28,7 @@ contract Genesis is AragonApp {
             _individuation.metadata
         );
 
-        bytes32 hash = Pando(organism.pando()).hash(individuation);
+        bytes32 hash = pando.hash(individuation);
 
         individuations[hash].blockstamp = individuation.blockstamp;
         individuations[hash].metadata = individuation.metadata;

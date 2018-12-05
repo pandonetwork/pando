@@ -4,9 +4,10 @@ pragma experimental ABIEncoderV2;
 import "@aragon/os/contracts/apps/AragonApp.sol";
 import "@aragon/apps-shared-minime/contracts/ITokenController.sol";
 import "@aragon/apps-shared-minime/contracts/MiniMeToken.sol";
+import "@pando/core/contracts/organism/ILineage.sol";
 
 
-contract Lineage is ITokenController, AragonApp {
+contract Lineage is ILineage, ITokenController, AragonApp {
     bytes32 public constant MINT_ROLE = keccak256("MINT_ROLE");
     bytes32 public constant BURN_ROLE = keccak256("BURN_ROLE");
 
@@ -31,7 +32,7 @@ contract Lineage is ITokenController, AragonApp {
         token.destroyTokens(_holder, _amount);
     }
 
-    function proxyPayment(address) public payable returns (bool) {
+    function proxyPayment(address) external payable returns (bool) {
         // Sender check is required to avoid anyone sending ETH to the Token Manager through this method
         // Even though it is tested, solidity-coverage doesnt get it because
         // MiniMeToken is not instrumented and entire tx is reverted
@@ -43,7 +44,7 @@ contract Lineage is ITokenController, AragonApp {
         return false;
     }
 
-    function onApprove(address, address, uint) public returns (bool) {
+    function onApprove(address, address, uint) external returns (bool) {
         return false;
     }
 

@@ -1,1 +1,1 @@
-import "../../../contracts/core/Lineage.sol";
+import "../../../contracts/Lineage.sol";
