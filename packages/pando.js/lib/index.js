@@ -43,12 +43,10 @@ var truffle_contract_1 = __importDefault(require("truffle-contract"));
 var web3_1 = __importDefault(require("web3"));
 var factory_1 = __importDefault(require("./organism/factory"));
 var _artifacts = [
-    'PandoAPI',
-    'Pando',
-    'PandoLineage',
-    'PandoGenesis',
-    ''
-].map(function (name) { return require("@pando/core/build/contracts/" + name + ".json"); });
+    'Organism',
+    'Lineage',
+    'Genesis',
+].map(function (name) { return require("@pando/organism/build/contracts/" + name + ".json"); });
 var _defaults = function (options) {
     if (typeof options.ethereum.provider !== 'undefined') {
         return options;

@@ -37,9 +37,9 @@ module.exports = {
             fontFamily: "'Playfair Display', serif",
             fontSize: 16,
             fontWeight: 'light',
-            backgroundColor: '#5ff6b0',
-            color: '#13161f',
-            padding: '3px 5px'
+            // backgroundColor: '#5ff6b0',
+            // color: '#13161f',
+            // padding: '3px 5px'
         },
         code: {
             margin: '0 3px',

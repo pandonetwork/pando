@@ -7,12 +7,10 @@ import { Provider }              from 'web3/providers'
 import { PandoOptions, Gateway } from '@pando/types'
 
 const _artifacts = [
-    'PandoAPI',
-    'Pando',
-    'PandoLineage',
-    'PandoGenesis',
-    ''
-].map((name) => require(`@pando/core/build/contracts/${name}.json`))
+    'Organism',
+    'Lineage',
+    'Genesis',
+].map((name) => require(`@pando/organism/build/contracts/${name}.json`))
 
 const _defaults  = (options: PandoOptions): PandoOptions => {
     if (typeof options.ethereum.provider !== 'undefined') {

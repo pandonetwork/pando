@@ -40,12 +40,11 @@ describe('@pando/pando.js', () => {
             })
 
             it("should initialize pando's contracts", () => {
-                pando.contracts.Pando.should.exist
-                pando.contracts.PandoAPI.should.exist
-                pando.contracts.PandoLineage.should.exist
-                pando.contracts.PandoGenesis.should.exist
+                pando.contracts.Organism.should.exist
+                pando.contracts.Lineage.should.exist
+                pando.contracts.Genesis.should.exist
 
-                pando.contracts.Pando.web3.currentProvider.provider.connection._url.should.equal('ws://192.168.0.1:8546')
+                pando.contracts.Organism.web3.currentProvider.provider.connection._url.should.equal('ws://192.168.0.1:8546')
             })
 
         })
