@@ -2,78 +2,64 @@ const Kernel          = artifacts.require('@aragon/os/contracts/kernel/Kernel.so
 const ACL             = artifacts.require('@aragon/core/contracts/acl/ACL')
 const RegistryFactory = artifacts.require('@aragon/os/contracts/factory/EVMScriptRegistryFactory')
 const DAOFactory      = artifacts.require('@aragon/core/contracts/factory/DAOFactory')
-// const MiniMeToken     = artifacts.require('@aragon/core/contracts/lib/minime/MiniMeToken')
+const MiniMeToken     = artifacts.require('@aragon/core/contracts/lib/minime/MiniMeToken')
+const TokenManager    = artifacts.require('@aragon/apps-token-manager/contracts/TokenManager')
+
+const Pando           = artifacts.require('@pando/core/contracts/lib/Pando')
+const DemocracyScheme = artifacts.require('@pando/scheme-democracy/contracts/DemocracyScheme')
 const Colony          = artifacts.require('Colony')
-const Organism        = artifacts.require('@pando/organism/contracts/core/Organism')
-const Lineage         = artifacts.require('@pando/organism/contracts/core/Lineage')
-const Genesis         = artifacts.require('@pando/organism/contracts/core/Genesis')
+const Lineage         = artifacts.require('@pando/organism/contracts/Lineage')
+const Genesis         = artifacts.require('@pando/organism/contracts/Genesis')
+const Organism        = artifacts.require('@pando/organism/contracts/Organism')
 
-const { ADDR_NULL }    = require('@pando/helpers/address')
-const { HASH_NULL }    = require('@pando/helpers/hash')
-
-const { assertRevert } = require('@aragon/test-helpers/assertThrow')
-const blocknumber      = require('@aragon/test-helpers/blockNumber')(web3)
+const { ADDR_NULL, ADDR_ANY } = require('@pando/helpers/address')
+const { HASH_NULL }           = require('@pando/helpers/hash')
+const { assertRevert }        = require('@aragon/test-helpers/assertThrow')
 
 const chai = require('chai')
-
 chai.should()
 
 contract('Colony', accounts => {
-    let factory, dao, colony
+    let factory, dao, acl, token, tokenManager, scheme, colony
 
     const root         = accounts[0]
-    const origin       = accounts[1]
-    const dependency   = accounts[2]
-    const authorized   = accounts[3]
-    const unauthorized = accounts[4]
+    const unauthorized = accounts[1]
 
-    const iid_0         = { api: ADDR_NULL, hash: HASH_NULL }
-    const individuation = { origin: origin, tree: 'QwAwesomeIPFSHash', message: 'First individuation', metadata: '0x1987', parents: [iid_0] }
-    const lineage_0     = { destination: origin, minimum: 0, metadata: '0x1987' }
-    const lineage_1     = { destination: dependency, minimum: 15, metadata: '0x1987' }
+    const parameters = { quorum: 50, required: 20 }
 
     const deploy = async () => {
-        // MiniMeToken
-        // const token = await MiniMeToken.new(ADDR_NULL, ADDR_NULL, 0, 'Native Lineage Token', 0, 'NLT', true)
         // DAO
         const receipt_1 = await factory.newDAO(root)
         const dao       = await Kernel.at(receipt_1.logs.filter(l => l.event == 'DeployDAO')[0].args.dao)
         const acl       = await ACL.at(await dao.acl())
         await acl.createPermission(root, dao.address, await dao.APP_MANAGER_ROLE(), root, { from: root })
+        // MiniMeToken
+        const token = await MiniMeToken.new(ADDR_NULL, ADDR_NULL, 0, 'Native Governance Token', 0, 'NGT', true)
+        // TokenManager
+        const receipt_2 = await dao.methods['newAppInstance(bytes32,address)']('0x0001', (await TokenManager.new()).address)
+        const tokenManager   = await TokenManager.at(receipt_2.logs.filter(l => l.event == 'NewAppProxy')[0].args.proxy)
+        // Colony
+        const receipt_3 = await dao.methods['newAppInstance(bytes32,address)']('0x0002', (await Colony.new()).address)
+        const colony   = await Colony.at(receipt_3.logs.filter(l => l.event == 'NewAppProxy')[0].args.proxy)
+        // ACL
+        const receipt_4 = await dao.methods['newAppInstance(bytes32,address)']('0x0003', (await DemocracyScheme.new()).address, { from: root })
+        const scheme    = await DemocracyScheme.at(receipt_4.logs.filter(l => l.event == 'NewAppProxy')[0].args.proxy)
+        // Permissions
+        await acl.createPermission(root, colony.address, await colony.DEPLOY_ORGANISM_ROLE(), root, { from: root })
+        await acl.grantPermission(colony.address, dao.address, await dao.APP_MANAGER_ROLE(), { from: root })
+        await acl.grantPermission(colony.address, acl.address, await acl.CREATE_PERMISSIONS_ROLE(), { from: root })
+        await acl.createPermission(colony.address, tokenManager.address, await tokenManager.MINT_ROLE(), root, { from: root })
+        await acl.createPermission(colony.address, tokenManager.address, await tokenManager.ISSUE_ROLE(), root, { from: root })
+        await acl.createPermission(colony.address, tokenManager.address, await tokenManager.ASSIGN_ROLE(), root, { from: root })
+        await acl.createPermission(colony.address, tokenManager.address, await tokenManager.REVOKE_VESTINGS_ROLE(), root, { from: root })
+        await acl.createPermission(colony.address, tokenManager.address, await tokenManager.BURN_ROLE(), root, { from: root })
+        // Initialization
+        await token.changeController(tokenManager.address, { from: root })
+        await tokenManager.initialize(token.address, true, 0, { from: root })
+        await scheme.initialize(token.address, parameters.quorum, parameters.required, { from: root })
+        await colony.initialize('0x5f6f7e8cc7346a11ca2def8f827b7a0b612c56a1', tokenManager.address, scheme.address, { from: root })
 
-        // Genesis
-        // let params = web3.eth.abi.encodeParameter('address', '0x5f6f7e8cc7346a11ca2def8f827b7a0b612c56a1')
-
-
-        const receipt_2 = await dao.methods['newAppInstance(bytes32,address)']('0x0002', (await Colony.new()).address)
-        const colony   = await Colony.at(receipt_2.logs.filter(l => l.event == 'NewAppProxy')[0].args.proxy)
-        await colony.initialize('0x5f6f7e8cc7346a11ca2def8f827b7a0b612c56a1')
-
-        await acl.grantPermission(colony.address, dao.address, await dao.APP_MANAGER_ROLE(), { from: root})
-
-        // // Genesis
-        // const receipt_2 = await dao.newAppInstance('0x0001', (await PandoGenesis.new()).address, { from: root })
-        // const genesis   = await PandoGenesis.at(receipt_2.logs.filter(l => l.event == 'NewAppProxy')[0].args.proxy)
-        // await genesis.initialize()
-        // // Lineage
-        // const receipt_3 = await dao.newAppInstance('0x0002', (await PandoLineage.new()).address, { from: root })
-        // const lineage   = await PandoLineage.at(receipt_3.logs.filter(l => l.event == 'NewAppProxy')[0].args.proxy)
-        // await token.changeController(lineage.address)
-        // await lineage.initialize(token.address)
-        // // API
-        // const receipt_4 = await dao.newAppInstance('0x0003', (await PandoAPI.new()).address, { from: root })
-        // const api       = await PandoAPI.at(receipt_4.logs.filter(l => l.event == 'NewAppProxy')[0].args.proxy)
-        // await acl.createPermission(api.address, genesis.address, await genesis.INDIVIDUATE_ROLE(), root, { from: root })
-        // await acl.createPermission(api.address, lineage.address, await lineage.MINT_ROLE(), root, { from: root })
-        // await acl.createPermission(api.address, lineage.address, await lineage.BURN_ROLE(), root, { from: root })
-        // await acl.createPermission(authorized, api.address, await api.CREATE_RFI_ROLE(), root, { from: root })
-        // await acl.createPermission(authorized, api.address, await api.MERGE_RFI_ROLE(), root, { from: root })
-        // await acl.createPermission(authorized, api.address, await api.REJECT_RFI_ROLE(), root, { from: root })
-        // await acl.createPermission(authorized, api.address, await api.ACCEPT_RFL_ROLE(), root, { from: root })
-        // await acl.createPermission(authorized, api.address, await api.REJECT_RFL_ROLE(), root, { from: root })
-        // await api.initialize(genesis.address, lineage.address, { from: root })
-        //
-        return { dao, colony }
+        return { dao, acl, token, tokenManager, scheme, colony }
     }
 
     before(async () => {
@@ -83,50 +69,94 @@ contract('Colony', accounts => {
         factory           = await DAOFactory.new(kernel_base.address, acl_base.address, reg_factory.address)
     })
 
-    beforeEach(async () => {
-        ;({ dao, colony } = await deploy())
-    })
-
     context('#initialize', () => {
-      it('should initialize PandoAPI', async () => {
+      before(async () => {
+        ;({ dao, acl, token, tokenManager, scheme, colony } = await deploy())
+      })
 
+      it('it should initialize colony', async () => {
+        const _ens = await colony.ens()
+        const _tokenManager = await colony.tokenManager()
+        const _scheme = await colony.scheme()
 
-        let lineage_base = await colony.lineageBase()
-        let genesis_base = await colony.genesisBase()
-        let organism_base = await colony.organismBase()
+        _ens.toLowerCase().should.equal('0x5f6f7e8cc7346a11ca2def8f827b7a0b612c56a1')
+        _tokenManager.should.equal(tokenManager.address)
+        _scheme.should.equal(scheme.address)
+      })
 
-        console.log('Lineage: ' + lineage_base)
-        console.log('Genesis: ' + genesis_base)
-
-        console.log('Organism: ' + organism_base)
+      it('it should revert on reinitialization', async () => {
+        return assertRevert(async () => {
+          await colony.initialize('0x5f6f7e8cc7346a11ca2def8f827b7a0b612c56a1', tokenManager.address, scheme.address, { from: root })
+        })
       })
     })
 
     context('#deployOrganism', () => {
-      it('it should deploy blabla', async () => {
-        const receipt = await colony.deploy()
+      let pando, lineage, genesis, organism
 
-        const address = receipt.logs.filter(l => l.event == 'DeployOrganism')[0].args.organism
+      before(async () => {
+        ;({ dao, acl, token, tokenManager, scheme, colony } = await deploy())
+      })
 
-        console.log(address)
+      context('sender has DEPLOY_ORGANISM_ROLE', () => {
+        it('it should deploy organism', async () => {
+          const receipt = await colony.deploy()
+          const address = receipt.logs.filter(l => l.event == 'DeployOrganism')[0].args.organism
 
-      }),
-      it('it should initialize organism', async () => {
-        const receipt = await colony.deploy()
-        const address = receipt.logs.filter(l => l.event == 'DeployOrganism')[0].args.organism
+          organism = await Organism.at(address)
 
-        const organism = await Organism.at(address)
-        const lineage  = await Lineage.at(await organism.lineage())
-        const genesis  = await Genesis.at(await organism.genesis())
+          address.should.not.equal(ADDR_NULL)
+        })
 
-        lineage.address.should.not.equal(ADDR_NULL)
-        genesis.address.should.not.equal(ADDR_NULL)
+        it('it should initialize organism', async () => {
+          pando    = await Pando.at(await organism.pando())
+          lineage  = await Lineage.at(await organism.lineage())
+          genesis  = await Genesis.at(await organism.genesis())
 
+          pando.should.not.equal(ADDR_NULL)
+          lineage.should.not.equal(ADDR_NULL)
+          genesis.should.not.equal(ADDR_NULL)
+        })
 
-        // return assertRevert(async () => {
-        //     await organism.initialize(genesis.address, lineage.address, { from: root })
-        // })
+        it('it should revert on reinitialization', async () => {
+          return assertRevert(async () => {
+            await lineage.initialize({ from: root })
+          })
 
+          return assertRevert(async () => {
+            await genesis.initialize(pando.address, { from: root })
+          })
+
+          return assertRevert(async () => {
+            await organism.initialize(pando.address, genesis.address, lineage.address, { from: root })
+          })
+        })
+
+        it('it should set permissions', async () => {
+          let has_mint_role        = await acl.hasPermission(organism.address, lineage.address, await lineage.MINT_ROLE())
+          let has_individuate_role = await acl.hasPermission(organism.address, genesis.address, await genesis.INDIVIDUATE_ROLE())
+          let has_create_rfi_role  = await acl.hasPermission(scheme.address, organism.address, await organism.CREATE_RFI_ROLE())
+          let has_merge_rfi_role   = await acl.hasPermission(scheme.address, organism.address, await organism.MERGE_RFI_ROLE())
+          let has_reject_rfi_role  = await acl.hasPermission(scheme.address, organism.address, await organism.REJECT_RFI_ROLE())
+          let has_accept_rfl_role  = await acl.hasPermission(scheme.address, organism.address, await organism.ACCEPT_RFL_ROLE())
+          let has_reject_rfl_role  = await acl.hasPermission(scheme.address, organism.address, await organism.REJECT_RFL_ROLE())
+
+          has_mint_role.should.be.true
+          has_individuate_role.should.be.true
+          has_create_rfi_role.should.be.true
+          has_merge_rfi_role.should.be.true
+          has_reject_rfi_role.should.be.true
+          has_accept_rfl_role.should.be.true
+          has_reject_rfl_role.should.be.true
+        })
+      })
+
+      context('sender does not have DEPLOY_ORGANISM_ROLE', () => {
+        it('it should revert', async () => {
+          return assertRevert(async () => {
+            await colony.deploy({ from: unauthorized })
+          })
+        })
       })
     })
 })
