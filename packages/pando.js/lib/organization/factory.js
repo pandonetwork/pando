@@ -34,17 +34,83 @@ var __generator = (this && this.__generator) || function (thisArg, body) {
         if (op[0] & 5) throw op[1]; return { value: op[0] ? op[1] : void 0, done: true };
     }
 };
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
 Object.defineProperty(exports, "__esModule", { value: true });
+var _1 = __importDefault(require("."));
+var apm_1 = __importDefault(require("@aragon/apm"));
+var web3_1 = __importDefault(require("web3"));
 var OrganizationFactory = /** @class */ (function () {
     function OrganizationFactory(pando) {
         this.pando = pando;
     }
     OrganizationFactory.prototype.deploy = function () {
         return __awaiter(this, void 0, void 0, function () {
-            return __generator(this, function (_a) {
-                return [2 /*return*/];
+            var apm, factory, _a, _b, receipt, kernel, acl, _c, _d;
+            return __generator(this, function (_e) {
+                switch (_e.label) {
+                    case 0:
+                        apm = apm_1.default(new web3_1.default(this.pando.options.ethereum.provider), { ensRegistryAddress: this.pando.options.apm.ens, ipfs: 'http://locahost:5001' });
+                        _b = (_a = this.pando.contracts.OrganizationFactory).at;
+                        return [4 /*yield*/, apm.getLatestVersionContract('organization-factory.aragonpm.eth')];
+                    case 1: return [4 /*yield*/, _b.apply(_a, [_e.sent()])];
+                    case 2:
+                        factory = _e.sent();
+                        return [4 /*yield*/, factory.newInstance()];
+                    case 3:
+                        receipt = _e.sent();
+                        return [4 /*yield*/, this.pando.contracts.Kernel.at(this._getDAOAddressFromReceipt(receipt))];
+                    case 4:
+                        kernel = _e.sent();
+                        _d = (_c = this.pando.contracts.ACL).at;
+                        return [4 /*yield*/, kernel.acl()];
+                    case 5: return [4 /*yield*/, _d.apply(_c, [_e.sent()])];
+                    case 6:
+                        acl = _e.sent();
+                        return [2 /*return*/, new _1.default(this.pando, kernel, acl)
+                            // const kernel_base = await Kernel.new(true) // petrify immediately
+                            // const acl_base    = await ACL.new()
+                            // const reg_factory = await RegistryFactory.new()
+                            //
+                            // const dao = await KernelProxy.new(kernel_base.address)
+                            //
+                            //
+                            // dao = Kernel(new KernelProxy(baseKernel));
+                            //
+                            // if (address(regFactory) == address(0)) {
+                            //     dao.initialize(baseACL, _root);
+                            // } else {
+                            //     dao.initialize(baseACL, this);
+                            //
+                            //     ACL acl = ACL(dao.acl());
+                            //     bytes32 permRole = acl.CREATE_PERMISSIONS_ROLE();
+                            //     bytes32 appManagerRole = dao.APP_MANAGER_ROLE();
+                            //
+                            //     acl.grantPermission(regFactory, acl, permRole);
+                            //
+                            //     acl.createPermission(regFactory, dao, appManagerRole, this);
+                            //
+                            //     EVMScriptRegistry reg = regFactory.newEVMScriptRegistry(dao, _root);
+                            //     DeployEVMScriptRegistry(address(reg));
+                            //
+                            //     acl.revokePermission(regFactory, dao, appManagerRole);
+                            //     acl.revokePermission(regFactory, acl, permRole);
+                            //     acl.revokePermission(this, acl, permRole);
+                            //     acl.grantPermission(_root, acl, permRole);
+                            //
+                            //     acl.removePermissionManager(dao, appManagerRole);
+                            //     acl.setPermissionManager(_root, acl, permRole);
+                            // }
+                            //
+                            // DeployDAO(address(dao));
+                        ];
+                }
             });
         });
+    };
+    OrganizationFactory.prototype._getDAOAddressFromReceipt = function (receipt) {
+        return receipt.logs.filter(function (l) { return l.event == 'DeployInstance'; })[0].args.dao;
     };
     return OrganizationFactory;
 }());

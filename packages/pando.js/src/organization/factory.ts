@@ -1,8 +1,10 @@
-import Pando from '..'
+import Pando        from '..'
+import Organization from '.'
+import APM          from '@aragon/apm'
+import Web3         from 'web3'
 
 
 export default class OrganizationFactory {
-
     public pando: Pando
 
     constructor(pando: Pando) {
@@ -10,6 +12,16 @@ export default class OrganizationFactory {
     }
 
     public async deploy(): Promise<any> {
+      const apm     = APM(new Web3(this.pando.options.ethereum.provider), { ensRegistryAddress: this.pando.options.apm.ens, ipfs: 'http://locahost:5001' })
+      const factory = await this.pando.contracts.OrganizationFactory.at(await apm.getLatestVersionContract('organization-factory.aragonpm.eth'))
+      const receipt = await factory.newInstance()
+
+      const kernel = await this.pando.contracts.Kernel.at(this._getDAOAddressFromReceipt(receipt))
+      const acl    = await this.pando.contracts.ACL.at(await kernel.acl())
+
+      return new Organization(this.pando, kernel, acl)
+
+
         // const kernel_base = await Kernel.new(true) // petrify immediately
         // const acl_base    = await ACL.new()
         // const reg_factory = await RegistryFactory.new()
@@ -47,6 +59,9 @@ export default class OrganizationFactory {
         // DeployDAO(address(dao));
     }
 
+    private _getDAOAddressFromReceipt(receipt: any): string {
+      return receipt.logs.filter(l => l.event == 'DeployInstance')[0].args.dao
+    }
 
         // const token = await MiniMeToken.new(ADDR_NULL, ADDR_NULL, 0, 'Native Lineage Token', 0, 'NLT', true)
         // // DAO

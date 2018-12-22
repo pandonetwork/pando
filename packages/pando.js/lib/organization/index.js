@@ -1,7 +1,8 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 var Organization = /** @class */ (function () {
-    function Organization(kernel, acl) {
+    function Organization(pando, kernel, acl) {
+        this.pando = pando;
         this.kernel = kernel;
         this.acl = acl;
     }

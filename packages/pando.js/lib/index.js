@@ -42,39 +42,56 @@ var lodash_1 = __importDefault(require("lodash"));
 var truffle_contract_1 = __importDefault(require("truffle-contract"));
 var web3_1 = __importDefault(require("web3"));
 var factory_1 = __importDefault(require("./organism/factory"));
+var factory_2 = __importDefault(require("./organization/factory"));
+var factory_3 = __importDefault(require("./plant/factory"));
+var error_1 = __importDefault(require("./error"));
 var _artifacts = [
+    'Kernel',
+    'ACL',
     'Organism',
     'Lineage',
     'Genesis',
-].map(function (name) { return require("@pando/organism/build/contracts/" + name + ".json"); });
-var _defaults = function (options) {
-    if (typeof options.ethereum.provider !== 'undefined') {
-        return options;
+    'OrganizationFactory'
+].map(function (name) {
+    if (name === 'Kernel' || name === 'ACL') {
+        return require("@aragon/os/build/contracts/" + name + ".json");
+    }
+    else if (name === 'OrganizationFactory') {
+        return require("@pando/factory/build/contracts/" + name + ".json");
     }
     else {
-        options.ethereum.gateway = lodash_1.default.defaultsDeep(options.ethereum.gateway, { protocol: 'http', host: 'localhost', port: '8545' });
-        switch (options.ethereum.gateway.protocol) {
-            case 'ws':
-                options.ethereum.provider = new web3_1.default.providers.WebsocketProvider('ws://' + options.ethereum.gateway.host + ':' + options.ethereum.gateway.port);
-                break;
-            case 'http':
-                options.ethereum.provider = new web3_1.default.providers.HttpProvider('http://' + options.ethereum.gateway.host + ':' + options.ethereum.gateway.port);
-                break;
-            default:
-                throw new Error('Unknow provider type');
-        }
+        return require("@pando/organism/build/contracts/" + name + ".json");
     }
-    return options;
+});
+var _providerFromGateway = function (gateway) {
+    switch (gateway.protocol) {
+        case 'ws':
+            return new web3_1.default.providers.WebsocketProvider('ws://' + gateway.host + ':' + gateway.port);
+        case 'http':
+            return new web3_1.default.providers.HttpProvider('http://' + gateway.host + ':' + gateway.port);
+        default:
+            throw new error_1.default('E_UNKNOWN_PROVIDER_PROTOCOL', gateway.protocol);
+    }
+};
+var _defaults = function (options) {
+    var apm = lodash_1.default.defaultsDeep(options.apm, { ens: '0x5f6f7e8cc7346a11ca2def8f827b7a0b612c56a1' });
+    var gateway = lodash_1.default.defaultsDeep(options.ethereum.gateway, { protocol: 'http', host: 'localhost', port: '8545' });
+    var provider = typeof options.ethereum.provider !== 'undefined' ? options.ethereum.provider : _providerFromGateway(gateway);
+    return { ethereum: { account: options.ethereum.account, provider: provider }, apm: apm };
 };
 var Pando = /** @class */ (function () {
     function Pando(options) {
-        this.account = options.ethereum.account;
-        this.provider = options.ethereum.provider;
+        // this.account   = options.ethereum.account
+        // this.provider  = options.ethereum.provider!
+        // this.apm       = options.apm!
+        this.options = options;
         this.contracts = Object.assign.apply(Object, [{}].concat(_artifacts.map(function (artifact) { return truffle_contract_1.default(artifact); }).map(function (contract) {
             var _a;
             return (_a = {}, _a[contract._json.contractName] = contract, _a);
         })));
         this.organisms = new factory_1.default(this);
+        this.organizations = new factory_2.default(this);
+        this.plants = new factory_3.default(this);
     }
     Pando.create = function (options) {
         return __awaiter(this, void 0, void 0, function () {
@@ -96,8 +113,8 @@ var Pando = /** @class */ (function () {
             var contract;
             return __generator(this, function (_a) {
                 for (contract in this.contracts) {
-                    this.contracts[contract].setProvider(this.provider);
-                    this.contracts[contract].defaults({ from: this.account });
+                    this.contracts[contract].setProvider(this.options.ethereum.provider);
+                    this.contracts[contract].defaults({ from: this.options.ethereum.account, gas: 30e6, gasPrice: 15000000001 });
                 }
                 return [2 /*return*/, this];
             });
