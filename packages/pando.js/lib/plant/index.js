@@ -40,17 +40,22 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 Object.defineProperty(exports, "__esModule", { value: true });
 var fs_extra_1 = __importDefault(require("fs-extra"));
 var path_1 = __importDefault(require("path"));
-var factory_1 = __importDefault(require("./fiber/factory"));
+var factory_1 = __importDefault(require("./organization/factory"));
+var factory_2 = __importDefault(require("./fiber/factory"));
 var Plant = /** @class */ (function () {
-    function Plant(path, node) {
+    function Plant(pando, path, node) {
         if (path === void 0) { path = '.'; }
-        this.paths = {};
-        this.paths['root'] = path;
-        this.paths['pando'] = path_1.default.join(path, '.pando');
-        this.paths['ipfs'] = path_1.default.join(path, '.pando', 'ipfs');
-        this.paths['fibers'] = path_1.default.join(path, '.pando', 'fibers');
+        this.pando = pando;
+        this.paths = {
+            root: path,
+            pando: path_1.default.join(path, '.pando'),
+            ipfs: path_1.default.join(path, '.pando', 'ipfs'),
+            organizations: path_1.default.join(path, '.pando', 'organizations'),
+            fibers: path_1.default.join(path, '.pando', 'fibers')
+        };
         this.node = node;
-        this.fibers = new factory_1.default(this);
+        this.organizations = new factory_1.default(this);
+        this.fibers = new factory_2.default(this);
     }
     Plant.prototype.remove = function () {
         return __awaiter(this, void 0, void 0, function () {
@@ -63,21 +68,17 @@ var Plant = /** @class */ (function () {
                         _a.sent();
                         _a.label = 2;
                     case 2:
+                        if (!this.organizations.db.isOpen()) return [3 /*break*/, 4];
+                        return [4 /*yield*/, this.organizations.db.close()];
+                    case 3:
+                        _a.sent();
+                        _a.label = 4;
+                    case 4:
                         fs_extra_1.default.removeSync(this.paths.pando);
                         return [2 /*return*/];
                 }
             });
         });
-    };
-    Plant.paths = {
-        root: '.',
-        pando: '.pando',
-        ipfs: '.pando/ipfs',
-        index: '.pando/index',
-        db: '.pando/db',
-        current: '.pando/current',
-        config: '.pando/config',
-        fibers: '.pando/fibers',
     };
     return Plant;
 }());

@@ -39,14 +39,10 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 var fs_extra_1 = __importDefault(require("fs-extra"));
-var ipfs_1 = __importDefault(require("ipfs"));
 var path_1 = __importDefault(require("path"));
-var error_1 = __importDefault(require("../error"));
+var ipfs_1 = __importDefault(require("ipfs"));
 var _1 = __importDefault(require("."));
-var util_1 = __importDefault(require("util"));
-// import async from 'async';
-// import Index from '@pando/index'
-var ensure = util_1.default.promisify(fs_extra_1.default.ensureDir);
+var error_1 = __importDefault(require("../error"));
 var PlantFactory = /** @class */ (function () {
     function PlantFactory(pando) {
         this.pando = pando;
@@ -54,17 +50,17 @@ var PlantFactory = /** @class */ (function () {
     PlantFactory.prototype.exists = function (path) {
         if (path === void 0) { path = '.'; }
         return __awaiter(this, void 0, void 0, function () {
-            var _a, one, two, three;
+            var _a, one, two;
             return __generator(this, function (_b) {
                 switch (_b.label) {
                     case 0: return [4 /*yield*/, Promise.all([
-                            fs_extra_1.default.pathExists(path_1.default.join(path, '.pando')),
                             fs_extra_1.default.pathExists(path_1.default.join(path, '.pando', 'ipfs')),
-                            fs_extra_1.default.pathExists(path_1.default.join(path, '.pando', 'fibers', 'db'))
+                            fs_extra_1.default.pathExists(path_1.default.join(path, '.pando', 'fibers', 'db')),
+                            fs_extra_1.default.pathExists(path_1.default.join(path, '.pando', 'organizations', 'db'))
                         ])];
                     case 1:
-                        _a = _b.sent(), one = _a[0], two = _a[1], three = _a[2];
-                        return [2 /*return*/, one && two && three];
+                        _a = _b.sent(), one = _a[0], two = _a[1];
+                        return [2 /*return*/, one && two];
                 }
             });
         });
@@ -74,42 +70,48 @@ var PlantFactory = /** @class */ (function () {
         return __awaiter(this, void 0, void 0, function () {
             var _this = this;
             return __generator(this, function (_a) {
-                return [2 /*return*/, new Promise(function (resolve, reject) { return __awaiter(_this, void 0, void 0, function () {
-                        var node;
-                        var _this = this;
-                        return __generator(this, function (_a) {
-                            switch (_a.label) {
-                                case 0: return [4 /*yield*/, Promise.all([
-                                        ensure(path_1.default.join(path, '.pando', 'ipfs')),
-                                        ensure(path_1.default.join(path, '.pando', 'fibers'))
-                                    ])];
-                                case 1:
-                                    _a.sent();
-                                    node = new ipfs_1.default({ repo: path_1.default.join(path, '.pando', 'ipfs'), start: false })
-                                        .on('error', function (err) {
-                                        reject(err);
-                                    })
-                                        .on('ready', function () { return __awaiter(_this, void 0, void 0, function () {
-                                        var plant;
-                                        return __generator(this, function (_a) {
-                                            switch (_a.label) {
-                                                case 0:
-                                                    plant = new _1.default(path, node);
-                                                    return [4 /*yield*/, plant.fibers.create('master', { fork: false })];
-                                                case 1:
-                                                    _a.sent();
-                                                    return [4 /*yield*/, plant.fibers.switch('master', { stash: false })];
-                                                case 2:
-                                                    _a.sent();
-                                                    resolve(plant);
-                                                    return [2 /*return*/];
-                                            }
-                                        });
-                                    }); });
-                                    return [2 /*return*/];
-                            }
-                        });
-                    }); })];
+                switch (_a.label) {
+                    case 0: return [4 /*yield*/, this.exists(path)];
+                    case 1:
+                        if (_a.sent()) {
+                            throw new error_1.default('E_PLANT_ALREADY_EXISTS');
+                        }
+                        return [2 /*return*/, new Promise(function (resolve, reject) { return __awaiter(_this, void 0, void 0, function () {
+                                var node;
+                                var _this = this;
+                                return __generator(this, function (_a) {
+                                    switch (_a.label) {
+                                        case 0: return [4 /*yield*/, Promise.all([
+                                                fs_extra_1.default.ensureDir(path_1.default.join(path, '.pando', 'ipfs')),
+                                                fs_extra_1.default.ensureDir(path_1.default.join(path, '.pando', 'organizations')),
+                                                fs_extra_1.default.ensureDir(path_1.default.join(path, '.pando', 'fibers'))
+                                            ])];
+                                        case 1:
+                                            _a.sent();
+                                            node = new ipfs_1.default({ repo: path_1.default.join(path, '.pando', 'ipfs'), start: false })
+                                                .on('error', function (err) { reject(err); })
+                                                .on('ready', function () { return __awaiter(_this, void 0, void 0, function () {
+                                                var plant;
+                                                return __generator(this, function (_a) {
+                                                    switch (_a.label) {
+                                                        case 0:
+                                                            plant = new _1.default(this.pando, path, node);
+                                                            return [4 /*yield*/, plant.fibers.create('master', { fork: false })];
+                                                        case 1:
+                                                            _a.sent();
+                                                            return [4 /*yield*/, plant.fibers.switch('master', { stash: false })];
+                                                        case 2:
+                                                            _a.sent();
+                                                            resolve(plant);
+                                                            return [2 /*return*/];
+                                                    }
+                                                });
+                                            }); });
+                                            return [2 /*return*/];
+                                    }
+                                });
+                            }); })];
+                }
             });
         });
     };
@@ -118,38 +120,30 @@ var PlantFactory = /** @class */ (function () {
         return __awaiter(this, void 0, void 0, function () {
             var _this = this;
             return __generator(this, function (_a) {
-                return [2 /*return*/, new Promise(function (resolve, reject) { return __awaiter(_this, void 0, void 0, function () {
-                        var node;
-                        var _this = this;
-                        return __generator(this, function (_a) {
-                            if (!this.exists(path)) {
-                                reject(new error_1.default('E_PLANT_NOT_FOUND', path));
-                            }
-                            node = new ipfs_1.default({ repo: path_1.default.join(path, '.pando', 'ipfs'), start: false })
-                                .on('error', function (err) {
-                                reject(err);
-                            })
-                                .on('ready', function () { return __awaiter(_this, void 0, void 0, function () {
+                switch (_a.label) {
+                    case 0: return [4 /*yield*/, this.exists(path)];
+                    case 1:
+                        if (!(_a.sent())) {
+                            throw new error_1.default('E_PLANT_NOT_FOUND', path);
+                        }
+                        return [2 /*return*/, new Promise(function (resolve, reject) { return __awaiter(_this, void 0, void 0, function () {
+                                var node;
+                                var _this = this;
                                 return __generator(this, function (_a) {
-                                    resolve(new _1.default(path, node));
+                                    node = new ipfs_1.default({ repo: path_1.default.join(path, '.pando', 'ipfs'), start: false })
+                                        .on('error', function (err) { reject(err); })
+                                        .on('ready', function () { return __awaiter(_this, void 0, void 0, function () {
+                                        return __generator(this, function (_a) {
+                                            resolve(new _1.default(this.pando, path, node));
+                                            return [2 /*return*/];
+                                        });
+                                    }); });
                                     return [2 /*return*/];
                                 });
-                            }); });
-                            return [2 /*return*/];
-                        });
-                    }); })];
+                            }); })];
+                }
             });
         });
-    };
-    PlantFactory.paths = {
-        root: '.',
-        pando: '.pando',
-        ipfs: '.pando/ipfs',
-        index: '.pando/index',
-        db: '.pando/db',
-        current: '.pando/current',
-        config: '.pando/config',
-        fibers: '.pando/fibers',
     };
     return PlantFactory;
 }());

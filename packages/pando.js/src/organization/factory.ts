@@ -1,7 +1,7 @@
-import Pando        from '..'
-import Organization from '.'
 import APM          from '@aragon/apm'
 import Web3         from 'web3'
+import Pando        from '..'
+import Organization from '.'
 
 
 export default class OrganizationFactory {
@@ -19,7 +19,12 @@ export default class OrganizationFactory {
       const kernel = await this.pando.contracts.Kernel.at(this._getDAOAddressFromReceipt(receipt))
       const acl    = await this.pando.contracts.ACL.at(await kernel.acl())
 
-      return new Organization(this.pando, kernel, acl)
+
+      const organization = new Organization(this.pando, kernel, acl)
+
+      await organization.initialize()
+
+      return organization
 
 
         // const kernel_base = await Kernel.new(true) // petrify immediately

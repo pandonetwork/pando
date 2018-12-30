@@ -41,26 +41,30 @@ Object.defineProperty(exports, "__esModule", { value: true });
 var lodash_1 = __importDefault(require("lodash"));
 var truffle_contract_1 = __importDefault(require("truffle-contract"));
 var web3_1 = __importDefault(require("web3"));
-var factory_1 = __importDefault(require("./organism/factory"));
-var factory_2 = __importDefault(require("./organization/factory"));
-var factory_3 = __importDefault(require("./plant/factory"));
+var factory_1 = __importDefault(require("./plant/factory"));
+// import OrganizationFactory from './organization/factory'
 var error_1 = __importDefault(require("./error"));
 var _artifacts = [
     'Kernel',
     'ACL',
+    'Colony',
+    'DemocracyScheme',
     'Organism',
     'Lineage',
     'Genesis',
     'OrganizationFactory'
 ].map(function (name) {
-    if (name === 'Kernel' || name === 'ACL') {
-        return require("@aragon/os/build/contracts/" + name + ".json");
-    }
-    else if (name === 'OrganizationFactory') {
-        return require("@pando/factory/build/contracts/" + name + ".json");
-    }
-    else {
-        return require("@pando/organism/build/contracts/" + name + ".json");
+    switch (name) {
+        case 'Kernel' || 'ACL':
+            return require("@aragon/os/build/contracts/" + name + ".json");
+        case 'OrganizationFactory':
+            return require("@pando/factory/build/contracts/" + name + ".json");
+        case 'Colony':
+            return require("@pando/colony/build/contracts/" + name + ".json");
+        case 'DemocracyScheme':
+            return require("@pando/scheme-democracy/build/contracts/DemocracyScheme.json");
+        default:
+            return require("@pando/organism/build/contracts/" + name + ".json");
     }
 });
 var _providerFromGateway = function (gateway) {
@@ -68,30 +72,26 @@ var _providerFromGateway = function (gateway) {
         case 'ws':
             return new web3_1.default.providers.WebsocketProvider('ws://' + gateway.host + ':' + gateway.port);
         case 'http':
-            return new web3_1.default.providers.HttpProvider('http://' + gateway.host + ':' + gateway.port);
+            throw new error_1.default('E_DEPRECATED_PROVIDER_PROTOCOL', gateway.protocol);
         default:
             throw new error_1.default('E_UNKNOWN_PROVIDER_PROTOCOL', gateway.protocol);
     }
 };
 var _defaults = function (options) {
     var apm = lodash_1.default.defaultsDeep(options.apm, { ens: '0x5f6f7e8cc7346a11ca2def8f827b7a0b612c56a1' });
-    var gateway = lodash_1.default.defaultsDeep(options.ethereum.gateway, { protocol: 'http', host: 'localhost', port: '8545' });
+    var gateway = lodash_1.default.defaultsDeep(options.ethereum.gateway, { protocol: 'ws', host: 'localhost', port: '8545' });
     var provider = typeof options.ethereum.provider !== 'undefined' ? options.ethereum.provider : _providerFromGateway(gateway);
     return { ethereum: { account: options.ethereum.account, provider: provider }, apm: apm };
 };
 var Pando = /** @class */ (function () {
     function Pando(options) {
-        // this.account   = options.ethereum.account
-        // this.provider  = options.ethereum.provider!
-        // this.apm       = options.apm!
         this.options = options;
+        this.plants = new factory_1.default(this);
+        // this.organizations = new OrganizationFactory(this)
         this.contracts = Object.assign.apply(Object, [{}].concat(_artifacts.map(function (artifact) { return truffle_contract_1.default(artifact); }).map(function (contract) {
             var _a;
             return (_a = {}, _a[contract._json.contractName] = contract, _a);
         })));
-        this.organisms = new factory_1.default(this);
-        this.organizations = new factory_2.default(this);
-        this.plants = new factory_3.default(this);
     }
     Pando.create = function (options) {
         return __awaiter(this, void 0, void 0, function () {
@@ -105,6 +105,15 @@ var Pando = /** @class */ (function () {
                         _a.sent();
                         return [2 /*return*/, pando];
                 }
+            });
+        });
+    };
+    Pando.prototype.close = function () {
+        return __awaiter(this, void 0, void 0, function () {
+            return __generator(this, function (_a) {
+                // console.log(this.options.ethereum.provider)
+                this.options.ethereum.provider.connection.close();
+                return [2 /*return*/];
             });
         });
     };

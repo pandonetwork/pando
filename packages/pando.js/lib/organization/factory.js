@@ -38,16 +38,16 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-var _1 = __importDefault(require("."));
 var apm_1 = __importDefault(require("@aragon/apm"));
 var web3_1 = __importDefault(require("web3"));
+var _1 = __importDefault(require("."));
 var OrganizationFactory = /** @class */ (function () {
     function OrganizationFactory(pando) {
         this.pando = pando;
     }
     OrganizationFactory.prototype.deploy = function () {
         return __awaiter(this, void 0, void 0, function () {
-            var apm, factory, _a, _b, receipt, kernel, acl, _c, _d;
+            var apm, factory, _a, _b, receipt, kernel, acl, _c, _d, organization;
             return __generator(this, function (_e) {
                 switch (_e.label) {
                     case 0:
@@ -68,7 +68,11 @@ var OrganizationFactory = /** @class */ (function () {
                     case 5: return [4 /*yield*/, _d.apply(_c, [_e.sent()])];
                     case 6:
                         acl = _e.sent();
-                        return [2 /*return*/, new _1.default(this.pando, kernel, acl)
+                        organization = new _1.default(this.pando, kernel, acl);
+                        return [4 /*yield*/, organization.initialize()];
+                    case 7:
+                        _e.sent();
+                        return [2 /*return*/, organization
                             // const kernel_base = await Kernel.new(true) // petrify immediately
                             // const acl_base    = await ACL.new()
                             // const reg_factory = await RegistryFactory.new()

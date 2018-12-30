@@ -8,7 +8,7 @@ import promised from 'chai-as-promised'
 import Pando from '../../lib/'
 // import Fiber      from '../../lib/fiber'
 
-import fixtures   from '../helpers/fixtures'
+import { fixtures } from '@pando/helpers/fixtures'
 
 chai.use(promised)
 
@@ -19,7 +19,7 @@ const account = '0xb4124cEB3451635DAcedd11767f004d8a28c6eE7'
 const gateway = { fake: { protocol: 'ws', host: '192.168.0.1', port: '8546' } }
 const options = { ethereum: { account: account }}
 
-describe('pando/plant/fibers', () => {
+describe('plant/fibers', () => {
   let pando, plant, master, fiber
 
   const initialize = async () => {
@@ -203,7 +203,7 @@ describe('pando/plant/fibers', () => {
 
     it('it should return undefined if fiber does not exist', async () => {
       const uuid = await plant.fibers.uuid('doesnotexist')
-      const type = typeof undefined
+      const type = typeof uuid
 
       type.should.equal('undefined')
     })

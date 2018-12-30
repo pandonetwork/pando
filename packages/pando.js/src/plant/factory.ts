@@ -1,83 +1,63 @@
 import fs from 'fs-extra'
-import IPFS from 'ipfs'
-import Level from 'level'
 import npath from 'path'
-import FiberFactory from './fiber/factory'
-import PandoError from '../error'
-import Plant from '.'
-import util from 'util'
+import IPFS from 'ipfs'
 import Pando from '..'
-// import async from 'async';
-
-// import Index from '@pando/index'
-
-const ensure = util.promisify(fs.ensureDir)
+import Plant from '.'
+import PandoError from '../error'
 
 
 export default class PlantFactory {
-    public static paths = {
-        root:  '.',
-        pando: '.pando',
-        ipfs: '.pando/ipfs',
-        index: '.pando/index',
-        db: '.pando/db',
-        current: '.pando/current',
-        config: '.pando/config',
-        fibers: '.pando/fibers',
+  public pando: Pando
+
+  public constructor(pando: Pando) {
+    this.pando = pando
+  }
+
+  public async exists(path: string = '.'): Promise<boolean> {
+    let [one, two] = await Promise.all([
+      fs.pathExists(npath.join(path, '.pando', 'ipfs')),
+      fs.pathExists(npath.join(path, '.pando', 'fibers', 'db')),
+      fs.pathExists(npath.join(path, '.pando', 'organizations', 'db'))
+
+    ])
+
+    return one && two
+  }
+
+  public async create(path: string = '.'): Promise<Plant> {
+    if (await this.exists(path)) {
+      throw new PandoError('E_PLANT_ALREADY_EXISTS')
     }
 
-    public pando: Pando
+    return new Promise<Plant>(async (resolve, reject) => {
+      await Promise.all([
+        fs.ensureDir(npath.join(path, '.pando', 'ipfs')),
+        fs.ensureDir(npath.join(path, '.pando', 'organizations')),
+        fs.ensureDir(npath.join(path, '.pando', 'fibers'))
+      ])
 
-    public constructor(pando: Pando) {
-        this.pando = pando
+      const node = new IPFS({ repo: npath.join(path, '.pando', 'ipfs'), start: false })
+        .on('error', err => { reject(err) })
+        .on('ready', async () => {
+          const plant = new Plant(this.pando, path, node)
+          await plant.fibers.create('master', { fork: false })
+          await plant.fibers.switch('master', { stash: false })
+          resolve(plant)
+        })
+    })
+  }
+
+  public async load(path: string = '.'): Promise<Plant> {
+    if (!await this.exists(path)) {
+      throw new PandoError('E_PLANT_NOT_FOUND', path)
     }
 
-    public async exists(path: string = '.'): Promise<boolean> {
-
-        let [one, two, three] = await Promise.all([
-            fs.pathExists(npath.join(path, '.pando')),
-            fs.pathExists(npath.join(path, '.pando', 'ipfs')),
-            fs.pathExists(npath.join(path, '.pando', 'fibers', 'db'))
-        ])
-
-        return one && two && three
-    }
-
-    public async create(path: string = '.'): Promise<Plant> {
-      return new Promise<Plant>(async (resolve, reject) => {
-        await Promise.all([
-          ensure(npath.join(path, '.pando', 'ipfs')),
-          ensure(npath.join(path, '.pando', 'fibers'))
-        ])
-
-        const node = new IPFS({ repo: npath.join(path, '.pando', 'ipfs'), start: false })
-          .on('error', err => {
-            reject(err)
-          })
-          .on('ready', async () => {
-            const plant = new Plant(path, node)
-            await plant.fibers.create('master', { fork: false })
-            await plant.fibers.switch('master', { stash: false })
-            resolve(plant)
-          })
-      })
-    }
-
-    public async load(path: string = '.'): Promise<Plant> {
-      return new Promise<Plant>(async (resolve, reject) => {
-        if (!this.exists(path)) {
-          reject(new PandoError('E_PLANT_NOT_FOUND', path))
-        }
-
-        const node = new IPFS({ repo: npath.join(path, '.pando', 'ipfs'), start: false })
-          .on('error', err => {
-            reject(err)
-          })
-          .on('ready', async () => {
-            resolve(new Plant(path, node))
-          })
-      })
-    }
-
-
+    return new Promise<Plant>(async (resolve, reject) => {
+      const node = new IPFS({ repo: npath.join(path, '.pando', 'ipfs'), start: false })
+        .on('error', err => { reject(err) })
+        .on('ready', async () => {
+          resolve(new Plant(this.pando, path, node))
+        })
+    })
+  }
 }
