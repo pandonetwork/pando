@@ -126,11 +126,14 @@ contract OrganizationFactory is KitBase {
         emit InstalledApp(colony, appIds[5]);
 
         // Permissions
+        acl.grantPermission(colony, dao, dao.APP_MANAGER_ROLE());
+        acl.grantPermission(colony, acl, acl.CREATE_PERMISSIONS_ROLE());
+
         acl.createPermission(finance, vault, vault.TRANSFER_ROLE(), metavoting);
         acl.createPermission(metavoting, finance, finance.CREATE_PAYMENTS_ROLE(), metavoting);
         acl.createPermission(metavoting, finance, finance.EXECUTE_PAYMENTS_ROLE(), metavoting);
         acl.createPermission(metavoting, finance, finance.MANAGE_PAYMENTS_ROLE(), metavoting);
-        acl.createPermission(metavoting, tokenManager, tokenManager.MINT_ROLE(), metavoting);
+        acl.createPermission(colony, tokenManager, tokenManager.MINT_ROLE(), metavoting);
         acl.createPermission(metavoting, tokenManager, tokenManager.ISSUE_ROLE(), metavoting);
         acl.createPermission(metavoting, tokenManager, tokenManager.ASSIGN_ROLE(), metavoting);
         acl.createPermission(metavoting, tokenManager, tokenManager.REVOKE_VESTINGS_ROLE(), metavoting);
