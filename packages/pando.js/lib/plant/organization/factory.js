@@ -43,7 +43,14 @@ var path_1 = __importDefault(require("path"));
 var level_1 = __importDefault(require("level"));
 var apm_1 = __importDefault(require("@aragon/apm"));
 var web3_1 = __importDefault(require("web3"));
+var error_1 = __importDefault(require("../../error"));
 var _1 = __importDefault(require("."));
+var wrapper_1 = __importDefault(require("@aragon/wrapper"));
+var APP_IDS = {
+    'acl': '0xe3262375f45a6e2026b7e7b18c2b807434f2508fe1a2a3dfb493c7df8f4aad6a',
+    'colony': '0x7b1ecd00360e711e0e2f5e06cfaa343df02df7bce0566ae1889b36a81c7ac7c7',
+    'scheme': '0x7dcc2953010d38f70485d098b74f6f8dc58f18ebcd350267fa5f62e7cbc13cfe'
+};
 var db = function (location, options) { return __awaiter(_this, void 0, void 0, function () {
     return __generator(this, function (_a) {
         return [2 /*return*/, new Promise(function (resolve, reject) {
@@ -63,32 +70,232 @@ var OrganizationFactory = /** @class */ (function () {
         this.plant = plant;
         this.db = level_1.default(path_1.default.join(plant.paths.organizations, 'db'), { valueEncoding: 'json' });
     }
-    OrganizationFactory.prototype.create = function (name) {
+    OrganizationFactory.prototype.exists = function (_a) {
+        var _b = _a === void 0 ? {} : _a, name = _b.name, address = _b.address;
         return __awaiter(this, void 0, void 0, function () {
-            var organization;
-            return __generator(this, function (_a) {
-                switch (_a.label) {
-                    case 0: return [4 /*yield*/, this.deploy()];
-                    case 1:
-                        organization = _a.sent();
-                        return [4 /*yield*/, this.db.put(organization.address, {
-                                name: name,
-                                acl: organization.acl.address,
-                                colony: organization.colony.address,
-                                scheme: organization.scheme.address
-                            })];
+            var _c;
+            var _this = this;
+            return __generator(this, function (_d) {
+                switch (_d.label) {
+                    case 0:
+                        if (typeof name === 'undefined' && typeof address === 'undefined')
+                            throw new error_1.default('E_WRONG_PARAMETERS', name, address);
+                        if (!(typeof address !== 'undefined')) return [3 /*break*/, 1];
+                        _c = address;
+                        return [3 /*break*/, 3];
+                    case 1: return [4 /*yield*/, this.address(name)];
                     case 2:
-                        _a.sent();
+                        _c = _d.sent();
+                        _d.label = 3;
+                    case 3:
+                        address = _c;
+                        if (typeof address === 'undefined')
+                            return [2 /*return*/, false];
+                        return [2 /*return*/, new Promise(function (resolve, reject) {
+                                _this.db.get(address, function (err, value) {
+                                    if (err) {
+                                        if (err.notFound) {
+                                            resolve(false);
+                                        }
+                                        else {
+                                            reject(err);
+                                        }
+                                    }
+                                    else {
+                                        resolve(true);
+                                    }
+                                });
+                            })];
+                }
+            });
+        });
+    };
+    OrganizationFactory.prototype.deploy = function (name) {
+        return __awaiter(this, void 0, void 0, function () {
+            var apm, factory, _a, _b, receipt, organization;
+            return __generator(this, function (_c) {
+                switch (_c.label) {
+                    case 0: return [4 /*yield*/, this.exists({ name: name })];
+                    case 1:
+                        if (_c.sent())
+                            throw new error_1.default('E_ORGANIZATION_NAME_ALREADY_EXISTS', name);
+                        apm = apm_1.default(new web3_1.default(this.plant.pando.options.ethereum.provider), { ensRegistryAddress: this.plant.pando.options.apm.ens, ipfs: 'http://locahost:5001' });
+                        _b = (_a = this.plant.pando.contracts.OrganizationFactory).at;
+                        return [4 /*yield*/, apm.getLatestVersionContract('organization-factory.aragonpm.eth')];
+                    case 2: return [4 /*yield*/, _b.apply(_a, [_c.sent()])];
+                    case 3:
+                        factory = _c.sent();
+                        return [4 /*yield*/, factory.newInstance()];
+                    case 4:
+                        receipt = _c.sent();
+                        return [4 /*yield*/, this.add(name, this._getDAOAddressFromReceipt(receipt))];
+                    case 5:
+                        organization = _c.sent();
                         return [2 /*return*/, organization];
                 }
             });
         });
     };
-    // public async load(nameOrAddress: string, { address = false }: { address?: boolean } = {}): Promise<Organization> {
-    //   return new Promise<Organization>((resolve, reject) => {
-    //
-    //   })
-    // }
+    OrganizationFactory.prototype.add = function (name, address) {
+        return __awaiter(this, void 0, void 0, function () {
+            var _this = this;
+            return __generator(this, function (_a) {
+                switch (_a.label) {
+                    case 0: return [4 /*yield*/, this.exists({ name: name })];
+                    case 1:
+                        if (_a.sent())
+                            throw new error_1.default('E_ORGANIZATION_NAME_ALREADY_EXISTS', name);
+                        return [4 /*yield*/, this.exists({ address: address })];
+                    case 2:
+                        if (_a.sent())
+                            throw new error_1.default('E_ORGANIZATION_ALREADY_EXISTS', address);
+                        return [2 /*return*/, new Promise(function (resolve, reject) { return __awaiter(_this, void 0, void 0, function () {
+                                var kernel, acl, colony, scheme, aragon, subscription;
+                                var _this = this;
+                                return __generator(this, function (_a) {
+                                    switch (_a.label) {
+                                        case 0: return [4 /*yield*/, this.plant.pando.contracts.Kernel.at(address)];
+                                        case 1:
+                                            kernel = _a.sent();
+                                            aragon = new wrapper_1.default(address, {
+                                                provider: this.plant.pando.options.ethereum.provider,
+                                                apm: { ensRegistryAddress: this.plant.pando.options.apm.ens }
+                                            });
+                                            return [4 /*yield*/, aragon.init({
+                                                    accounts: { providedAccounts: [this.plant.pando.options.ethereum.account] }
+                                                })];
+                                        case 2:
+                                            _a.sent();
+                                            subscription = aragon.apps
+                                                .take(1)
+                                                .subscribe(function (apps) { return __awaiter(_this, void 0, void 0, function () {
+                                                var _i, apps_1, app, _a, organization;
+                                                return __generator(this, function (_b) {
+                                                    switch (_b.label) {
+                                                        case 0:
+                                                            _i = 0, apps_1 = apps;
+                                                            _b.label = 1;
+                                                        case 1:
+                                                            if (!(_i < apps_1.length)) return [3 /*break*/, 9];
+                                                            app = apps_1[_i];
+                                                            _a = app.appId;
+                                                            switch (_a) {
+                                                                case APP_IDS.acl: return [3 /*break*/, 2];
+                                                                case APP_IDS.colony: return [3 /*break*/, 4];
+                                                                case APP_IDS.scheme: return [3 /*break*/, 6];
+                                                            }
+                                                            return [3 /*break*/, 8];
+                                                        case 2: return [4 /*yield*/, this.plant.pando.contracts.ACL.at(app.proxyAddress)];
+                                                        case 3:
+                                                            acl = _b.sent();
+                                                            return [3 /*break*/, 8];
+                                                        case 4: return [4 /*yield*/, this.plant.pando.contracts.Colony.at(app.proxyAddress)];
+                                                        case 5:
+                                                            colony = _b.sent();
+                                                            return [3 /*break*/, 8];
+                                                        case 6: return [4 /*yield*/, this.plant.pando.contracts.DemocracyScheme.at(app.proxyAddress)];
+                                                        case 7:
+                                                            scheme = _b.sent();
+                                                            return [3 /*break*/, 8];
+                                                        case 8:
+                                                            _i++;
+                                                            return [3 /*break*/, 1];
+                                                        case 9:
+                                                            subscription.unsubscribe();
+                                                            organization = new _1.default(this.plant, address, kernel, acl, colony, scheme);
+                                                            return [4 /*yield*/, this.db.put(organization.address, {
+                                                                    name: name,
+                                                                    acl: organization.acl.address,
+                                                                    colony: organization.colony.address,
+                                                                    scheme: organization.scheme.address
+                                                                })];
+                                                        case 10:
+                                                            _b.sent();
+                                                            resolve(organization);
+                                                            return [2 /*return*/];
+                                                    }
+                                                });
+                                            }); });
+                                            return [2 /*return*/];
+                                    }
+                                });
+                            }); })];
+                }
+            });
+        });
+    };
+    OrganizationFactory.prototype.delete = function (_a) {
+        var _b = _a === void 0 ? {} : _a, name = _b.name, address = _b.address;
+        return __awaiter(this, void 0, void 0, function () {
+            var _c;
+            return __generator(this, function (_d) {
+                switch (_d.label) {
+                    case 0:
+                        if (typeof name === 'undefined' && typeof address === 'undefined')
+                            throw new error_1.default('E_WRONG_PARAMETERS', name, address);
+                        return [4 /*yield*/, this.exists({ name: name, address: address })];
+                    case 1:
+                        if (!(_d.sent()))
+                            throw new error_1.default('E_ORGANIZATION_NOT_FOUND');
+                        if (!(typeof address !== 'undefined')) return [3 /*break*/, 2];
+                        _c = address;
+                        return [3 /*break*/, 4];
+                    case 2: return [4 /*yield*/, this.address(name)];
+                    case 3:
+                        _c = _d.sent();
+                        _d.label = 4;
+                    case 4:
+                        address = _c;
+                        return [4 /*yield*/, this.db.del(address)];
+                    case 5:
+                        _d.sent();
+                        return [2 /*return*/];
+                }
+            });
+        });
+    };
+    OrganizationFactory.prototype.load = function (_a) {
+        var _b = _a === void 0 ? {} : _a, name = _b.name, address = _b.address;
+        return __awaiter(this, void 0, void 0, function () {
+            var _c, organization, kernel, acl, colony, scheme;
+            return __generator(this, function (_d) {
+                switch (_d.label) {
+                    case 0:
+                        if (typeof name === 'undefined' && typeof address === 'undefined')
+                            throw new error_1.default('E_WRONG_PARAMETERS', name, address);
+                        return [4 /*yield*/, this.exists({ name: name, address: address })];
+                    case 1:
+                        if (!(_d.sent()))
+                            throw new error_1.default('E_ORGANIZATION_NOT_FOUND');
+                        if (!(typeof address !== 'undefined')) return [3 /*break*/, 2];
+                        _c = address;
+                        return [3 /*break*/, 4];
+                    case 2: return [4 /*yield*/, this.address(name)];
+                    case 3:
+                        _c = _d.sent();
+                        _d.label = 4;
+                    case 4:
+                        address = _c;
+                        return [4 /*yield*/, this.db.get(address)];
+                    case 5:
+                        organization = _d.sent();
+                        return [4 /*yield*/, this.plant.pando.contracts.Kernel.at(address)];
+                    case 6:
+                        kernel = _d.sent();
+                        return [4 /*yield*/, this.plant.pando.contracts.ACL.at(organization.acl)];
+                    case 7:
+                        acl = _d.sent();
+                        return [4 /*yield*/, this.plant.pando.contracts.Colony.at(organization.colony)];
+                    case 8:
+                        colony = _d.sent();
+                        return [4 /*yield*/, this.plant.pando.contracts.DemocracyScheme.at(organization.scheme)];
+                    case 9:
+                        scheme = _d.sent();
+                        return [2 /*return*/, new _1.default(this.plant, address, kernel, acl, colony, scheme)];
+                }
+            });
+        });
+    };
     OrganizationFactory.prototype.address = function (name) {
         return __awaiter(this, void 0, void 0, function () {
             var address;
@@ -106,32 +313,6 @@ var OrganizationFactory = /** @class */ (function () {
                             .on('end', function () { resolve(address); })
                             .on('error', function (err) { reject(err); });
                     })];
-            });
-        });
-    };
-    OrganizationFactory.prototype.deploy = function () {
-        return __awaiter(this, void 0, void 0, function () {
-            var apm, factory, _a, _b, receipt, organization;
-            return __generator(this, function (_c) {
-                switch (_c.label) {
-                    case 0:
-                        apm = apm_1.default(new web3_1.default(this.plant.pando.options.ethereum.provider), { ensRegistryAddress: this.plant.pando.options.apm.ens, ipfs: 'http://locahost:5001' });
-                        _b = (_a = this.plant.pando.contracts.OrganizationFactory).at;
-                        return [4 /*yield*/, apm.getLatestVersionContract('organization-factory.aragonpm.eth')];
-                    case 1: return [4 /*yield*/, _b.apply(_a, [_c.sent()])];
-                    case 2:
-                        factory = _c.sent();
-                        return [4 /*yield*/, factory.newInstance()
-                            // const kernel = await this.plant.pando.contracts.Kernel.at(this._getDAOAddressFromReceipt(receipt))
-                        ];
-                    case 3:
-                        receipt = _c.sent();
-                        organization = new _1.default(this.plant, this._getDAOAddressFromReceipt(receipt));
-                        return [4 /*yield*/, organization.initialize()];
-                    case 4:
-                        _c.sent();
-                        return [2 /*return*/, organization];
-                }
             });
         });
     };

@@ -113,6 +113,7 @@ describe('pando/plants', () => {
       const reset = capture.log()
       await plant.node.start()
       await plant.node.stop()
+      await plant.organizations.db.close()
       await plant.fibers.db.close()
       reset()
     })

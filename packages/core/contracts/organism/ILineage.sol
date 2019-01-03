@@ -3,11 +3,13 @@ pragma experimental ABIEncoderV2;
 
 
 contract ILineage {
-    function mint(address _receiver, uint256 _amount) external;
-    function burn(address _holder, uint256 _amount) external;
+  event Transfer(address indexed from, address indexed to, uint256 value);
+  event Approval(address indexed owner, address indexed spender, uint256 value);
 
-    function proxyPayment(address) external payable returns (bool);
-    function onTransfer(address _from, address _to, uint _amount) external returns(bool);
-    function onApprove(address, address, uint) external returns (bool);
-
+  function totalSupply() external view returns (uint256);
+  function balanceOf(address who) external view returns (uint256);
+  function allowance(address owner, address spender) external view returns (uint256);
+  function transfer(address to, uint256 value) external returns (bool);
+  function approve(address spender, uint256 value) external returns (bool);
+  function transferFrom(address from, address to, uint256 value) external returns (bool);
 }

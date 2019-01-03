@@ -29,6 +29,8 @@ describe('plant/fibers', () => {
   }
 
   const clean = async () => {
+    await pando.close()
+    
     const reset = capture.log()
 
     await plant.node.start()

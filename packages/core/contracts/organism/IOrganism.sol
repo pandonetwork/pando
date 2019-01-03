@@ -31,7 +31,7 @@ contract IOrganism {
 
     /*--------------------*/
 
-    function getLineageToken() public view returns (address);
+    /* function getLineageToken() public view returns (address); */
     function getRFI(uint256 _RFIid) public view returns (Pando.RFI);
     function getRFL(uint256 _RFLid) public view returns (Pando.RFL);
     function getIndividuationHash(Pando.Individuation _individuation) public view returns (bytes32);

@@ -1,54 +1,73 @@
 pragma solidity ^0.4.24;
-pragma experimental ABIEncoderV2;
 
 import "@aragon/os/contracts/apps/AragonApp.sol";
-import "@aragon/apps-shared-minime/contracts/ITokenController.sol";
-import "@aragon/apps-shared-minime/contracts/MiniMeToken.sol";
+import "@aragon/os/contracts/lib/math/SafeMath.sol";
 import "@pando/core/contracts/organism/ILineage.sol";
 
 
-contract Lineage is ILineage, ITokenController, AragonApp {
+contract Lineage is ILineage, AragonApp {
+    using SafeMath for uint256;
+
     bytes32 public constant MINT_ROLE = keccak256("MINT_ROLE");
-    bytes32 public constant BURN_ROLE = keccak256("BURN_ROLE");
 
-    MiniMeToken public token;
+    mapping (address => uint256) private _balances;
 
+    uint256 private _totalSupply;
 
-    function initialize(MiniMeToken _token) external onlyInit {
-        require(_token.controller() == address(this), "this contract is not set as a controller of this token");
-
+    function initialize() external onlyInit {
         initialized();
-
-        token = _token;
-        token.enableTransfers(false);
     }
 
-    function mint(address _receiver, uint256 _amount) external auth(MINT_ROLE) {
-        _mint(_receiver, _amount);
+    function totalSupply() external view returns (uint256) {
+        return _totalSupply;
     }
 
-    function burn(address _holder, uint256 _amount) external auth(BURN_ROLE) {
-        // minime.destroyTokens() never returns false, only reverts on failure
-        token.destroyTokens(_holder, _amount);
+    function balanceOf(address owner) external view returns (uint256) {
+        return _balances[owner];
     }
 
-    function proxyPayment(address) external payable returns (bool) {
-        // Sender check is required to avoid anyone sending ETH to the Token Manager through this method
-        // Even though it is tested, solidity-coverage doesnt get it because
-        // MiniMeToken is not instrumented and entire tx is reverted
-        require(msg.sender == address(token), "only the controlled token can send ETH to this address");
+    function mint(address to, uint256 value) external auth(MINT_ROLE) returns (bool) {
+        _mint(to, value);
+        return true;
+    }
+
+    function allowance(address owner, address spender) external view returns (uint256) {
+        return 0;
+    }
+
+    function transfer(address to, uint256 value) external returns (bool) {
         return false;
     }
 
-    function onTransfer(address _from, address _to, uint _amount) external returns(bool) {
+    function approve(address spender, uint256 value) external returns (bool) {
         return false;
     }
 
-    function onApprove(address, address, uint) external returns (bool) {
+    function transferFrom(address from, address to, uint256 value) external returns (bool) {
         return false;
     }
 
-    function _mint(address _receiver, uint256 _amount) internal {
-        token.generateTokens(_receiver, _amount); // minime.generateTokens() never returns false
+    function increaseAllowance(address spender, uint256 addedValue) external returns (bool) {
+        return false;
+    }
+
+    function decreaseAllowance(address spender, uint256 subtractedValue) external returns (bool) {
+        return false;
+    }
+
+    function _mint(address account, uint256 value) internal {
+        require(account != address(0));
+
+        _totalSupply = _totalSupply.add(value);
+        _balances[account] = _balances[account].add(value);
+        emit Transfer(address(0), account, value);
+    }
+
+    function _burn(address account, uint256 value) internal {
+        require(account != address(0));
+
+        _totalSupply = _totalSupply.sub(value);
+        _balances[account] = _balances[account].sub(value);
+        emit Transfer(account, address(0), value);
     }
 }

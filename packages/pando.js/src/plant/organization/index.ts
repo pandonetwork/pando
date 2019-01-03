@@ -1,5 +1,6 @@
 import Pando from '../..'
 import Plant from '..'
+import OrganismFactory from './organism/factory'
 import Aragon from '@aragon/wrapper'
 
 const APP_IDS = {
@@ -9,51 +10,23 @@ const APP_IDS = {
 }
 
 export default class Organization {
-  public plant: Plant
+  public plant:   Plant
   public address: string
-  public kernel!: any
-  public acl!: any
-  public colony!: any
-  public scheme!: any
+  public kernel:  any
+  public acl:     any
+  public colony:  any
+  public scheme:  any
+
+  public organisms: OrganismFactory
 
 
-  constructor(plant: Plant, address: string) {
-    this.plant = plant
+  constructor(plant: Plant, address: string, kernel: any, acl: any, colony: any, scheme:any) {
+    this.plant   = plant
     this.address = address
-  }
-
-  public async initialize(): Promise<any> {
-    return new Promise<any>(async (resolve, reject) => {
-      this.kernel = await this.plant.pando.contracts.Kernel.at(this.address)
-
-      const aragon = new Aragon(this.address, {
-        provider: this.plant.pando.options.ethereum.provider,
-        apm: { ensRegistryAddress: this.plant.pando.options.apm.ens }
-      })
-
-      await aragon.init({
-        accounts:
-          { providedAccounts: [this.plant.pando.options.ethereum.account] }
-      })
-
-      aragon.apps
-        .take(1)
-        .subscribe(async (apps) => {
-          for (let app of apps) {
-            switch (app.appId) {
-              case APP_IDS.acl:
-                this.acl = await this.plant.pando.contracts.ACL.at(app.proxyAddress)
-                break
-              case APP_IDS.colony:
-                this.colony = await this.plant.pando.contracts.Colony.at(app.proxyAddress)
-                break
-              case APP_IDS.scheme:
-                this.scheme = await this.plant.pando.contracts.DemocracyScheme.at(app.proxyAddress)
-                break
-            }
-        }
-        resolve()
-      })
-    })
+    this.kernel  = kernel
+    this.acl     = acl
+    this.colony  = colony
+    this.scheme  = scheme
+    this.organisms = new OrganismFactory(this)
   }
 }

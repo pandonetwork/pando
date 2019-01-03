@@ -1,13 +1,23 @@
 pragma solidity ^0.4.24;
 
-import "@aragon/os/contracts/factory/DAOFactory.sol";
 import "@aragon/os/contracts/apm/Repo.sol";
 import "@aragon/os/contracts/lib/ens/ENS.sol";
 import "@aragon/os/contracts/lib/ens/PublicResolver.sol";
 import "@aragon/os/contracts/apm/APMNamehash.sol";
 
-import "@aragon/apps-voting/contracts/Voting.sol";
+import "@aragon/os/contracts/factory/DAOFactory.sol";
+
 import "@aragon/apps-shared-minime/contracts/MiniMeToken.sol";
+import "@aragon/apps-vault/contracts/Vault.sol";
+import "@aragon/apps-finance/contracts/Finance.sol";
+import { TokenManager } from "@aragon/apps-token-manager/contracts/TokenManager.sol";
+import "@aragon/apps-voting/contracts/Voting.sol";
+
+import { DemocracyScheme } from "@pando/scheme-democracy/contracts/DemocracyScheme.sol";
+/* import { Colony } from "@pando/colony/contracts/Colony.sol"; */
+import { IColony } from "@pando/core/contracts/colony/IColony.sol";
+
+
 
 contract KitBase is APMNamehash {
     ENS public ens;
@@ -46,67 +56,111 @@ contract OrganizationFactory is KitBase {
         tokenFactory = new MiniMeTokenFactory();
     }
 
-    function newInstance() {
+    function newInstance() external {
+        bytes32[6] memory appIds = [
+            apmNamehash("vault"),            // 0
+            apmNamehash("finance"),          // 1
+            apmNamehash("token-manager"),    // 2
+            apmNamehash("voting"),           // 3
+            apmNamehash("scheme-democracy"), // 4
+            apmNamehash("colony")            // 5
+        ];
+
         Kernel dao = fac.newDAO(this);
         ACL acl = ACL(dao.acl());
         acl.createPermission(this, dao, dao.APP_MANAGER_ROLE(), this);
 
-        address root = msg.sender;
+        // Token
+        MiniMeToken token = tokenFactory.createCloneToken(MiniMeToken(address(0)), 0, "Native Governance Token", 0, "NGT", true);
+        token.generateTokens(msg.sender, 1);
 
-        bytes32 colonyAppId = apmNamehash("colony");
-        bytes32 votingAppId = apmNamehash("voting");
-        bytes32 tokenManagerAppId = apmNamehash("token-manager");
+        // Apps
+        Vault vault = Vault(
+            dao.newAppInstance(
+                appIds[0],
+                latestVersionAppBase(appIds[0]),
+                new bytes(0),
+                true
+            )
+        );
+        emit InstalledApp(vault, appIds[0]);
 
-        MiniMeToken token = tokenFactory.createCloneToken(token, 0, "Pando Organization Token", 0, "POT", true);
-        /* token.generateTokens(address(0xb4124cEB3451635DAcedd11767f004d8a28c6eE7), 1 ether); */
+        Finance finance = Finance(
+            dao.newAppInstance(
+                appIds[1],
+                latestVersionAppBase(appIds[1])
+            )
+        );
+        emit InstalledApp(finance, appIds[1]);
 
+        TokenManager tokenManager = TokenManager(
+            dao.newAppInstance(
+                appIds[2],
+                latestVersionAppBase(appIds[2])
+            )
+        );
+        emit InstalledApp(tokenManager, appIds[2]);
 
-        /*
-          1. Install colony app
-          2. Install voting app
-          3. Deploy token
-          4 Deploy token manager
-          5. Give root the right to deploy a new Repo from colony app
-          6.
-        */
+        Voting metavoting = Voting(
+            dao.newAppInstance(
+                appIds[3],
+                latestVersionAppBase(appIds[3])
+            )
+        );
+        emit InstalledApp(metavoting, appIds[3]);
 
-        /* Voting voting = Voting(dao.newAppInstance(votingAppId, latestVersionAppBase(votingAppId)));
-        TokenManager tokenManager = TokenManager(dao.newAppInstance(tokenManagerAppId, latestVersionAppBase(tokenManagerAppId)));
+        DemocracyScheme scheme = DemocracyScheme(
+            dao.newAppInstance(
+                appIds[4],
+                latestVersionAppBase(appIds[4])
+            )
+        );
+        emit InstalledApp(scheme, appIds[4]);
 
-        MiniMeToken token = tokenFactory.createCloneToken(MiniMeToken(0), 0, "App token", 0, "APP", true);
-        token.changeController(tokenManager); */
+        IColony colony = IColony(
+            dao.newAppInstance(
+                appIds[5],
+                latestVersionAppBase(appIds[5])
+            )
+        );
+        emit InstalledApp(colony, appIds[5]);
 
-        /* address root = msg.sender;
-        bytes32 appId = apmNamehash("apiary");
-        bytes32 votingAppId = apmNamehash("voting");
-        bytes32 tokenManagerAppId = apmNamehash("token-manager");
+        // Permissions
+        acl.createPermission(finance, vault, vault.TRANSFER_ROLE(), metavoting);
+        acl.createPermission(metavoting, finance, finance.CREATE_PAYMENTS_ROLE(), metavoting);
+        acl.createPermission(metavoting, finance, finance.EXECUTE_PAYMENTS_ROLE(), metavoting);
+        acl.createPermission(metavoting, finance, finance.MANAGE_PAYMENTS_ROLE(), metavoting);
+        acl.createPermission(metavoting, tokenManager, tokenManager.MINT_ROLE(), metavoting);
+        acl.createPermission(metavoting, tokenManager, tokenManager.ISSUE_ROLE(), metavoting);
+        acl.createPermission(metavoting, tokenManager, tokenManager.ASSIGN_ROLE(), metavoting);
+        acl.createPermission(metavoting, tokenManager, tokenManager.REVOKE_VESTINGS_ROLE(), metavoting);
+        acl.createPermission(metavoting, tokenManager, tokenManager.BURN_ROLE(), metavoting);
+        acl.createPermission(ANY_ENTITY, metavoting, metavoting.CREATE_VOTES_ROLE(), metavoting);
+        acl.createPermission(metavoting, scheme, scheme.UPDATE_PARAMETERS_ROLE(), metavoting);
+        acl.createPermission(ANY_ENTITY, colony, colony.DEPLOY_ORGANISM_ROLE(), metavoting);
 
-        Voting voting = Voting(dao.newAppInstance(votingAppId, latestVersionAppBase(votingAppId)));
-        TokenManager tokenManager = TokenManager(dao.newAppInstance(tokenManagerAppId, latestVersionAppBase(tokenManagerAppId)));
+        EVMScriptRegistry reg = EVMScriptRegistry(acl.getEVMScriptRegistry());
+        acl.createPermission(metavoting, reg, reg.REGISTRY_ADD_EXECUTOR_ROLE(), metavoting);
+        acl.createPermission(metavoting, reg, reg.REGISTRY_MANAGER_ROLE(), metavoting);
 
-        MiniMeToken token = tokenFactory.createCloneToken(MiniMeToken(0), 0, "App token", 0, "APP", true);
-        token.changeController(tokenManager);
 
         // Initialize apps
-
+        token.changeController(tokenManager);
+        vault.initialize();
+        finance.initialize(vault, 30 days);
         tokenManager.initialize(token, true, 0);
-        voting.initialize(token, uint64(50 * PCT), uint64(20 * PCT), 1 days);
+        metavoting.initialize(token, uint64(50 * PCT), uint64(20 * PCT), 1 days);
+        scheme.initialize(token, uint64(50), uint64(20));
+        colony.initialize(ens, tokenManager, scheme);
 
-        acl.createPermission(this, tokenManager, tokenManager.MINT_ROLE(), this);
-        tokenManager.mint(root, 1); // Give one token to root
-
-        acl.createPermission(ANY_ENTITY, voting, voting.CREATE_VOTES_ROLE(), root);
-
-        acl.grantPermission(voting, tokenManager, tokenManager.MINT_ROLE());
-
-        // Clean up permissions
-        acl.grantPermission(root, dao, dao.APP_MANAGER_ROLE());
+        // Cleanup permissions
+        acl.grantPermission(metavoting, dao, dao.APP_MANAGER_ROLE());
         acl.revokePermission(this, dao, dao.APP_MANAGER_ROLE());
-        acl.setPermissionManager(root, dao, dao.APP_MANAGER_ROLE());
+        acl.setPermissionManager(metavoting, dao, dao.APP_MANAGER_ROLE());
 
-        acl.grantPermission(root, acl, acl.CREATE_PERMISSIONS_ROLE());
+        acl.grantPermission(metavoting, acl, acl.CREATE_PERMISSIONS_ROLE());
         acl.revokePermission(this, acl, acl.CREATE_PERMISSIONS_ROLE());
-        acl.setPermissionManager(root, acl, acl.CREATE_PERMISSIONS_ROLE()); */
+        acl.setPermissionManager(metavoting, acl, acl.CREATE_PERMISSIONS_ROLE());
 
         emit DeployInstance(dao);
     }

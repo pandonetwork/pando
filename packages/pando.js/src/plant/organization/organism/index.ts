@@ -1,4 +1,5 @@
-import Pando from '..'
+import Pando from '../../..'
+import Organization from '..'
 
 
 export default class Organism {

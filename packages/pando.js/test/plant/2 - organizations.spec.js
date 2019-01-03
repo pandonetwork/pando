@@ -16,7 +16,7 @@ chai.use(promised)
 const should = chai.should()
 
 
-describe('pando/organizations', () => {
+describe('plant/organizations', () => {
   let pando, plant
 
   const initialize = async () => {
@@ -38,32 +38,48 @@ describe('pando/organizations', () => {
     await fixtures.restore()
   }
 
-  // describe('#deploy', () => {
-  //   before(async () => {
-  //     await initialize()
-  //   })
-  //
-  //   after(async () => {
-  //     console.log('AFTER')
-  //     await clean()
-  //   })
-  //
-  //   it('it should return true if plant exists', async () => {
-  //     const organization = await plant.organizations.deploy()
-  //     console.log('On a organization')
-  //
-  //     organization.kernel.address.should.exist
-  //     organization.acl.address.should.exist
-  //     organization.colony.address.should.exist
-  //     organization.scheme.address.should.exist
-  //
-  //
-  //     // console.log(organization.kernel.address)
-  //   })
-  //
-  // })
+  describe('#exists', () => {
+    let origin
 
-  describe('#create', () => {
+    before(async () => {
+      await initialize()
+      origin = await plant.organizations.deploy('origin')
+    })
+
+    after(async () => {
+      await clean()
+    })
+
+    describe('with name', () => {
+      it("it should return true if organization exists in database", async () => {
+        const exists = await plant.organizations.exists({ name: 'origin' })
+
+        exists.should.equal(true)
+      })
+
+      it("it should return false if organization does not exist in database", async () => {
+        const exists = await plant.organizations.exists({ name: 'doesnotexist' })
+
+        exists.should.equal(false)
+      })
+    })
+
+    describe('with address', () => {
+      it("it should return true if organization exists in database", async () => {
+        const exists = await plant.organizations.exists({ address: origin.address })
+
+        exists.should.equal(true)
+      })
+
+      it("it should return false if organization does not exist in database", async () => {
+        const exists = await plant.organizations.exists({ address: 'doesnotexist' })
+
+        exists.should.equal(false)
+      })
+    })
+  })
+
+  describe('#deploy', () => {
     let organization
 
     before(async () => {
@@ -74,8 +90,8 @@ describe('pando/organizations', () => {
       await clean()
     })
 
-    it('it should deploy organization', async () => {
-      organization = await plant.organizations.create('origin')
+    it('it should deploy and return organization', async () => {
+      organization = await plant.organizations.deploy('origin')
 
       organization.should.exist
     })
@@ -87,39 +103,123 @@ describe('pando/organizations', () => {
       organization.scheme.address.should.exist
     })
 
+    it('it should save organization into database', async () => {
+      // organization.kernel.address.should.exist
+      // organization.acl.address.should.exist
+      // organization.colony.address.should.exist
+      // organization.scheme.address.should.exist
+    })
+
+    it("it should reject with error E_ORGANIZATION_NAME_ALREADY_EXISTS if organization's name already exists", async () => {
+      return plant.organizations.deploy('origin').should.be.rejectedWith('E_ORGANIZATION_NAME_ALREADY_EXISTS')
+    })
   })
 
-  // describe('#load', () => {
-  //   let organization
-  //
-  //   before(async () => {
-  //     await initialize()
-  //   })
-  //
-  //   after(async () => {
-  //     await clean()
-  //   })
-  //
-  //   it('it should return organization', async () => {
-  //     organization = await plant.organizations.load('origin')
-  //
-  //     organization.should.exist
-  //   })
-  //
-  //   it('it should initialize organization', async () => {
-  //     organization.kernel.address.should.exist
-  //     organization.acl.address.should.exist
-  //     organization.colony.address.should.exist
-  //     organization.scheme.address.should.exist
-  //   })
-  //
-  // })
+  describe('#add', () => {
+    let organization_1, organization_2, organization
+
+    before(async () => {
+      await initialize()
+      organization_1 = await plant.organizations.deploy('organization_1')
+      organization_2 = await plant.organizations.deploy('organization_2')
+      // Nasty trick to clean database while organizations still being deployed
+      await plant.organizations.delete({ name: 'organization_1' })
+      await plant.organizations.delete({ name: 'organization_2' })
+    })
+
+    after(async () => {
+      await clean()
+    })
+
+    it('it should return organization', async () => {
+      organization = await plant.organizations.add('origin', organization_1.address)
+
+      organization.should.exist
+    })
+
+    it('it should initialize organization', async () => {
+      organization.kernel.address.should.exist
+      organization.acl.address.should.exist
+      organization.colony.address.should.exist
+      organization.scheme.address.should.exist
+    })
+
+    it('it should save organization into database', async () => {
+      const loaded = await plant.organizations.load({ name: 'origin' })
+
+      loaded.address.should.equal(organization.address)
+      // organization.kernel.address.should.exist
+      // organization.acl.address.should.exist
+      // organization.colony.address.should.exist
+      // organization.scheme.address.should.exist
+    })
+
+    it("it should reject with error E_ORGANIZATION_NAME_ALREADY_EXISTS if organization's name already exists", async () => {
+      return plant.organizations.add('origin', organization_2.address).should.be.rejectedWith('E_ORGANIZATION_NAME_ALREADY_EXISTS')
+    })
+
+    it("it should reject with error E_ORGANIZATION_ALREADY_EXISTS if organization's address already exists", async () => {
+      return plant.organizations.add('notorigin', organization.address).should.be.rejectedWith('E_ORGANIZATION_ALREADY_EXISTS')
+    })
+  })
+
+  describe('#load', () => {
+    let origin, organization
+
+    before(async () => {
+      await initialize()
+      origin = await plant.organizations.deploy('origin')
+    })
+
+    after(async () => {
+      await clean()
+    })
+
+    describe('with name', () => {
+      it('it should return organization', async () => {
+        organization = await plant.organizations.load({ name: 'origin' })
+
+        organization.should.exist
+      })
+
+      it('it should initialize organization', async () => {
+        organization.kernel.address.should.exist
+        organization.acl.address.should.exist
+        organization.colony.address.should.exist
+        organization.scheme.address.should.exist
+      })
+
+      it("it should reject with error E_ORGANIZATION_NOT_FOUND if organization does not exist", async () => {
+        return plant.organizations.load({ name: 'doesnotexist' }).should.be.rejectedWith('E_ORGANIZATION_NOT_FOUND')
+      })
+    })
+
+    describe('with address', () => {
+      it('it should return organization', async () => {
+        organization = await plant.organizations.load({ address: origin.address })
+
+        organization.should.exist
+      })
+
+      it('it should initialize organization', async () => {
+        organization.kernel.address.should.exist
+        organization.acl.address.should.exist
+        organization.colony.address.should.exist
+        organization.scheme.address.should.exist
+      })
+
+      it("it should reject with error E_ORGANIZATION_NOT_FOUND if organization does not exist", async () => {
+        return plant.organizations.load({ address: 'doesnotexist' }).should.be.rejectedWith('E_ORGANIZATION_NOT_FOUND')
+      })
+    })
+
+  })
 
   describe('#address', () => {
     let origin
     before(async () => {
       await initialize()
-      origin = await plant.organizations.create('origin')
+      origin = await plant.organizations.deploy('origin')
     })
 
     after(async () => {

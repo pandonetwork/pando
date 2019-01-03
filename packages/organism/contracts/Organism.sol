@@ -136,9 +136,9 @@ contract Organism is IOrganism, AragonApp {
 
     /*--------------------*/
 
-    function getLineageToken() public view returns (address) {
+    /* function getLineageToken() public view returns (address) {
         return address(lineage.token());
-    }
+    } */
 
 
     function getRFI(uint256 _RFIid) public view RFIExists(_RFIid) returns (Pando.RFI) {

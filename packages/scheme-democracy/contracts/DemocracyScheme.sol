@@ -13,7 +13,7 @@ contract DemocracyScheme is IPandoScheme, AragonApp {
     using SafeMath for uint256;
     using SafeMath64 for uint64;
 
-    bytes32 public constant UPDATE_KIT_PARAMETERS_ROLE = keccak256("UPDATE_KIT_PARAMETERS_ROLE");
+    bytes32 public constant UPDATE_PARAMETERS_ROLE = keccak256("UPDATE_PARAMETERS_ROLE");
 
     enum VoteState  { Pending, Executed, Cancelled }
     enum VoterState { Absent, Yea, Nay }
@@ -103,7 +103,7 @@ contract DemocracyScheme is IPandoScheme, AragonApp {
         required = _required;
     }
 
-    function createRFI(IOrganism _organism, Pando.IIndividuation _individuation, Pando.ILineage[] _lineages) public isInitialized {
+    function createRFI(IOrganism _organism, Pando.IIndividuation _individuation, Pando.ILineage[] _lineages) isInitialized {
         _createRFI(_organism, _individuation, _lineages);
     }
 

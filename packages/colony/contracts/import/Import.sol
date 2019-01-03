@@ -8,6 +8,7 @@ import "@aragon/os/contracts/factory/EVMScriptRegistryFactory.sol";
 import "@aragon/apps-token-manager/contracts/TokenManager.sol";
 import "@pando/organism/contracts/Organism.sol";
 import "@pando/scheme-democracy/contracts/DemocracyScheme.sol";
+import "@aragon/apps-vault/contracts/Vault.sol";
 
 
 

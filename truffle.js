@@ -2,9 +2,9 @@ module.exports = {
   networks: {
     devnet: {
       host: 'localhost',
-      port: 8547,
+      port: 8545,
       network_id: '*',
-      gas: 6.9e6,
+      gas: 30e6,
       gasPrice: 15000000001
     }
   },

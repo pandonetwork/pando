@@ -66,7 +66,7 @@ contract('Democracy Kit', accounts => {
     before(async () => {
         // create Democracy Kit
 
-        factory = await initialize()
+        factory = await OrganizationFactory.new('0x5f6f7e8cc7346a11ca2def8f827b7a0b612c56a1')
 
         // const networkName = (await getNetwork(networks)).name
         // if (networkName == 'devnet' || networkName == 'rpc') {
