@@ -3,27 +3,21 @@ pragma solidity ^0.4.24;
 import "@aragon/os/contracts/kernel/Kernel.sol";
 import "@aragon/os/contracts/acl/ACL.sol";
 import "@aragon/os/contracts/apps/AragonApp.sol";
+
+import "@aragon/apps-shared-minime/contracts/MiniMeToken.sol";
+import "@aragon/apps-shared-minime/contracts/ITokenController.sol";
+
 import "@aragon/os/contracts/lib/ens/ENS.sol";
 import "@aragon/os/contracts/lib/ens/PublicResolver.sol";
 import "@aragon/os/contracts/apm/Repo.sol";
 import "@aragon/os/contracts/apm/APMNamehash.sol";
-import "@pando/core/contracts/lib/Pando.sol";
 
+import "@pando/core/contracts/lib/Pando.sol";
 import "@pando/organism/contracts/Organism.sol";
 import "@pando/organism/contracts/Lineage.sol";
 import "@pando/organism/contracts/Genesis.sol";
-
 import "@pando/scheme-democracy/contracts/DemocracyScheme.sol";
 
-
-/* import "@pando/core/contracts/organism/IOrganism.sol";
-import "@pando/core/contracts/organism/ILineage.sol";
-import "@pando/core/contracts/organism/IGenesis.sol"; */
-
-/* import "@aragon/apps-token-manager/contracts/TokenManager.sol"; */
-import "@aragon/apps-shared-minime/contracts/MiniMeToken.sol";
-
-import "@aragon/apps-shared-minime/contracts/ITokenController.sol";
 
 
 /* ENS: 0x5f6f7e8cc7346a11ca2def8f827b7a0b612c56a1 */

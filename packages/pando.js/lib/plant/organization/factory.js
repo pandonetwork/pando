@@ -37,7 +37,6 @@ var __generator = (this && this.__generator) || function (thisArg, body) {
 var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
-var _this = this;
 Object.defineProperty(exports, "__esModule", { value: true });
 var path_1 = __importDefault(require("path"));
 var level_1 = __importDefault(require("level"));
@@ -45,30 +44,15 @@ var apm_1 = __importDefault(require("@aragon/apm"));
 var web3_1 = __importDefault(require("web3"));
 var error_1 = __importDefault(require("../../error"));
 var _1 = __importDefault(require("."));
-var wrapper_1 = __importDefault(require("@aragon/wrapper"));
 var APP_IDS = {
     'acl': '0xe3262375f45a6e2026b7e7b18c2b807434f2508fe1a2a3dfb493c7df8f4aad6a',
     'colony': '0x7b1ecd00360e711e0e2f5e06cfaa343df02df7bce0566ae1889b36a81c7ac7c7',
     'scheme': '0x7dcc2953010d38f70485d098b74f6f8dc58f18ebcd350267fa5f62e7cbc13cfe'
 };
-var db = function (location, options) { return __awaiter(_this, void 0, void 0, function () {
-    return __generator(this, function (_a) {
-        return [2 /*return*/, new Promise(function (resolve, reject) {
-                level_1.default(location, options, function (err, dbs) {
-                    if (err) {
-                        reject(err);
-                    }
-                    else {
-                        resolve(dbs);
-                    }
-                });
-            })];
-    });
-}); };
 var OrganizationFactory = /** @class */ (function () {
     function OrganizationFactory(plant) {
         this.plant = plant;
-        this.db = level_1.default(path_1.default.join(plant.paths.organizations, 'db'), { valueEncoding: 'json' });
+        this.db = level_1.default(path_1.default.join(plant.paths.organizations, 'organizations.db'), { valueEncoding: 'json' });
     }
     OrganizationFactory.prototype.exists = function (_a) {
         var _b = _a === void 0 ? {} : _a, name = _b.name, address = _b.address;
@@ -150,58 +134,48 @@ var OrganizationFactory = /** @class */ (function () {
                         if (_a.sent())
                             throw new error_1.default('E_ORGANIZATION_ALREADY_EXISTS', address);
                         return [2 /*return*/, new Promise(function (resolve, reject) { return __awaiter(_this, void 0, void 0, function () {
-                                var kernel, acl, colony, scheme, aragon, subscription;
+                                var kernel, acl, colony, scheme, _a, _b;
                                 var _this = this;
-                                return __generator(this, function (_a) {
-                                    switch (_a.label) {
+                                return __generator(this, function (_c) {
+                                    switch (_c.label) {
                                         case 0: return [4 /*yield*/, this.plant.pando.contracts.Kernel.at(address)];
                                         case 1:
-                                            kernel = _a.sent();
-                                            aragon = new wrapper_1.default(address, {
-                                                provider: this.plant.pando.options.ethereum.provider,
-                                                apm: { ensRegistryAddress: this.plant.pando.options.apm.ens }
-                                            });
-                                            return [4 /*yield*/, aragon.init({
-                                                    accounts: { providedAccounts: [this.plant.pando.options.ethereum.account] }
-                                                })];
-                                        case 2:
-                                            _a.sent();
-                                            subscription = aragon.apps
-                                                .take(1)
-                                                .subscribe(function (apps) { return __awaiter(_this, void 0, void 0, function () {
-                                                var _i, apps_1, app, _a, organization;
+                                            kernel = _c.sent();
+                                            _b = (_a = this.plant.pando.contracts.ACL).at;
+                                            return [4 /*yield*/, kernel.acl()];
+                                        case 2: return [4 /*yield*/, _b.apply(_a, [_c.sent()])];
+                                        case 3:
+                                            acl = _c.sent();
+                                            kernel.NewAppProxy({}, { fromBlock: 0, toBlock: 'latest' }).get(function (err, events) { return __awaiter(_this, void 0, void 0, function () {
+                                                var _i, events_1, event_1, _a, organization;
                                                 return __generator(this, function (_b) {
                                                     switch (_b.label) {
                                                         case 0:
-                                                            _i = 0, apps_1 = apps;
+                                                            if (err)
+                                                                reject(err);
+                                                            _i = 0, events_1 = events;
                                                             _b.label = 1;
                                                         case 1:
-                                                            if (!(_i < apps_1.length)) return [3 /*break*/, 9];
-                                                            app = apps_1[_i];
-                                                            _a = app.appId;
+                                                            if (!(_i < events_1.length)) return [3 /*break*/, 7];
+                                                            event_1 = events_1[_i];
+                                                            _a = event_1.args.appId;
                                                             switch (_a) {
-                                                                case APP_IDS.acl: return [3 /*break*/, 2];
-                                                                case APP_IDS.colony: return [3 /*break*/, 4];
-                                                                case APP_IDS.scheme: return [3 /*break*/, 6];
+                                                                case APP_IDS.colony: return [3 /*break*/, 2];
+                                                                case APP_IDS.scheme: return [3 /*break*/, 4];
                                                             }
-                                                            return [3 /*break*/, 8];
-                                                        case 2: return [4 /*yield*/, this.plant.pando.contracts.ACL.at(app.proxyAddress)];
+                                                            return [3 /*break*/, 6];
+                                                        case 2: return [4 /*yield*/, this.plant.pando.contracts.Colony.at(event_1.args.proxy)];
                                                         case 3:
-                                                            acl = _b.sent();
-                                                            return [3 /*break*/, 8];
-                                                        case 4: return [4 /*yield*/, this.plant.pando.contracts.Colony.at(app.proxyAddress)];
-                                                        case 5:
                                                             colony = _b.sent();
-                                                            return [3 /*break*/, 8];
-                                                        case 6: return [4 /*yield*/, this.plant.pando.contracts.DemocracyScheme.at(app.proxyAddress)];
-                                                        case 7:
+                                                            return [3 /*break*/, 6];
+                                                        case 4: return [4 /*yield*/, this.plant.pando.contracts.DemocracyScheme.at(event_1.args.proxy)];
+                                                        case 5:
                                                             scheme = _b.sent();
-                                                            return [3 /*break*/, 8];
-                                                        case 8:
+                                                            return [3 /*break*/, 6];
+                                                        case 6:
                                                             _i++;
                                                             return [3 /*break*/, 1];
-                                                        case 9:
-                                                            subscription.unsubscribe();
+                                                        case 7:
                                                             organization = new _1.default(this.plant, address, kernel, acl, colony, scheme);
                                                             return [4 /*yield*/, this.db.put(organization.address, {
                                                                     name: name,
@@ -209,7 +183,7 @@ var OrganizationFactory = /** @class */ (function () {
                                                                     colony: organization.colony.address,
                                                                     scheme: organization.scheme.address
                                                                 })];
-                                                        case 10:
+                                                        case 8:
                                                             _b.sent();
                                                             resolve(organization);
                                                             return [2 /*return*/];

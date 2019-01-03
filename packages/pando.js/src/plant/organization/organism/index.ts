@@ -4,12 +4,13 @@ import Organization from '..'
 
 export default class Organism {
 
-    public address: string
+  public address: string
+  public organization: Organization
 
-
-    constructor(address: string) {
-        this.address = address
-    }
+  constructor(organization: Organization, address: string) {
+    this.address = address
+    this.organization = organization
+  }
 
 
 }

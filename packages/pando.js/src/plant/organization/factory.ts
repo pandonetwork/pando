@@ -14,26 +14,13 @@ const APP_IDS = {
   'scheme': '0x7dcc2953010d38f70485d098b74f6f8dc58f18ebcd350267fa5f62e7cbc13cfe'
 }
 
-
-const db = async (location, options): Promise<any> => {
-  return new Promise<any>((resolve, reject) => {
-    Level(location, options, function (err, dbs) {
-      if (err) {
-        reject(err)
-      } else {
-        resolve(dbs)
-      }
-    })
-  })
-}
-
 export default class OrganizationFactory {
   public plant: Plant
   public db: Level
 
   constructor(plant: Plant) {
     this.plant = plant
-    this.db = Level(npath.join(plant.paths.organizations, 'db'), { valueEncoding: 'json' })
+    this.db = Level(npath.join(plant.paths.organizations, 'organizations.db'), { valueEncoding: 'json' })
   }
 
   public async exists({ name, address }: { name?: string , address?: string } = {}): Promise<boolean> {
@@ -84,35 +71,22 @@ export default class OrganizationFactory {
       let kernel, acl, colony, scheme
 
       kernel = await this.plant.pando.contracts.Kernel.at(address)
+      acl    = await this.plant.pando.contracts.ACL.at(await kernel.acl())
 
-      const aragon = new Aragon(address, {
-        provider: this.plant.pando.options.ethereum.provider,
-        apm: { ensRegistryAddress: this.plant.pando.options.apm.ens }
-      })
+      kernel.NewAppProxy({}, { fromBlock: 0, toBlock: 'latest' }).get(async (err, events) => {
+        if (err)
+          reject(err)
 
-      await aragon.init({
-        accounts:
-          { providedAccounts: [this.plant.pando.options.ethereum.account] }
-      })
-
-      let subscription = aragon.apps
-        .take(1)
-        .subscribe(async (apps) => {
-          for (let app of apps) {
-            switch (app.appId) {
-              case APP_IDS.acl:
-                acl = await this.plant.pando.contracts.ACL.at(app.proxyAddress)
-                break
-              case APP_IDS.colony:
-                colony = await this.plant.pando.contracts.Colony.at(app.proxyAddress)
-                break
-              case APP_IDS.scheme:
-                scheme = await this.plant.pando.contracts.DemocracyScheme.at(app.proxyAddress)
-                break
-            }
+        for (let event of events) {
+          switch (event.args.appId) {
+            case APP_IDS.colony:
+              colony = await this.plant.pando.contracts.Colony.at(event.args.proxy)
+              break
+            case APP_IDS.scheme:
+              scheme = await this.plant.pando.contracts.DemocracyScheme.at(event.args.proxy)
+              break
+          }
         }
-
-        subscription.unsubscribe()
 
         const organization = new Organization(this.plant, address, kernel, acl, colony, scheme)
 
@@ -129,7 +103,6 @@ export default class OrganizationFactory {
         resolve(organization)
       })
     })
-
   }
 
   public async delete({ name, address }: { name?: string , address?: string } = {}): Promise<void> {

@@ -1,8 +1,9 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 var Organism = /** @class */ (function () {
-    function Organism(address) {
+    function Organism(organization, address) {
         this.address = address;
+        this.organization = organization;
     }
     return Organism;
 }());
