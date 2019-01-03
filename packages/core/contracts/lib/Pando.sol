@@ -2,31 +2,23 @@ pragma solidity ^0.4.24;
 pragma experimental ABIEncoderV2;
 
 
-library Pando {
+contract Pando {
     enum RFLState   { Pending, Accepted, Issued, Rejected, Cancelled }
     enum RFIState   { Pending, Merged, Rejected, Cancelled }
     enum RFISorting { Merge, Reject }
 
     struct IID {
-        address api;
+        address organism;
         bytes32 hash;
     }
 
     struct IIndividuation {
-        address origin;
-        string  tree;
-        string  message;
         string  metadata;
-        IID[]   parents;
     }
 
     struct Individuation {
-        address origin;
         uint256 blockstamp;
-        string  tree;
-        string  message;
         string  metadata;
-        IID[]   parents;
     }
 
     struct RFI {
@@ -50,27 +42,13 @@ library Pando {
         uint256  RFIid;
     }
 
-    function isPending(RFI _RFI) public pure returns (bool) {
-        return _RFI.state == RFIState.Pending;
-    }
-
-    function isPending(RFL _RFL) public pure returns (bool) {
-        return _RFL.state == RFLState.Pending;
-    }
-
-    function isAccepted(RFL _RFL) public pure returns (bool) {
-        return _RFL.state == RFLState.Accepted;
-    }
+    constructor() public {}
 
     function hash(Individuation _individuation) public pure returns (bytes32) {
         return keccak256(
             abi.encodePacked(
-                _individuation.origin,
                 _individuation.blockstamp,
-                _individuation.tree,
-                _individuation.message,
-                _individuation.metadata,
-                _individuation.parents)
+                _individuation.metadata)
             );
     }
 }
