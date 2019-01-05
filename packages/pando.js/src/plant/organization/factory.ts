@@ -67,42 +67,37 @@ export default class OrganizationFactory {
     if (await this.exists({ address }))
       throw new PandoError('E_ORGANIZATION_ALREADY_EXISTS', address)
 
-    return new Promise<any>(async (resolve, reject) => {
-      let kernel, acl, colony, scheme
+    let kernel, acl, colony, scheme
 
-      kernel = await this.plant.pando.contracts.Kernel.at(address)
-      acl    = await this.plant.pando.contracts.ACL.at(await kernel.acl())
+    kernel = await this.plant.pando.contracts.Kernel.at(address)
+    acl    = await this.plant.pando.contracts.ACL.at(await kernel.acl())
 
-      kernel.NewAppProxy({}, { fromBlock: 0, toBlock: 'latest' }).get(async (err, events) => {
-        if (err)
-          reject(err)
+    const events = await kernel.getPastEvents("NewAppProxy", { fromBlock: 0, toBlock: 'latest' });
 
-        for (let event of events) {
-          switch (event.args.appId) {
-            case APP_IDS.colony:
-              colony = await this.plant.pando.contracts.Colony.at(event.args.proxy)
-              break
-            case APP_IDS.scheme:
-              scheme = await this.plant.pando.contracts.DemocracyScheme.at(event.args.proxy)
-              break
-          }
+    for (let event of events) {
+      switch (event.args.appId) {
+        case APP_IDS.colony:
+          colony = await this.plant.pando.contracts.Colony.at(event.args.proxy)
+          break
+        case APP_IDS.scheme:
+          scheme = await this.plant.pando.contracts.DemocracyScheme.at(event.args.proxy)
+          break
         }
+     }
 
-        const organization = new Organization(this.plant, address, kernel, acl, colony, scheme)
+     const organization = new Organization(this.plant, address, kernel, acl, colony, scheme)
 
-        await this.db.put(
-          organization.address,
-          {
-            name,
-            acl: organization.acl.address,
-            colony: organization.colony.address,
-            scheme: organization.scheme.address
-          }
-        )
+     await this.db.put(
+       organization.address,
+       {
+         name,
+         acl: organization.acl.address,
+         colony: organization.colony.address,
+         scheme: organization.scheme.address
+       }
+    )
 
-        resolve(organization)
-      })
-    })
+    return organization
   }
 
   public async delete({ name, address }: { name?: string , address?: string } = {}): Promise<void> {
@@ -134,6 +129,20 @@ export default class OrganizationFactory {
     const scheme = await this.plant.pando.contracts.DemocracyScheme.at(organization.scheme)
 
     return new Organization(this.plant, address as string, kernel, acl, colony, scheme)
+  }
+
+  public async list(name: string): Promise<any[]> {
+    const organizations: any[] = []
+
+    return new Promise<any[]>((resolve, reject) => {
+      this.db
+        .createReadStream()
+        .on('data', organization => {
+          organizations.push({ address: organization.key, ...organization.value })
+        })
+        .on('end', () => { resolve(organizations) })
+        .on('error', (err) => { reject(err) })
+    })
   }
 
   public async address(name: string): Promise<string|undefined> {

@@ -84,6 +84,20 @@ export default class OrganismFactory {
     return new Organism(this.organization, address as string)
   }
 
+  public async list(): Promise<any[]> {
+    const organisms: any[] = []
+
+    return new Promise<any[]>((resolve, reject) => {
+      this.db
+        .createReadStream()
+        .on('data', organism => {
+          organisms.push({ address: organism.key, ...organism.value })
+        })
+        .on('end', () => { resolve(organisms) })
+        .on('error', (err) => { reject(err) })
+    })
+  }
+
   public async address(name: string): Promise<string|undefined> {
     let address: string|undefined = undefined
 

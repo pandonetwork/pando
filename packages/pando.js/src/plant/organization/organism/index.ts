@@ -12,5 +12,5 @@ export default class Organism {
     this.organization = organization
   }
 
-
+  
 }

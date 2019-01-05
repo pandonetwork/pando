@@ -135,7 +135,7 @@ export default class Fiber {
           path = npath.relative(this.plant.paths.root, path)
           const tree = await this.plant.node.files.get(snapshot.tree + '/' + path)
 
-          console.log(tree)
+          // console.log(tree)
 
 
           if (tree.length <= 0) {

@@ -204,10 +204,12 @@ var Fiber = /** @class */ (function () {
                         if (!(_i < paths_1.length)) return [3 /*break*/, 5];
                         path = paths_1[_i];
                         path = path_1.default.relative(this.plant.paths.root, path);
-                        return [4 /*yield*/, this.plant.node.files.get(snapshot.tree + '/' + path)];
+                        return [4 /*yield*/, this.plant.node.files.get(snapshot.tree + '/' + path)
+                            // console.log(tree)
+                        ];
                     case 3:
                         tree = _c.sent();
-                        console.log(tree);
+                        // console.log(tree)
                         if (tree.length <= 0) {
                             throw new error_1.default('E_ENTRY_NOT_FOUND_IN_SNAPSHOT', path, id);
                         }
