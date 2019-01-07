@@ -10,6 +10,8 @@ export * from './switch'
 export * from './fibers'
 export * from './organizations'
 export * from './organisms'
+export * from './individuate'
+
 
 
 

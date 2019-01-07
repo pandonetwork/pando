@@ -25,6 +25,7 @@ const argv = yargs
   .command(commands.fibers)
   .command(commands.organizations)
   .command(commands.organisms)
+  .command(commands.individuate)
   .demandCommand(1, 'No command provided')
   .strict()
   .help()

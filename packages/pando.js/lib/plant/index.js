@@ -42,6 +42,7 @@ var fs_extra_1 = __importDefault(require("fs-extra"));
 var path_1 = __importDefault(require("path"));
 var factory_1 = __importDefault(require("./organization/factory"));
 var factory_2 = __importDefault(require("./fiber/factory"));
+var ipfs_http_client_1 = __importDefault(require("ipfs-http-client"));
 var Plant = /** @class */ (function () {
     function Plant(pando, path, node) {
         if (path === void 0) { path = '.'; }
@@ -57,6 +58,66 @@ var Plant = /** @class */ (function () {
         this.organizations = new factory_1.default(this);
         this.fibers = new factory_2.default(this);
     }
+    Plant.prototype.publish = function (organizationName, organismName, message) {
+        if (message === void 0) { message = 'n/a'; }
+        return __awaiter(this, void 0, void 0, function () {
+            var fiber, snapshot, metadata, lineage, cid, individuation, organization, address, peer, gateway, receipt;
+            return __generator(this, function (_a) {
+                switch (_a.label) {
+                    case 0: return [4 /*yield*/, this.fibers.current()];
+                    case 1:
+                        fiber = _a.sent();
+                        return [4 /*yield*/, fiber.snapshot('Automatic snapshot before RFI')];
+                    case 2:
+                        snapshot = _a.sent();
+                        metadata = {
+                            tree: snapshot.tree,
+                            message: message
+                        };
+                        lineage = {
+                            destination: this.pando.options.ethereum.account,
+                            minimum: 0,
+                            metadata: ''
+                        };
+                        return [4 /*yield*/, this.node.dag.put(metadata, { format: 'dag-cbor', hashAlg: 'sha3-512' })];
+                    case 3:
+                        cid = (_a.sent()).toBaseEncodedString();
+                        individuation = {
+                            metadata: cid
+                        };
+                        return [4 /*yield*/, this.organizations.load({ name: organizationName })];
+                    case 4:
+                        organization = _a.sent();
+                        return [4 /*yield*/, organization.organisms.address(organismName)];
+                    case 5:
+                        address = _a.sent();
+                        return [4 /*yield*/, this.node.start()];
+                    case 6:
+                        _a.sent();
+                        return [4 /*yield*/, this.node.id()];
+                    case 7:
+                        peer = _a.sent();
+                        gateway = ipfs_http_client_1.default({ host: 'localhost', port: '5001', protocol: 'http' });
+                        return [4 /*yield*/, gateway.swarm.connect('/ip4/127.0.0.1/tcp/4003/ws/ipfs/' + peer.id)];
+                    case 8:
+                        _a.sent();
+                        return [4 /*yield*/, gateway.pin.add(cid)];
+                    case 9:
+                        _a.sent();
+                        return [4 /*yield*/, gateway.pin.add(snapshot.tree)];
+                    case 10:
+                        _a.sent();
+                        return [4 /*yield*/, this.node.stop()];
+                    case 11:
+                        _a.sent();
+                        return [4 /*yield*/, organization.scheme.createRFI(address, individuation, [lineage])];
+                    case 12:
+                        receipt = _a.sent();
+                        return [2 /*return*/, receipt];
+                }
+            });
+        });
+    };
     Plant.prototype.remove = function () {
         return __awaiter(this, void 0, void 0, function () {
             return __generator(this, function (_a) {

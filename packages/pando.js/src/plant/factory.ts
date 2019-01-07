@@ -36,7 +36,22 @@ export default class PlantFactory {
         fs.ensureDir(npath.join(path, '.pando', 'fibers'))
       ])
 
-      const node = new IPFS({ repo: npath.join(path, '.pando', 'ipfs'), start: false })
+      const node = new IPFS({
+        repo: npath.join(path, '.pando', 'ipfs'),
+        start: false,
+        config: {
+          "Bootstrap": [
+            "/ip4/127.0.0.1/tcp/9999/ws/",
+            "/ipv4/127.0.0.1/tcp/9999/ws/ipfs/QmbuTRFUhf8EBRjY8rRKcpKEg3ptECvgyqP2PRDij5h8cK",
+            "/ipv4/127.0.0.1/tcp/9999/ws/ipfs/QmYS164H7ndSirykbAnf9LJ5VJdAQZGB8a2CvjaaVvSRSq",
+            "/ip4/127.0.0.1/tcp/4001/ipfs/QmYS164H7ndSirykbAnf9LJ5VJdAQZGB8a2CvjaaVvSRSq"
+          ]}
+        // },
+        // preload: { enabled: true, addresses: [ '/ip4/127.0.0.1/tcp/4001/',
+        // '/ipv4/127.0.0.1/tcp/9999/ws/', '/ipv4/127.0.0.1/tcp/9999/ws/ipfs/QmYS164H7ndSirykbAnf9LJ5VJdAQZGB8a2CvjaaVvSRSq', "/ipv4/127.0.0.1/tcp/9999/ws/ipfs/QmbuTRFUhf8EBRjY8rRKcpKEg3ptECvgyqP2PRDij5h8cK",
+        // "/ipv4/127.0.0.1/tcp/9999/ws/ipfs/QmYS164H7ndSirykbAnf9LJ5VJdAQZGB8a2CvjaaVvSRSq",
+        // "/ip4/127.0.0.1/tcp/4001/ipfs/QmYS164H7ndSirykbAnf9LJ5VJdAQZGB8a2CvjaaVvSRSq"] }
+        })
         .on('error', err => { reject(err) })
         .on('ready', async () => {
           const plant = new Plant(this.pando, path, node)

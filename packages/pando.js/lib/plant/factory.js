@@ -88,7 +88,23 @@ var PlantFactory = /** @class */ (function () {
                                             ])];
                                         case 1:
                                             _a.sent();
-                                            node = new ipfs_1.default({ repo: path_1.default.join(path, '.pando', 'ipfs'), start: false })
+                                            node = new ipfs_1.default({
+                                                repo: path_1.default.join(path, '.pando', 'ipfs'),
+                                                start: false,
+                                                config: {
+                                                    "Bootstrap": [
+                                                        "/ip4/127.0.0.1/tcp/9999/ws/",
+                                                        "/ipv4/127.0.0.1/tcp/9999/ws/ipfs/QmbuTRFUhf8EBRjY8rRKcpKEg3ptECvgyqP2PRDij5h8cK",
+                                                        "/ipv4/127.0.0.1/tcp/9999/ws/ipfs/QmYS164H7ndSirykbAnf9LJ5VJdAQZGB8a2CvjaaVvSRSq",
+                                                        "/ip4/127.0.0.1/tcp/4001/ipfs/QmYS164H7ndSirykbAnf9LJ5VJdAQZGB8a2CvjaaVvSRSq"
+                                                    ]
+                                                }
+                                                // },
+                                                // preload: { enabled: true, addresses: [ '/ip4/127.0.0.1/tcp/4001/',
+                                                // '/ipv4/127.0.0.1/tcp/9999/ws/', '/ipv4/127.0.0.1/tcp/9999/ws/ipfs/QmYS164H7ndSirykbAnf9LJ5VJdAQZGB8a2CvjaaVvSRSq', "/ipv4/127.0.0.1/tcp/9999/ws/ipfs/QmbuTRFUhf8EBRjY8rRKcpKEg3ptECvgyqP2PRDij5h8cK",
+                                                // "/ipv4/127.0.0.1/tcp/9999/ws/ipfs/QmYS164H7ndSirykbAnf9LJ5VJdAQZGB8a2CvjaaVvSRSq",
+                                                // "/ip4/127.0.0.1/tcp/4001/ipfs/QmYS164H7ndSirykbAnf9LJ5VJdAQZGB8a2CvjaaVvSRSq"] }
+                                            })
                                                 .on('error', function (err) { reject(err); })
                                                 .on('ready', function () { return __awaiter(_this, void 0, void 0, function () {
                                                 var plant;
