@@ -86,4 +86,14 @@ contract Colony is AragonApp, APMNamehash {
 
       emit DeployOrganism(address(organism));
     }
+
+    function getOrganisms() public view returns (address[]) {
+      address[] memory all = new address[](organismsLength);
+
+      for (uint i = 1; i <= organismsLength; i++) {
+        all[i - 1] = organisms[i];
+      }
+
+      return all;
+    }
 }

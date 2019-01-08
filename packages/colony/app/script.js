@@ -4,29 +4,32 @@ import Aragon from '@aragon/client'
 
 const app = new Aragon()
 
-const initialState = {
-  count: 0
-}
 app.store(async (state, event) => {
-  if (state === null) state = initialState
+    if (state === null) {
+      state = { organisms: await getOrganisms() }
+    }
 
-  switch (event.event) {
-    case 'Increment':
-      return { count: await getValue() }
-    case 'Decrement':
-      return { count: await getValue() }
-    default:
-      return state
-  }
-})
+    console.log('State from script')
+    console.log(state)
 
-function getValue() {
-  // Get current value from the contract by calling the public getter
+    switch (event.event) {
+      // case 'Buy':
+      //   return { ...state, transactions: [{ type: 'buy', to: event.returnValues.to, tokens: event.returnValues.amount, eth: event.returnValues.value }, ...state.transactions], pool: await getPool(), supply: await getSupply() }
+      // case 'Sell':
+      //   return { ...state, transactions: [{ type: 'sell', from: event.returnValues.from, tokens: event.returnValues.amount, eth: event.returnValues.value }, ...state.transactions], pool: await getPool(), supply: await getSupply() }
+      // case 'Withdraw':
+      //   return { ...state, withdrawals: [{ value: event.returnValues.value }, ...state.withdrawals], pool: await getPool(), supply: await getSupply() }
+      // case 'UpdateTap':
+      //   return { ...state, tap: await getTap() }
+      default:
+        return state
+    }
+  })
+
+function getOrganisms() {
   return new Promise(resolve => {
     app
-      .call('value')
-      .first()
-      .map(value => parseInt(value, 10))
+      .call('getOrganisms')
       .subscribe(resolve)
   })
 }

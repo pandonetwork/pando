@@ -9,11 +9,12 @@ import {
   AppBar,
   NavigationBar,
   EmptyStateCard,
+  IconHome,
   observe
 } from '@aragon/ui'
 import Aragon, { providers } from '@aragon/client'
 import styled from 'styled-components'
-
+import OrganismScreen from './screens/Organism'
 const AppContainer = styled(AragonApp)`
   display: flex;
   align-items: center;
@@ -31,15 +32,72 @@ const EmptyContainer = styled.div`
   flex-grow: 1;
 `
 
+const ItemContainer = styled.div`
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(282px, 1fr));
+  grid-gap: 2rem;
+`
+
+function WithdrawalsTable(props) {
+  const withdrawals = props.withdrawals
+
+  if(withdrawals.length === 0) { return('') }
+
+  const items = withdrawals.map((withdrawal) => {
+    return(
+      <TableRow>
+        <TableCell><Text color={theme.negative}>- {web3Utils.fromWei(withdrawal.value.toString(), 'ether')} ETH</Text></TableCell>
+      </TableRow>
+    )
+  })
+
+  return (
+    <Table header={<TableRow><TableHeader title="Withdrawals" /></TableRow>}>{items}</Table>
+  )
+}
+
+function OrganismsGrid(props) {
+  const organisms = props.organisms
+  const onActivate = props.onActivate
+
+
+  const items = organisms.map((address, idx) => {
+    return(
+      <EmptyStateCard
+        key={idx}
+        icon={IconHome}
+        title={address}
+        actionText='View organism'
+        onActivate={() => onActivate(address)}
+      />
+    )
+
+  })
+
+  return(<ItemContainer>{items}</ItemContainer>)
+}
+
 export default class App extends React.Component {
+
+  static defaultProps = {
+    account: '',
+    organisms: []
+  }
 
   state = {
     panelOpen: false,
     selectedScheme: 0,
     organismName: '',
     organismToken: '',
-    organisms: [],
+    organism: '',
     navItems: ["Colony", "OrganismX"],
+  }
+
+  forward = (address) => {
+    this.setState(({ navItems }) => ({
+      navItems: [...navItems, address],
+      organism: address,
+    }))
   }
 
   backward = () => {
@@ -50,22 +108,23 @@ export default class App extends React.Component {
   }
 
   render () {
+    const organisms = ['0xorganism1', '0xorganism2']
+
     const {
-      organisms,
-      organismName,
-      organismToken,
-      selectedScheme,
+      organism,
       panelOpen,
       navItems,
       selectedOrganism,
     } = this.state
+
+
 
     return (
       <PublicUrl.Provider url="./aragon-ui/">
         <BaseStyles />
         <Main>
         <AppView
-        appBar={
+          appBar={
           <AppBar
             endContent={
               navItems.length < 2 && (
@@ -77,7 +136,7 @@ export default class App extends React.Component {
           </AppBar>
         }>
         {
-          navItems.length < 2 && !this.state.organisms.length && (
+          navItems.length < 2 && !organisms.length && (
             <EmptyContainer>
               <EmptyStateCard
                 icon={EmptyIcon}
@@ -89,6 +148,12 @@ export default class App extends React.Component {
             </EmptyContainer>
           )
         }
+        {navItems.length < 2 && !!organisms.length && (
+            <OrganismsGrid organisms={organisms} onActivate={this.forward} />
+          )}
+          {navItems.length > 1 && (
+              <OrganismScreen name={organism.address} />
+            )}
         </AppView>
 
         </Main>

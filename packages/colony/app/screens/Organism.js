@@ -38,6 +38,8 @@ const Seperator = styled.span`
 `
 
 export default function Organism(props) {
+  console.log(useState)
+  console.log(data)
   const [state, setState] = useState([{ depth: 1, parent: '' }])
   const content = state.map((item, idx) => {
     if (state.length < 2) {
