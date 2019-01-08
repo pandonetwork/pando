@@ -1,37 +1,69 @@
 import React from 'react'
-import {
-  AragonApp,
-  Button,
-  Text,
+import { AragonApp, AppBar, AppView, NavigationBar } from '@aragon/ui'
 
-  observe
-} from '@aragon/ui'
-import Aragon, { providers } from '@aragon/client'
-import styled from 'styled-components'
+import OverviewScreen from './screens/Overview'
+import RFIView from './screens/RFI'
 
-const AppContainer = styled(AragonApp)`
-  display: flex;
-  align-items: center;
-  justify-content: center;
-`
+import TabBar from './components/TabBar'
+
+const tabData = [
+  {
+    title: 'Conversation',
+    screen: OverviewScreen,
+    button: { label: 'Add Project', actions: ['sidePanelOpen'] },
+    sidePanelContent: 'NewProject',
+    sidePanelTitle: 'New Project',
+  },
+  {
+    title: 'Lineage',
+    screen: OverviewScreen,
+    button: { label: 'New Issue', actions: ['createIssue'] },
+  },
+  { title: 'Code', screen: OverviewScreen },
+]
 
 export default class App extends React.Component {
-  render () {
+  state = {
+    navItems: ['Pando'],
+    selectedTabIndex: 1,
+  }
+
+  forward = title => {
+    this.setState(({ navItems }) => ({
+      navItems: [...navItems, title],
+    }))
+  }
+
+  backward = () => {
+    if (this.state.navItems.length <= 1) {
+      return
+    }
+    this.setState(({ navItems }) => ({ navItems: navItems.slice(0, -1) }))
+  }
+
+  render() {
+    const { navItems, selectedTabIndex } = this.state
+
     return (
-      <AppContainer>
-        <div>
-          <ObservedCount observable={this.props.observable} />
-          <Button onClick={() => this.props.app.decrement(1)}>Decrement</Button>
-          <Button onClick={() => this.props.app.increment(1)}>Increment</Button>
-        </div>
-      </AppContainer>
+      <AragonApp publicUrl="/">
+        <AppView
+          appBar={
+            <AppBar>
+              <NavigationBar items={navItems} onBack={this.backward} />
+              {navItems.length > 1 && (
+                <TabBar
+                  data={tabData.map(({ title }) => title)}
+                  selected={selectedTabIndex}
+                  onSelect={idx => this.setState({ selectedTabIndex: idx })}
+                />
+              )}
+            </AppBar>
+          }
+        >
+          {navItems.length < 2 && <OverviewScreen forward={this.forward} />}
+          {navItems.length > 1 && <RFIView />}
+        </AppView>
+      </AragonApp>
     )
   }
 }
-
-const ObservedCount = observe(
-  (state$) => state$,
-  { count: 0 }
-)(
-  ({ count }) => <Text.Block style={{ textAlign: 'center' }} size='xxlarge'>{count}</Text.Block>
-)
