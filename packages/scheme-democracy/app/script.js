@@ -4,29 +4,24 @@ import Aragon from '@aragon/client'
 
 const app = new Aragon()
 
-const initialState = {
-  count: 0
-}
 app.store(async (state, event) => {
-  if (state === null) state = initialState
+  if (!state) {
+    state = { rfiVotes: [] }
+  }
 
   switch (event.event) {
-    case 'Increment':
-      return { count: await getValue() }
-    case 'Decrement':
-      return { count: await getValue() }
+    case 'NewRFIVote':
+      state.rfiVotes.push(
+        await getRFIVotes(event.returnValues.organism, event.returnValues.id)
+      )
+      return state
     default:
       return state
   }
 })
 
-function getValue() {
-  // Get current value from the contract by calling the public getter
+function getRFIVotes(organism, id) {
   return new Promise(resolve => {
-    app
-      .call('value')
-      .first()
-      .map(value => parseInt(value, 10))
-      .subscribe(resolve)
+    app.call('RFIVotes', organism, id).subscribe(resolve)
   })
 }

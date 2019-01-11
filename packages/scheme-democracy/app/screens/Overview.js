@@ -61,7 +61,7 @@ const RFIs = [
 
 export default props => (
   <div>
-    {false && (
+    {!props.rfiVotes.length && (
       <EmptyContainer>
         <EmptyStateCard
           icon={EmptyIcon}
@@ -70,45 +70,46 @@ export default props => (
         />
       </EmptyContainer>
     )}
-    {true && (
+    {!!props.rfiVotes.length && (
       <div>
         <Box mb="0.5rem">
           <Text weight="bold">Open RFIs</Text>
         </Box>
         <ItemContainer>
-          {RFIs.filter(({ completed }) => !completed).map(
-            ({ title, description }) => (
+          {console.log(props.rfiVotes)}
+          {props.rfiVotes
+            .filter(({ state }) => state === '0')
+            .map(({ RFIid }) => (
               <EmptyStateCard
-                key={title}
+                key={RFIid}
                 icon={EmptyIcon}
-                title={title}
-                text={description}
+                title={`RFI #${RFIid}`}
+                text={'Description...'}
                 actionText="View"
-                onActivate={() => props.forward(title)}
+                onActivate={() => props.forward(`RFI #${RFIid}`)}
               />
-            )
-          )}
+            ))}
         </ItemContainer>
       </div>
     )}
-    {true && (
+    {!!props.rfiVotes.length && (
       <Box mt="2rem">
         <Box mb="0.5rem">
           <Text weight="bold">Past RFIs</Text>
         </Box>
         <ItemContainer>
-          {RFIs.filter(({ completed }) => completed).map(
-            ({ title, description }) => (
+          {props.rfiVotes
+            .filter(({ state }) => state !== '0')
+            .map(({ RFIid }) => (
               <EmptyStateCard
-                key={title}
+                key={RFIid}
                 icon={EmptyIcon}
-                title={title}
-                text={description}
+                title={`RFI #${RFIid}`}
+                text={'Description...'}
                 actionText="View"
-                onActivate={() => props.forward(title)}
+                onActivate={() => props.forward(`RFI #${RFIid}`)}
               />
-            )
-          )}
+            ))}
         </ItemContainer>
       </Box>
     )}

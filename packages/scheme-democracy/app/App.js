@@ -60,7 +60,12 @@ export default class App extends React.Component {
             </AppBar>
           }
         >
-          {navItems.length < 2 && <OverviewScreen forward={this.forward} />}
+          {navItems.length < 2 && (
+            <OverviewScreen
+              rfiVotes={this.props.rfiVotes}
+              forward={this.forward}
+            />
+          )}
           {navItems.length > 1 && <RFIView />}
         </AppView>
       </AragonApp>
