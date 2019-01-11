@@ -138,6 +138,10 @@ contract DemocracyScheme is IPandoScheme, AragonApp {
         return RFLVotes[address(_organism)][_RFLid];
     }
 
+    function getRFIMetadata(IOrganism _organism, uint256 _RFIid) public view RFIVoteExists(_organism, _RFIid) returns (string) {
+        return _organism.getRFI(_RFIid).individuation.metadata;
+    }
+
     /*--------------------*/
 
     function _createRFI(IOrganism _organism, Pando.IIndividuation _individuation, Pando.ILineage[] _lineages) internal {

@@ -11,6 +11,7 @@ class ConnectedApp extends React.Component {
     observable: null,
     userAccount: '',
     rfiVotes: [],
+    RFIs:[]
   }
   componentDidMount() {
     window.addEventListener('message', this.handleWrapperMessage)
