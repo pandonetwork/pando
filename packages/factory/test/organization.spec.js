@@ -1,112 +1,96 @@
-const Kernel          = artifacts.require('@aragon/os/contracts/kernel/Kernel.sol')
-const ACL             = artifacts.require('@aragon/core/contracts/acl/ACL')
-const RegistryFactory = artifacts.require('@aragon/os/contracts/factory/EVMScriptRegistryFactory')
-const DAOFactory      = artifacts.require('@aragon/core/contracts/factory/DAOFactory')
-// const MiniMeToken     = artifacts.require('@aragon/core/contracts/lib/minime/MiniMeToken')
-// const Colony          = artifacts.require('@pando/colony/contracts/Colony')
-// const Organism        = artifacts.require('@pando/organism/contracts/core/Organism')
-// const Lineage         = artifacts.require('@pando/organism/contracts/core/Lineage')
-// const Genesis         = artifacts.require('@pando/organism/contracts/core/Genesis')
-
+const Kernel              = artifacts.require('@aragon/os/contracts/kernel/Kernel.sol')
+const ACL                 = artifacts.require('@aragon/core/contracts/acl/ACL')
+const MiniMeToken         = artifacts.require("@aragon/apps-shared-minime/contracts/MiniMeToken");
+const Vault               = artifacts.require("@aragon/apps-vault/contracts/Vault")
+const Finance             = artifacts.require("@aragon/apps-finance/contracts/Finance")
+const Voting              = artifacts.require("@aragon/apps-voting/contracts/Voting")
+const TokenManager        = artifacts.require("@aragon/apps-token-manager/contracts/TokenManager")
+const Scheme              = artifacts.require("@pando/scheme-democracy/contracts/DemocracyScheme")
+const Colony              = artifacts.require("@pando/core/contracts/colony/IColony")
 const OrganizationFactory = artifacts.require('OrganizationFactory')
 
-const ENS = artifacts.require('@aragon/os/contracts/lib/ens/ENS')
-const Resolver = artifacts.require('@aragon/os/contracts/lib/ens/PublicResolver.sol')
-const Repo = artifacts.require('@aragon/os/contracts/apm/Repo.sol')
+const namehash                = require('eth-ens-namehash').hash
+const { ADDR_NULL, ADDR_ANY } = require('@pando/helpers/address')
 
-const { ADDR_NULL }    = require('@pando/helpers/address')
-const { HASH_NULL }    = require('@pando/helpers/hash')
+const chai   = require('chai')
+const should = chai.should()
 
-const { assertRevert } = require('@aragon/test-helpers/assertThrow')
-
-const chai = require('chai')
-
-chai.should()
-
-const namehash = require('eth-ens-namehash').hash
-
-// const Finance = artifacts.require('Finance')
-// const TokenManager = artifacts.require('TokenManager')
-// const Vault = artifacts.require('Vault')
-// const Voting = artifacts.require('Voting')
-//
-// const apps = ['finance', 'token-manager', 'vault', 'voting']
-// const appIds = apps.map(app => namehash(require(`@aragon/apps-${app}/arapp`).environments.default.appName))
-//
-// const getContract = name => artifacts.require(name)
-
-const getEventResult = (receipt, event, param) => receipt.logs.filter(l => l.event == event)[0].args[param]
-const createdVoteId = receipt => getEventResult(receipt, 'StartVote', 'voteId')
-const getAppProxy = (receipt, id) => receipt.logs.filter(l => l.event == 'InstalledApp' && l.args.appId == id)[0].args.appProxy
-
-
-const arapp = require('../arapp.json')
-
-console.log(arapp)
-
+const arapp       = require('../arapp.json')
 const ENS_ADDRESS = arapp.environments.default.registry
-const ENS_NAME    = arapp.environments.default.appName
 
-const initialize = async (networkName) => {
-    const ens      = await ENS.at(ENS_ADDRESS)
-    const resolver = await Resolver.at(await ens.resolver(namehash('aragonpm.eth')))
-    const repo     = await Repo.at((await resolver.addr(namehash(ENS_NAME))))
-    const factory  = await OrganizationFactory.at((await repo.getLatest())[1])
 
-    return factory
-}
+contract('OrganizationFactory', accounts => {
+  let factory
+  let address
+  let apps
+  let kernel
+  let acl
+  let vault
+  let finance
+  let tokenManager
+  let voting
+  let scheme
+  let colony
 
-contract('Democracy Kit', accounts => {
-    let factory
+  before(async () => {
+    factory = await OrganizationFactory.new(ENS_ADDRESS)
+  })
 
-    const root         = accounts[0]
+  context('#newInstance', () => {
+    it('it should deploy DAO', async() => {
+      const receipt = await factory.newInstance()
 
-    before(async () => {
-        // create Democracy Kit
+      address = receipt.logs.filter(l => l.event == 'DeployInstance')[0].args.dao
+      apps    = receipt.logs.filter(l => l.event == 'InstalledApp').map(event => { return { id: event.args.appId, proxy: event.args.appProxy } })
 
-        factory = await OrganizationFactory.new('0x5f6f7e8cc7346a11ca2def8f827b7a0b612c56a1')
-
-        // const networkName = (await getNetwork(networks)).name
-        // if (networkName == 'devnet' || networkName == 'rpc') {
-        //     // transfer some ETH to other accounts
-        //     await web3.eth.sendTransaction({ from: owner, to: holder20, value: web3.toWei(1, 'ether') })
-        //     await web3.eth.sendTransaction({ from: owner, to: holder29, value: web3.toWei(1, 'ether') })
-        //     await web3.eth.sendTransaction({ from: owner, to: holder51, value: web3.toWei(1, 'ether') })
-        //     await web3.eth.sendTransaction({ from: owner, to: nonHolder, value: web3.toWei(1, 'ether') })
-        // }
-        // kit = await getKit(networkName)
-        // const holders = [holder20, holder29, holder51]
-        // const stakes = [20e18, 29e18, 51e18]
-        //
-        // // create Token
-        // const receiptToken = await kit.newToken('DemocracyToken', 'DTT', { from: owner })
-        // tokenAddress = getEventResult(receiptToken, 'DeployToken', 'token')
-        //
-        // // create Instance
-        // receiptInstance = await kit.newInstance('DemocracyDao-' + Math.random() * 1000, holders, stakes, neededSupport, minimumAcceptanceQuorum, votingTime, { from: owner })
-        // daoAddress = getEventResult(receiptInstance, 'DeployInstance', 'dao')
-        //
-        // // generated apps
-        // financeAddress = getAppProxy(receiptInstance, appIds[0])
-        // finance = await Finance.at(financeAddress)
-        // tokenManagerAddress = getAppProxy(receiptInstance, appIds[1])
-        // tokenManager = TokenManager.at(tokenManagerAddress)
-        // vaultAddress = getAppProxy(receiptInstance, appIds[2])
-        // vault = await Vault.at(vaultAddress)
-        // votingAddress = getAppProxy(receiptInstance, appIds[3])
-        // voting = Voting.at(votingAddress)
+      address.should.not.equal(ADDR_NULL)
     })
 
-    context('#deployOrganization', () => {
+    it('it should install apps', async() => {
+      apps[0].id.should.equal(namehash('vault.aragonpm.eth'))
+      apps[1].id.should.equal(namehash('finance.aragonpm.eth'))
+      apps[2].id.should.equal(namehash('token-manager.aragonpm.eth'))
+      apps[3].id.should.equal(namehash('voting.aragonpm.eth'))
+      apps[4].id.should.equal(namehash('scheme-democracy.aragonpm.eth'))
+      apps[5].id.should.equal(namehash('colony.aragonpm.eth'))
 
-        it('fails creating a DAO if holders and stakes don\'t match', async() => {
-            const receipt = await factory.newInstance()
-            const address = receipt.logs.filter(l => l.event == 'DeployInstance')[0].args.dao
-
-            console.log(address)
-
-        })
-
+      kernel       = await Kernel.at(address)
+      acl          = await ACL.at(await kernel.acl())
+      vault        = await Vault.at(apps[0].proxy)
+      finance      = await Finance.at(apps[1].proxy)
+      tokenManager = await TokenManager.at(apps[2].proxy)
+      voting       = await Voting.at(apps[3].proxy)
+      scheme       = await Scheme.at(apps[4].proxy)
+      colony       = await Colony.at(apps[5].proxy)
     })
 
+    it('it should initialize apps', async() => {
+      (await Promise.all([
+        vault.hasInitialized(),
+        finance.hasInitialized(),
+        tokenManager.hasInitialized(),
+        voting.hasInitialized(),
+        scheme.hasInitialized()
+      ])).should.deep.equal([true, true, true, true, true])
+    })
+
+    it('it should set permissions', async() => {
+      (await Promise.all([
+        kernel.hasPermission(colony.address, kernel.address, await kernel.APP_MANAGER_ROLE(), '0x0'),
+        kernel.hasPermission(colony.address, acl.address, await acl.CREATE_PERMISSIONS_ROLE(), '0x0'),
+        kernel.hasPermission(finance.address, vault.address, await vault.TRANSFER_ROLE(), '0x0'),
+        kernel.hasPermission(voting.address, finance.address, await finance.CREATE_PAYMENTS_ROLE(), '0x0'),
+        kernel.hasPermission(voting.address, finance.address, await finance.EXECUTE_PAYMENTS_ROLE(), '0x0'),
+        kernel.hasPermission(voting.address, finance.address, await finance.MANAGE_PAYMENTS_ROLE(), '0x0'),
+        kernel.hasPermission(colony.address, tokenManager.address, await tokenManager.MINT_ROLE(), '0x0'),
+        kernel.hasPermission(voting.address, tokenManager.address, await tokenManager.ISSUE_ROLE(), '0x0'),
+        kernel.hasPermission(voting.address, tokenManager.address, await tokenManager.ASSIGN_ROLE(), '0x0'),
+        kernel.hasPermission(voting.address, tokenManager.address, await tokenManager.REVOKE_VESTINGS_ROLE(), '0x0'),
+        kernel.hasPermission(voting.address, tokenManager.address, await tokenManager.BURN_ROLE(), '0x0'),
+        kernel.hasPermission(ADDR_ANY, voting.address, await voting.CREATE_VOTES_ROLE(), '0x0'),
+        kernel.hasPermission(voting.address, scheme.address, await  scheme.UPDATE_PARAMETERS_ROLE(), '0x0'),
+        kernel.hasPermission(ADDR_ANY, colony.address, await colony.DEPLOY_ORGANISM_ROLE(), '0x0')
+      ])).should.deep.equal([true, true, true, true, true, true, true, true, true, true, true, true, true, true])
+    })
+  })
 })
