@@ -6,12 +6,12 @@ import "../organism/IOrganism.sol";
 
 
 contract IPandoScheme {
-    event CreateRFI(IOrganism organism, uint256 indexed id, address sender);
-    event MergeRFI(IOrganism organism, uint256 indexed id, address sender);
-    event RejectRFI(IOrganism organism, uint256 indexed id, address sender);
-    event CreateRFL(IOrganism organism, uint256 indexed id, address sender);
-    event AcceptRFL(IOrganism organism, uint256 indexed id, uint256 value, address sender);
-    event RejectRFL(IOrganism organism, uint256 indexed id, address sender);
+    event CreateRFI(IOrganism indexed organism, uint256 indexed id, address sender);
+    event MergeRFI(IOrganism indexed organism, uint256 indexed id, address sender);
+    event RejectRFI(IOrganism indexed organism, uint256 indexed id, address sender);
+    event CreateRFL(IOrganism indexed organism, uint256 indexed id, address sender);
+    event AcceptRFL(IOrganism indexed organism, uint256 indexed id, uint256 value, address sender);
+    event RejectRFL(IOrganism indexed organism, uint256 indexed id, address sender);
 
     function createRFI(IOrganism _organism, Pando.IIndividuation _individuation, Pando.ILineage[] _lineages) public;
     function mergeRFI(IOrganism _organism, uint256 _RFIid) public;

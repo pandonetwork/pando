@@ -12,5 +12,4 @@ contract IColony {
 
     function initialize(ENS _ens, ITokenController _tokenManager, IPandoScheme _scheme) public;
     function deploy() public;
-
 }
