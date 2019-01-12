@@ -1,13 +1,10 @@
 pragma solidity ^0.4.24;
-pragma experimental ABIEncoderV2;
 
 
 import "@aragon/os/contracts/acl/ACL.sol";
 import "@aragon/os/contracts/kernel/Kernel.sol";
 import "@aragon/os/contracts/factory/DAOFactory.sol";
 import "@aragon/os/contracts/factory/EVMScriptRegistryFactory.sol";
-
-/* import "@pando/colony/contracts/Colony.sol"; */
 
 // You might think this file is a bit odd, but let me explain.
 // We only use some contracts in our tests, which means Truffle

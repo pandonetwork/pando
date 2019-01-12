@@ -1,32 +1,27 @@
 pragma solidity ^0.4.24;
 
-import "@aragon/os/contracts/apm/Repo.sol";
 import "@aragon/os/contracts/lib/ens/ENS.sol";
 import "@aragon/os/contracts/lib/ens/PublicResolver.sol";
+import "@aragon/os/contracts/apm/Repo.sol";
 import "@aragon/os/contracts/apm/APMNamehash.sol";
-
 import "@aragon/os/contracts/factory/DAOFactory.sol";
-
 import "@aragon/apps-shared-minime/contracts/MiniMeToken.sol";
 import "@aragon/apps-vault/contracts/Vault.sol";
 import "@aragon/apps-finance/contracts/Finance.sol";
-import { TokenManager } from "@aragon/apps-token-manager/contracts/TokenManager.sol";
 import "@aragon/apps-voting/contracts/Voting.sol";
-
+import { TokenManager } from "@aragon/apps-token-manager/contracts/TokenManager.sol";
 import { DemocracyScheme } from "@pando/scheme-democracy/contracts/DemocracyScheme.sol";
-/* import { Colony } from "@pando/colony/contracts/Colony.sol"; */
 import { IColony } from "@pando/core/contracts/colony/IColony.sol";
 
 
-
 contract KitBase is APMNamehash {
-    ENS public ens;
+    ENS        public ens;
     DAOFactory public fac;
 
     event DeployInstance(address dao);
     event InstalledApp(address appProxy, bytes32 appId);
 
-    function KitBase(DAOFactory _fac, ENS _ens) {
+    constructor(DAOFactory _fac, ENS _ens) public {
         ens = _ens;
 
         // If no factory is passed, get it from on-chain bare-kit
@@ -45,6 +40,7 @@ contract KitBase is APMNamehash {
         return base;
     }
 }
+
 
 contract OrganizationFactory is KitBase {
     MiniMeTokenFactory tokenFactory;
@@ -67,7 +63,7 @@ contract OrganizationFactory is KitBase {
         ];
 
         Kernel dao = fac.newDAO(this);
-        ACL acl = ACL(dao.acl());
+        ACL    acl = ACL(dao.acl());
         acl.createPermission(this, dao, dao.APP_MANAGER_ROLE(), this);
 
         // Token
@@ -128,7 +124,6 @@ contract OrganizationFactory is KitBase {
         // Permissions
         acl.grantPermission(colony, dao, dao.APP_MANAGER_ROLE());
         acl.grantPermission(colony, acl, acl.CREATE_PERMISSIONS_ROLE());
-
         acl.createPermission(finance, vault, vault.TRANSFER_ROLE(), metavoting);
         acl.createPermission(metavoting, finance, finance.CREATE_PAYMENTS_ROLE(), metavoting);
         acl.createPermission(metavoting, finance, finance.EXECUTE_PAYMENTS_ROLE(), metavoting);

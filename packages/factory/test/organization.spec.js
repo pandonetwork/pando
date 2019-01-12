@@ -47,8 +47,6 @@ console.log(arapp)
 const ENS_ADDRESS = arapp.environments.default.registry
 const ENS_NAME    = arapp.environments.default.appName
 
-
-
 const initialize = async (networkName) => {
     const ens      = await ENS.at(ENS_ADDRESS)
     const resolver = await Resolver.at(await ens.resolver(namehash('aragonpm.eth')))
