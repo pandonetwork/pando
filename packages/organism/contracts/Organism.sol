@@ -1,12 +1,10 @@
 pragma solidity ^0.4.24;
 pragma experimental ABIEncoderV2;
 
-/* import "@aragon/apps-shared-minime/contracts/ITokenController.sol";
-import "@aragon/apps-shared-minime/contracts/MiniMeToken.sol"; */
+
 import "@aragon/os/contracts/apps/AragonApp.sol";
 import "@pando/core/contracts/organism/IOrganism.sol";
 import "@pando/core/contracts/lib/Pando.sol";
-
 import "./Genesis.sol";
 import "./Lineage.sol";
 
