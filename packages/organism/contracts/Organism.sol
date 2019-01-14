@@ -58,7 +58,7 @@ contract Organism is IOrganism, AragonApp {
 
     function initialize(Pando _pando, Genesis _genesis, Lineage _lineage) external onlyInit {
         initialized();
-        pando   = _pando;
+        pando = _pando;
         genesis = _genesis;
         lineage = _lineage;
     }
