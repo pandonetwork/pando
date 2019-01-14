@@ -15,7 +15,6 @@ contract Organism is IOrganism, AragonApp {
     bytes32 constant public REJECT_RFI_ROLE  = keccak256("REJECT_RFI_ROLE");
     bytes32 constant public ACCEPT_RFL_ROLE  = keccak256("ACCEPT_RFL_ROLE");
     bytes32 constant public REJECT_RFL_ROLE  = keccak256("REJECT_RFL_ROLE");
-    bytes32 constant public INDIVIDUATE_ROLE = keccak256("INDIVIDUATE_ROLE");
 
     Genesis public genesis;
     Lineage public lineage;
