@@ -60,9 +60,9 @@ contract Colony is AragonApp, APMNamehash {
         organismsLength = organismsLength + 1;
 
         Pando       pando = Pando(latestVersionAppBase(apps[0]));
-        Lineage   lineage = Lineage(dao.newAppInstance(keccak256(abi.encodePacked(apps[1], organismsLength)), latestVersionAppBase(apps[1])));
-        Genesis   genesis = Genesis(dao.newAppInstance(keccak256(abi.encodePacked(apps[2], organismsLength)), latestVersionAppBase(apps[2])));
-        Organism organism = Organism(dao.newAppInstance(keccak256(abi.encodePacked(apps[3], organismsLength)), latestVersionAppBase(apps[3])));
+        Lineage   lineage = Lineage(dao.newAppInstance(apps[1], latestVersionAppBase(apps[1])));
+        Genesis   genesis = Genesis(dao.newAppInstance(apps[2], latestVersionAppBase(apps[2])));
+        Organism organism = Organism(dao.newAppInstance(apps[3], latestVersionAppBase(apps[3])));
 
         organisms[organismsLength] = organism;
 
