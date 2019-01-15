@@ -9,6 +9,5 @@ import "@aragon/os/contracts/factory/EVMScriptRegistryFactory.sol";
 
 contract Import {
     constructor() public {
-        // to avoid lint error
     }
 }

@@ -11,7 +11,6 @@ contract Lineage is ILineage, AragonApp {
     bytes32 public constant MINT_ROLE = keccak256("MINT_ROLE");
 
     mapping (address => uint256) private _balances;
-
     uint256 private _totalSupply;
 
     function initialize() external onlyInit {

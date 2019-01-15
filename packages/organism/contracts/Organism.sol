@@ -1,7 +1,6 @@
 pragma solidity ^0.4.24;
 pragma experimental ABIEncoderV2;
 
-
 import "@aragon/os/contracts/apps/AragonApp.sol";
 import "@pando/core/contracts/organism/IOrganism.sol";
 import "@pando/core/contracts/lib/Pando.sol";
@@ -10,11 +9,11 @@ import "./Lineage.sol";
 
 
 contract Organism is IOrganism, AragonApp {
-    bytes32 constant public CREATE_RFI_ROLE  = keccak256("CREATE_RFI_ROLE");
-    bytes32 constant public MERGE_RFI_ROLE   = keccak256("MERGE_RFI_ROLE");
-    bytes32 constant public REJECT_RFI_ROLE  = keccak256("REJECT_RFI_ROLE");
-    bytes32 constant public ACCEPT_RFL_ROLE  = keccak256("ACCEPT_RFL_ROLE");
-    bytes32 constant public REJECT_RFL_ROLE  = keccak256("REJECT_RFL_ROLE");
+    bytes32 constant public CREATE_RFI_ROLE = keccak256("CREATE_RFI_ROLE");
+    bytes32 constant public MERGE_RFI_ROLE  = keccak256("MERGE_RFI_ROLE");
+    bytes32 constant public REJECT_RFI_ROLE = keccak256("REJECT_RFI_ROLE");
+    bytes32 constant public ACCEPT_RFL_ROLE = keccak256("ACCEPT_RFL_ROLE");
+    bytes32 constant public REJECT_RFL_ROLE = keccak256("REJECT_RFL_ROLE");
 
     Genesis public genesis;
     Lineage public lineage;
@@ -34,7 +33,6 @@ contract Organism is IOrganism, AragonApp {
     event MergeRFI(uint256 indexed id);
     event RejectRFI(uint256 indexed id);
     event CancelRFI(uint256 indexed id);
-
     event CreateRFL(uint256 indexed id);
     event AcceptRFL(uint256 indexed id, uint256 value);
     event RejectRFL(uint256 indexed id);
@@ -42,12 +40,12 @@ contract Organism is IOrganism, AragonApp {
     event IssueRFL(uint256 indexed id, address destination, uint256 value);
 
     modifier RFIExists(uint256 _RFIid) {
-        require(_RFIid <= RFIsLength, "RFI does not exist");
+        require(_RFIid > 0 && _RFIid <= RFIsLength, "RFI does not exist");
         _;
     }
 
     modifier RFLExists(uint256 _RFLid) {
-        require(_RFLid <= RFLsLength, "RFL does not exist");
+        require(_RFLid > 0 && _RFLid <= RFLsLength, "RFL does not exist");
         _;
     }
 

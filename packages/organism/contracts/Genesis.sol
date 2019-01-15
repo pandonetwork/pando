@@ -7,7 +7,6 @@ import "@pando/core/contracts/organism/IGenesis.sol";
 
 
 contract Genesis is IGenesis, AragonApp {
-
     bytes32 constant public INDIVIDUATE_ROLE = keccak256("INDIVIDUATE_ROLE");
 
     Pando public pando;
