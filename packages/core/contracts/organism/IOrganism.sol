@@ -5,6 +5,12 @@ import "../lib/Pando.sol";
 
 
 contract IOrganism {
+    mapping (uint256 => Pando.RFI) public RFIs;
+    mapping (uint256 => Pando.RFL) public RFLs;
+
+    uint256 public RFIsLength = 0;
+    uint256 public RFLsLength = 0;
+
     event CreateRFI(uint256 indexed id);
     event MergeRFI(uint256 indexed id);
     event RejectRFI(uint256 indexed id);
@@ -33,6 +39,7 @@ contract IOrganism {
 
     function getRFI(uint256 _RFIid) public view returns (Pando.RFI);
     function getRFL(uint256 _RFLid) public view returns (Pando.RFL);
+    function getRFLLineage(uint256 _RFLid) public view returns (address destination, uint256 minimum, string metadata);
     function getIndividuationHash(Pando.Individuation _individuation) public view returns (bytes32);
     function head() public view returns (bytes32);
     function getHead() public view returns (Pando.Individuation);

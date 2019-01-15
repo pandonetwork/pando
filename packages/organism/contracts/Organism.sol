@@ -144,6 +144,14 @@ contract Organism is IOrganism, AragonApp {
         return RFLs[_RFLid];
     }
 
+    function getRFLLineage(uint256 _RFLid) public view RFLExists(_RFLid) returns (address destination, uint256 minimum, string metadata) {
+      Pando.RFL storage RFL = RFLs[_RFLid];
+
+      destination = RFL.lineage.destination;
+      minimum = RFL.lineage.minimum;
+      metadata = RFL.lineage.metadata;
+    }
+
     function getIndividuationHash(Pando.Individuation _individuation) public view returns (bytes32) {
         return pando.hash(_individuation);
     }
