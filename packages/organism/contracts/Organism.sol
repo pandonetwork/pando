@@ -60,7 +60,6 @@ contract Organism is IOrganism, AragonApp {
 
     function createRFI(Pando.IIndividuation _individuation, Pando.ILineage[] _lineages)
         public
-        isInitialized
         auth(CREATE_RFI_ROLE)
         returns (uint256 RFIid)
     {
@@ -90,7 +89,7 @@ contract Organism is IOrganism, AragonApp {
     /*--------------------*/
 
     function canMergeRFI(uint256 _RFIid) public view returns (bool) {
-        if (_RFIid > RFIsLength)
+        if (_RFIid < 1 || _RFIid > RFIsLength)
             return false;
         Pando.RFI storage RFI = RFIs[_RFIid];
         if (RFI.state != Pando.RFIState.Pending)
@@ -104,7 +103,7 @@ contract Organism is IOrganism, AragonApp {
     }
 
     function canRejectRFI(uint _RFIid) public view returns (bool) {
-        if (_RFIid > RFIsLength)
+        if (_RFIid < 1 || _RFIid > RFIsLength)
             return false;
         if (RFIs[_RFIid].state != Pando.RFIState.Pending)
             return false;
@@ -112,7 +111,7 @@ contract Organism is IOrganism, AragonApp {
     }
 
     function canAcceptRFL(uint256 _RFLid, uint256 _value) public view returns (bool) {
-        if (_RFLid > RFLsLength)
+        if (_RFLid < 1 || _RFLid > RFLsLength)
             return false;
         if (RFLs[_RFLid].state != Pando.RFLState.Pending)
             return false;
@@ -122,7 +121,7 @@ contract Organism is IOrganism, AragonApp {
     }
 
     function canRejectRFL(uint _RFLid) public view returns (bool) {
-        if (_RFLid > RFLsLength)
+        if (_RFLid < 1 || _RFLid > RFLsLength)
             return false;
         if (RFLs[_RFLid].state != Pando.RFLState.Pending)
             return false;
@@ -130,11 +129,6 @@ contract Organism is IOrganism, AragonApp {
     }
 
     /*--------------------*/
-
-    /* function getLineageToken() public view returns (address) {
-        return address(lineage.token());
-    } */
-
 
     function getRFI(uint256 _RFIid) public view RFIExists(_RFIid) returns (Pando.RFI) {
         return RFIs[_RFIid];
@@ -145,11 +139,11 @@ contract Organism is IOrganism, AragonApp {
     }
 
     function getRFLLineage(uint256 _RFLid) public view RFLExists(_RFLid) returns (address destination, uint256 minimum, string metadata) {
-      Pando.RFL storage RFL = RFLs[_RFLid];
+        Pando.RFL storage RFL = RFLs[_RFLid];
 
-      destination = RFL.lineage.destination;
-      minimum = RFL.lineage.minimum;
-      metadata = RFL.lineage.metadata;
+        destination = RFL.lineage.destination;
+        minimum = RFL.lineage.minimum;
+        metadata = RFL.lineage.metadata;
     }
 
     function getIndividuationHash(Pando.Individuation _individuation) public view returns (bytes32) {
