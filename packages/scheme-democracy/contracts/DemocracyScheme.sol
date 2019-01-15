@@ -142,6 +142,18 @@ contract DemocracyScheme is IPandoScheme, AragonApp {
         return _organism.getRFI(_RFIid).individuation.metadata;
     }
 
+    /* function getRFLDestination(IOrganism _organism, uint256 _RFLid) public view RFLVoteExists(_organism, _RFLid) returns (address) {
+        return _organism.getRFL(_RFLid).lineage.destination;
+    }
+
+    function getRFLMinimum(IOrganism _organism, uint256 _RFLid) public view RFLVoteExists(_organism, _RFLid) returns (uint256) {
+        return _organism.getRFL(_RFLid).lineage.minimum;
+    } */
+
+    function getRFL(IOrganism _organism, uint256 _RFLid) public view RFLVoteExists(_organism, _RFLid) returns (Pando.RFL) {
+        return _organism.getRFL(_RFLid);
+    }
+
     /*--------------------*/
 
     function _createRFI(IOrganism _organism, Pando.IIndividuation _individuation, Pando.ILineage[] _lineages) internal {
