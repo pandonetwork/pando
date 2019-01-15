@@ -26,11 +26,13 @@ export default class App extends React.Component {
   state = {
     navItems: ['Pando'],
     selectedTabIndex: 1,
+    selectedRFIIndex: 0,
   }
 
-  forward = title => {
+  forward = (title, rfiIndex) => {
     this.setState(({ navItems }) => ({
       navItems: [...navItems, title],
+      selectedRFIIndex: rfiIndex,
     }))
   }
 
@@ -42,8 +44,7 @@ export default class App extends React.Component {
   }
 
   render() {
-    console.log(this.props)
-    const { navItems, selectedTabIndex } = this.state
+    const { navItems, selectedTabIndex, selectedRFIIndex } = this.state
 
     return (
       <AragonApp publicUrl="/">
@@ -67,7 +68,13 @@ export default class App extends React.Component {
               forward={this.forward}
             />
           )}
-          {navItems.length > 1 && <RFIView />}
+          {navItems.length > 1 && (
+            <RFIView
+              rfiVotes={this.props.rfiVotes}
+              rflVotes={this.props.rflVotes}
+              rfiIndex={selectedRFIIndex}
+            />
+          )}
         </AppView>
       </AragonApp>
     )

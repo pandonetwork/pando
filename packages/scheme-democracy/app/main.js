@@ -11,7 +11,8 @@ class ConnectedApp extends React.Component {
     observable: null,
     userAccount: '',
     rfiVotes: [],
-    RFIs:[]
+    rflVotes: [],
+    RFIs: [],
   }
   componentDidMount() {
     window.addEventListener('message', this.handleWrapperMessage)
@@ -46,6 +47,7 @@ class ConnectedApp extends React.Component {
         })
       })
       app.state().subscribe(state => {
+        console.log(state)
         this.setState(state)
       })
     }

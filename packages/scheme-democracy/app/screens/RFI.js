@@ -12,8 +12,6 @@ import {
 
 import Box from '../components/Box'
 
-import Overview from './Overview'
-
 const MainContainer = styled.div`
   margin-top: 3rem;
 `
@@ -49,13 +47,9 @@ const StyledTableCell = styled(TableCell)`
 `
 
 export default class App extends React.Component {
-  state = {
-    navItems: ['Pando'],
-  }
-
   render() {
-    const { navItems } = this.state
-
+    const { rfiVotes, rfiIndex, rflVotes } = this.props
+    const currentRFI = rfiVotes[rfiIndex]
     return (
       <MainContainer>
         <Box>
@@ -67,15 +61,13 @@ export default class App extends React.Component {
               <TableRow>
                 <TableHeader title="Message" />
                 <TableHeader title="Organism" />
-                <TableHeader title="Minimum" />
                 <TableHeader title="Actions" />
               </TableRow>
             }
           >
             <TableRow>
               <TableCell>Update README.md</TableCell>
-              <TableCell>0xadf...</TableCell>
-              <TableCell>3 NLT</TableCell>
+              <TableCell>{currentRFI.organism}</TableCell>
               <StyledTableCell>
                 <Button>
                   <IconCheck /> Accept
@@ -83,7 +75,6 @@ export default class App extends React.Component {
                 <Button>
                   <IconCross /> Reject
                 </Button>
-                <Field placeholder="Enter amount..." />
               </StyledTableCell>
             </TableRow>
           </Table>
@@ -102,48 +93,24 @@ export default class App extends React.Component {
               </TableRow>
             }
           >
-            <TableRow>
-              <TableCell>0xadf...</TableCell>
-              <TableCell>Developer</TableCell>
-              <TableCell>0 NLT</TableCell>
-              <StyledTableCell>
-                <Button>
-                  <IconCheck /> Accept
-                </Button>
-                <Button>
-                  <IconCross /> Reject
-                </Button>
-                <Field placeholder="Enter amount..." />
-              </StyledTableCell>
-            </TableRow>
-            <TableRow>
-              <TableCell>0xadf...</TableCell>
-              <TableCell>Comitter</TableCell>
-              <TableCell>3 NLT</TableCell>
-              <StyledTableCell>
-                <Button>
-                  <IconCheck /> Accept
-                </Button>
-                <Button>
-                  <IconCross /> Reject
-                </Button>
-                <Field placeholder="Enter amount..." />
-              </StyledTableCell>
-            </TableRow>
-            <TableRow>
-              <TableCell>0xadf...</TableCell>
-              <TableCell>Dependency</TableCell>
-              <TableCell>1 NLT</TableCell>
-              <StyledTableCell>
-                <Button>
-                  <IconCheck /> Accept
-                </Button>
-                <Button>
-                  <IconCross /> Reject
-                </Button>
-                <Field placeholder="Enter amount..." />
-              </StyledTableCell>
-            </TableRow>
+            {rflVotes
+              .filter(({ organism }) => organism === currentRFI.organism)
+              .map(({ organism, required }) => (
+                <TableRow>
+                  <TableCell>0xadf...</TableCell>
+                  <TableCell>Developer</TableCell>
+                  <TableCell>{required} NLT</TableCell>
+                  <StyledTableCell>
+                    <Button>
+                      <IconCheck /> Accept
+                    </Button>
+                    <Button>
+                      <IconCross /> Reject
+                    </Button>
+                    <Field placeholder="Enter amount..." />
+                  </StyledTableCell>
+                </TableRow>
+              ))}
           </Table>
         </Box>
       </MainContainer>

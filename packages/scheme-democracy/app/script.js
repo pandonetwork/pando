@@ -8,17 +8,31 @@ const ipfs = IPFS({ host: 'localhost', port: '5001', protocol: 'http' })
 
 app.store(async (state, event) => {
   if (!state) {
-    state = { rfiVotes: [], RFIs: [] }
+    state = { rfiVotes: [], rflVotes: [], RFIs: [] }
   }
+
+  console.log('event', event)
 
   switch (event.event) {
     case 'NewRFIVote':
-      state.rfiVotes.push(
-        await getRFIVotes(event.returnValues.organism, event.returnValues.id)
+      let rfiPayload = await getRFIVotes(
+        event.returnValues.organism,
+        event.returnValues.id
       )
-      state.RFIs.push(
-        await getRFIMetadata(event.returnValues.organism, event.returnValues.id)
+      rfiPayload.organism = event.returnValues.organism
+      state.rfiVotes.push(rfiPayload)
+      // state.RFIs.push(
+      //   await getRFIMetadata(event.returnValues.organism, event.returnValues.id)
+      // )
+      return state
+    case 'NewRFLVote':
+      let rflPayload = await getRFLVotes(
+        event.returnValues.organism,
+        event.returnValues.id
       )
+      rflPayload.organism = event.returnValues.organism
+      state.rflVotes.push(rflPayload)
+
       return state
     default:
       return state
@@ -31,14 +45,19 @@ function getRFIVotes(organism, id) {
   })
 }
 
+function getRFLVotes(organism, id) {
+  return new Promise(resolve => {
+    app.call('RFLVotes', organism, id).subscribe(resolve)
+  })
+}
+
 function getRFIMetadata(organism, id) {
   return new Promise(resolve => {
-    app
-      .call('getRFIMetadata', organism, id)
-      .subscribe(async (hash) => {
-        const metadata = (await ipfs.dag.get(hash)).value
-        const files = await ipfs.ls(metadata.tree)
-        resolve({ message: metadata.message, files: files })
-      })
+    app.call('getRFIMetadata', organism, id).subscribe(async hash => {
+      console.log('hash', hash)
+      const metadata = (await ipfs.dag.get(hash)).value
+      const files = await ipfs.ls(metadata.tree)
+      resolve({ message: metadata.message, files: files })
+    })
   })
 }

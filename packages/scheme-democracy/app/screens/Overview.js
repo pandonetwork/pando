@@ -1,6 +1,17 @@
 import React from 'react'
 import styled from 'styled-components'
-import { Text, EmptyStateCard } from '@aragon/ui'
+import {
+  Text,
+  EmptyStateCard,
+  Table,
+  TableRow,
+  TableHeader,
+  TableCell,
+  ProgressBar,
+  theme,
+  IconCheck,
+  IconCross,
+} from '@aragon/ui'
 
 import Box from '../components/Box'
 
@@ -15,49 +26,22 @@ const EmptyContainer = styled.div`
   height: 80vh;
 `
 
-const ItemContainer = styled.div`
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(282px, 1fr));
-  grid-gap: 2rem;
+const StyledTableCell = styled(TableCell)`
+  & > div {
+    display: flex;
+    flex-direction: column;
+  }
 `
 
-const RFIs = [
-  {
-    title: 'RFI #1',
-    description: 'Some message here..',
-    completed: true,
-  },
-  {
-    title: 'RFI #2',
-    description: 'Some message here..',
-    completed: true,
-  },
-  {
-    title: 'RFI #3',
-    description: 'Some message here..',
-    completed: true,
-  },
-  {
-    title: 'RFI #4',
-    description: 'Some message here..',
-    completed: true,
-  },
-  {
-    title: 'RFI #5',
-    description: 'Some message here..',
-    completed: false,
-  },
-  {
-    title: 'RFI #6',
-    description: 'Some message here..',
-    completed: false,
-  },
-  {
-    title: 'RFI #7',
-    description: 'Some message here..',
-    completed: false,
-  },
-]
+const StyledTableRow = styled(TableRow)`
+  &:hover {
+    cursor: pointer;
+  }
+`
+
+const StyledBox = styled(Box)`
+  align-items: center;
+`
 
 export default props => (
   <div>
@@ -70,47 +54,86 @@ export default props => (
         />
       </EmptyContainer>
     )}
+
     {!!props.rfiVotes.length && (
       <div>
         <Box mb="0.5rem">
           <Text weight="bold">Open RFIs</Text>
         </Box>
-        <ItemContainer>
-          {console.log(props.rfiVotes)}
+
+        <Table
+          header={
+            <TableRow>
+              <TableHeader title="ID" />
+              <TableHeader title="Message" />
+              <TableHeader title="Participation" />
+              <TableHeader title="State" />
+            </TableRow>
+          }
+        >
           {props.rfiVotes
             .filter(({ state }) => state === '0')
-            .map(({ RFIid }) => (
-              <EmptyStateCard
-                key={RFIid}
-                icon={EmptyIcon}
-                title={`RFI #${RFIid}`}
-                text={'Description...'}
-                actionText="View"
-                onActivate={() => props.forward(`RFI #${RFIid}`)}
-              />
+            .map(({ RFIid, participation, yea, nay }, idx) => (
+              <StyledTableRow
+                onClick={() => props.forward(`RFI #${RFIid}`, idx)}
+              >
+                <TableCell>RFI #{RFIid}</TableCell>
+                <TableCell>Message...</TableCell>
+                <TableCell>{participation} participants</TableCell>
+                <StyledTableCell>
+                  <StyledBox width="100%" display="flex" mb="1rem">
+                    <Box mr="1rem">
+                      <IconCheck />
+                    </Box>
+                    <ProgressBar
+                      color={theme.positive}
+                      progress={yea / participation}
+                    />
+                  </StyledBox>
+                  <StyledBox width="100%" display="flex">
+                    <Box mr="1rem">
+                      <IconCross />
+                    </Box>
+                    <ProgressBar
+                      color={theme.negative}
+                      progress={nay / participation}
+                    />
+                  </StyledBox>
+                </StyledTableCell>
+              </StyledTableRow>
             ))}
-        </ItemContainer>
+        </Table>
       </div>
     )}
+
     {!!props.rfiVotes.length && (
       <Box mt="2rem">
         <Box mb="0.5rem">
           <Text weight="bold">Past RFIs</Text>
         </Box>
-        <ItemContainer>
+        <Table
+          header={
+            <TableRow>
+              <TableHeader title="ID" />
+              <TableHeader title="Message" />
+              <TableHeader title="Participation" />
+              <TableHeader title="State" />
+            </TableRow>
+          }
+        >
           {props.rfiVotes
             .filter(({ state }) => state !== '0')
-            .map(({ RFIid }) => (
-              <EmptyStateCard
-                key={RFIid}
-                icon={EmptyIcon}
-                title={`RFI #${RFIid}`}
-                text={'Description...'}
-                actionText="View"
-                onActivate={() => props.forward(`RFI #${RFIid}`)}
-              />
+            .map(({ RFIid, participants }, idx) => (
+              <StyledTableRow
+                onClick={() => props.forward(`RFI #${RFIid}`, idx)}
+              >
+                <TableCell>RFI #{RFIid}</TableCell>
+                <TableCell>Message...</TableCell>
+                <TableCell>{participants} participants</TableCell>
+                <StyledTableCell>Pending - Show progress</StyledTableCell>
+              </StyledTableRow>
             ))}
-        </ItemContainer>
+        </Table>
       </Box>
     )}
   </div>
