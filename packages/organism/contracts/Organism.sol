@@ -138,6 +138,10 @@ contract Organism is IOrganism, AragonApp {
         return RFLs[_RFLid];
     }
 
+    function getRFIMetadata(uint256 _RFIid) public view RFIExists(_RFIid) returns (string) {
+        return RFIs[_RFIid].individuation.metadata;
+    }
+
     function getRFLLineage(uint256 _RFLid) public view RFLExists(_RFLid) returns (address destination, uint256 minimum, string metadata) {
         Pando.RFL storage RFL = RFLs[_RFLid];
 

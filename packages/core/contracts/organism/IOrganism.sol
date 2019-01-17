@@ -39,6 +39,7 @@ contract IOrganism {
 
     function getRFI(uint256 _RFIid) public view returns (Pando.RFI);
     function getRFL(uint256 _RFLid) public view returns (Pando.RFL);
+    function getRFIMetadata(uint256 _RFIid) public view returns (string);
     function getRFLLineage(uint256 _RFLid) public view returns (address destination, uint256 minimum, string metadata);
     function getIndividuationHash(Pando.Individuation _individuation) public view returns (bytes32);
     function head() public view returns (bytes32);
