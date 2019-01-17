@@ -6,16 +6,12 @@ import promised from 'chai-as-promised'
 import Web3 from 'web3'
 import Pando from '../../lib'
 
-import { ADDR_NULL } from '@pando/helpers/address'
-import { fixtures } from '@pando/helpers/fixtures'
-import { options } from '@pando/helpers/options'
-
-// const options2 = { ethereum: { account: '0xb4124cEB3451635DAcedd11767f004d8a28c6eE7', gateway: { protocol: 'ws', host: 'localhost', port: '8545'} } }
-
-
 chai.use(promised)
 const should = chai.should()
 
+import { ADDR_NULL } from '@pando/helpers/address'
+import { fixtures } from '@pando/helpers/fixtures'
+import { options } from '@pando/helpers/options'
 
 describe('organization/organisms', () => {
   let pando, plant, organization
@@ -53,13 +49,13 @@ describe('organization/organisms', () => {
     })
 
     describe('with name', () => {
-      it("it should return true if organisms exists in database", async () => {
+      it('it should return true if organisms exists in database', async () => {
         const exists = await organization.organisms.exists({ name: 'awesomeorganism' })
 
         exists.should.equal(true)
       })
 
-      it("it should return false if organisms does not exist in database", async () => {
+      it('it should return false if organisms does not exist in database', async () => {
         const exists = await organization.organisms.exists({ name: 'doesnotexist' })
 
         exists.should.equal(false)
@@ -67,13 +63,13 @@ describe('organization/organisms', () => {
     })
 
     describe('with address', () => {
-      it("it should return true if organisms exists in database", async () => {
+      it('it should return true if organisms exists in database', async () => {
         const exists = await organization.organisms.exists({ address: organism.address })
 
         exists.should.equal(true)
       })
 
-      it("it should return false if organisms does not exist in database", async () => {
+      it('it should return false if organisms does not exist in database', async () => {
         const exists = await organization.organisms.exists({ address: 'doesnotexist' })
 
         exists.should.equal(false)
@@ -180,7 +176,7 @@ describe('organization/organisms', () => {
         organism.organization.should.deep.equal(organization)
       })
 
-      it("it should reject with error E_ORGANISM_NOT_FOUND if organism does not exist", async () => {
+      it('it should reject with error E_ORGANISM_NOT_FOUND if organism does not exist', async () => {
         return organization.organisms.load({ name: 'doesnotexist' }).should.be.rejectedWith('E_ORGANISM_NOT_FOUND')
       })
     })
@@ -197,11 +193,10 @@ describe('organization/organisms', () => {
         organism.organization.should.deep.equal(organization)
       })
 
-      it("it should reject with error E_ORGANISM_NOT_FOUND if organism does not exist", async () => {
+      it('it should reject with error E_ORGANISM_NOT_FOUND if organism does not exist', async () => {
         return organization.organisms.load({ address: 'doesnotexist' }).should.be.rejectedWith('E_ORGANISM_NOT_FOUND')
       })
     })
-
   })
 
   describe('#address', () => {

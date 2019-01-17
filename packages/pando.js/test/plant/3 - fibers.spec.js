@@ -4,33 +4,28 @@ import path from 'path'
 import capture from 'collect-console'
 import chai from 'chai'
 import promised from 'chai-as-promised'
-
 import Pando from '../../lib/'
-// import Fiber      from '../../lib/fiber'
 
 import { fixtures } from '@pando/helpers/fixtures'
+import { options } from '@pando/helpers/options'
 
 chai.use(promised)
 
 const expect = chai.expect
 const should = chai.should()
 
-const account = '0xb4124cEB3451635DAcedd11767f004d8a28c6eE7'
-const gateway = { fake: { protocol: 'ws', host: '192.168.0.1', port: '8546' } }
-const options = { ethereum: { account: account }}
-
 describe('plant/fibers', () => {
   let pando, plant, master, fiber
 
   const initialize = async () => {
-    pando  = await Pando.create(options)
-    plant  = await pando.plants.create(path.join('test', 'fixtures'))
+    pando = await Pando.create(options)
+    plant = await pando.plants.create(path.join('test', 'fixtures'))
     master = await plant.fibers.load('master')
   }
 
   const clean = async () => {
     await pando.close()
-    
+
     const reset = capture.log()
 
     await plant.node.start()
@@ -52,13 +47,13 @@ describe('plant/fibers', () => {
     })
 
     describe('with name', () => {
-      it("it should return true if fiber exists", async () => {
+      it('it should return true if fiber exists', async () => {
         const exists = await plant.fibers.exists('master')
 
         exists.should.equal(true)
       })
 
-      it("it should return false if fiber does not exist", async () => {
+      it('it should return false if fiber does not exist', async () => {
         const exists = await plant.fibers.exists('doesnotexist')
 
         exists.should.equal(false)
@@ -66,13 +61,13 @@ describe('plant/fibers', () => {
     })
 
     describe('with uuid', () => {
-      it("it should return true if fiber exists", async () => {
+      it('it should return true if fiber exists', async () => {
         const exists = await plant.fibers.exists(master.uuid, { uuid: true })
 
         exists.should.equal(true)
       })
 
-      it("it should return false if fiber does not exist", async () => {
+      it('it should return false if fiber does not exist', async () => {
         const exists = await plant.fibers.exists('doesnotexist', { uuid: true })
 
         exists.should.equal(false)
@@ -149,7 +144,6 @@ describe('plant/fibers', () => {
           fiber.snapshots.isOpen().should.equal(true)
         })
       })
-
     })
   })
 
@@ -164,25 +158,25 @@ describe('plant/fibers', () => {
     })
 
     describe('with name', () => {
-      it("it should return fiber", async () => {
+      it('it should return fiber', async () => {
         const dev = await plant.fibers.load('dev')
 
         dev.uuid.should.equal(fiber.uuid)
       })
 
-      it("it should reject with error E_FIBER_NOT_FOUND if fiber does not exist", async () => {
+      it('it should reject with error E_FIBER_NOT_FOUND if fiber does not exist', async () => {
         return plant.fibers.load('doesnotexist').should.be.rejectedWith('E_FIBER_NOT_FOUND')
       })
     })
 
     describe('with uuid', () => {
-      it("it should return fiber", async () => {
+      it('it should return fiber', async () => {
         const dev = await plant.fibers.load(fiber.uuid, { uuid: true })
 
         dev.uuid.should.equal(fiber.uuid)
       })
 
-      it("it should reject with error E_FIBER_NOT_FOUND if fiber does not exist", async () => {
+      it('it should reject with error E_FIBER_NOT_FOUND if fiber does not exist', async () => {
         return plant.fibers.load('doesnotexist', { uuid: true }).should.be.rejectedWith('E_FIBER_NOT_FOUND')
       })
     })
@@ -214,19 +208,19 @@ describe('plant/fibers', () => {
   describe('#current', () => {
     describe('uuid option is disabled', () => {
       before(async () => {
-          await initialize()
-          fiber = await plant.fibers.create('dev')
-          await plant.fibers.switch('dev')
+        await initialize()
+        fiber = await plant.fibers.create('dev')
+        await plant.fibers.switch('dev')
       })
 
       after(async () => {
-          await clean()
+        await clean()
       })
 
       it('it should return current fiber', async () => {
-          let current = await plant.fibers.current()
+        let current = await plant.fibers.current()
 
-          current.uuid.should.equal(fiber.uuid)
+        current.uuid.should.equal(fiber.uuid)
       })
     })
 
@@ -255,7 +249,6 @@ describe('plant/fibers', () => {
       await plant.fibers.create('dev')
       await plant.fibers.create('next')
       await plant.fibers.create('beta')
-
     })
 
     after(async () => {
@@ -271,7 +264,6 @@ describe('plant/fibers', () => {
       fibers[2].name.should.equal('next')
       fibers[3].name.should.equal('beta')
     })
-
   })
 
   describe('#switch', () => {
@@ -286,18 +278,18 @@ describe('plant/fibers', () => {
       await clean()
     })
 
-    it("it should switch fiber", async () => {
+    it('it should switch fiber', async () => {
       await plant.fibers.switch('dev')
     })
 
-    it("it should stash current fiber", async () => {
+    it('it should stash current fiber', async () => {
       fs.pathExistsSync(path.join(plant.paths.fibers, master.uuid, 'stash', 'test.md')).should.equal(false)
       fs.pathExistsSync(path.join(plant.paths.fibers, master.uuid, 'stash', 'dir', 'test_1.md')).should.equal(true)
       fs.pathExistsSync(path.join(plant.paths.fibers, master.uuid, 'stash', 'dir', 'test_2.md')).should.equal(true)
       fs.pathExistsSync(path.join(plant.paths.fibers, master.uuid, 'stash', 'dir', 'sub', 'test.md')).should.equal(false)
     })
 
-    it("it should unstash destination fiber", async () => {
+    it('it should unstash destination fiber', async () => {
       fs.pathExistsSync(path.join(plant.paths.root, 'test.md')).should.equal(true)
       fs.pathExistsSync(path.join(plant.paths.root, 'dir', 'test_1.md')).should.equal(true)
       fs.pathExistsSync(path.join(plant.paths.root, 'dir', 'test_2.md')).should.equal(true)
@@ -314,6 +306,6 @@ describe('plant/fibers', () => {
       return plant.fibers.switch('doesnotexist').should.be.rejectedWith('E_FIBER_NOT_FOUND')
     })
   })
-//
-//   describe('#rename', () => {})
+  //
+  //   describe('#rename', () => {})
 })

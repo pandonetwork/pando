@@ -5,13 +5,8 @@ import { options } from '@pando/helpers/options'
 
 const should = chai.should()
 
-
 describe('pando', () => {
   let pando
-
-  after(async () => {
-    await pando.close()
-  })
 
   describe('#create', () => {
     it('it should return pando', async () => {
@@ -20,7 +15,7 @@ describe('pando', () => {
       pando.should.exist
     })
 
-    it("it should initialize pando", async () => {
+    it('it should initialize pando', async () => {
       pando.options.ethereum.account.should.equal(options.ethereum.account)
       pando.options.ethereum.provider.connection._url.should.equal('ws://localhost:8545')
 
@@ -39,21 +34,29 @@ describe('pando', () => {
     })
 
     describe('a custom gateway is passed in options', () => {
-      before(async() => {
+      before(async () => {
         await pando.close()
       })
 
-      it("it should set options accordingly", async () => {
-        pando = await Pando.create({ ethereum: { account: options.ethereum.account, gateway: { protocol: 'ws', host: '192.168.0.1', port: '8546' } } })
+      after(async () => {
+        await pando.close()
+      })
+
+      it('it should set options accordingly', async () => {
+        pando = await Pando.create({ ethereum: { account: options.ethereum.account, gateway: { protocol: 'ws', host: '127.0.0.1', port: '8545' } } })
 
         pando.options.ethereum.account.should.equal(options.ethereum.account)
-        pando.options.ethereum.provider.connection._url.should.equal('ws://192.168.0.1:8546')
+        pando.options.ethereum.provider.connection._url.should.equal('ws://127.0.0.1:8545')
         pando.options.apm.ens.should.equal('0x5f6f7e8cc7346a11ca2def8f827b7a0b612c56a1')
       })
     })
 
     describe('a custom provider is passed in options', () => {
-      it("it should set options accordingly", async () => {
+      after(async () => {
+        await pando.close()
+      })
+
+      it('it should set options accordingly', async () => {
         pando = await Pando.create({ ethereum: { account: options.ethereum.account, provider: new Web3.providers.HttpProvider('http://localhost:8546') } })
 
         pando.options.ethereum.account.should.equal(options.ethereum.account)
@@ -63,7 +66,11 @@ describe('pando', () => {
     })
 
     describe('a custom apm ens registry is passed in options', () => {
-      it("it should set options accordingly", async () => {
+      after(async () => {
+        await pando.close()
+      })
+
+      it('it should set options accordingly', async () => {
         pando = await Pando.create({ ethereum: { account: options.ethereum.account }, apm: { ens: '0x0' } })
 
         pando.options.ethereum.account.should.equal(options.ethereum.account)

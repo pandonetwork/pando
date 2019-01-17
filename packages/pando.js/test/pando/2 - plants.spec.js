@@ -12,7 +12,6 @@ import { options } from '@pando/helpers/options'
 chai.use(promised)
 const should = chai.should()
 
-
 describe('pando/plants', () => {
   let pando, plant
 
@@ -87,15 +86,15 @@ describe('pando/plants', () => {
       fs.pathExistsSync(plant.paths.fibers).should.equal(true)
     })
 
-    it("it should create master fiber", async () => {
+    it('it should create master fiber', async () => {
       const exists = await plant.fibers.exists('master')
 
       exists.should.equal(true)
     })
 
-    it("it should switch to master fiber", async () => {
+    it('it should switch to master fiber', async () => {
       const current = await plant.fibers.current({ uuid: true })
-      const master  = await plant.fibers.uuid('master')
+      const master = await plant.fibers.uuid('master')
 
       current.should.equal(master)
     })

@@ -9,12 +9,8 @@ import Pando from '../../lib'
 import { fixtures } from '@pando/helpers/fixtures'
 import { options } from '@pando/helpers/options'
 
-// const options2 = { ethereum: { account: '0xb4124cEB3451635DAcedd11767f004d8a28c6eE7', gateway: { protocol: 'ws', host: 'localhost', port: '8545'} } }
-
-
 chai.use(promised)
 const should = chai.should()
-
 
 describe('plant/organizations', () => {
   let pando, plant
@@ -51,13 +47,13 @@ describe('plant/organizations', () => {
     })
 
     describe('with name', () => {
-      it("it should return true if organization exists in database", async () => {
+      it('it should return true if organization exists in database', async () => {
         const exists = await plant.organizations.exists({ name: 'origin' })
 
         exists.should.equal(true)
       })
 
-      it("it should return false if organization does not exist in database", async () => {
+      it('it should return false if organization does not exist in database', async () => {
         const exists = await plant.organizations.exists({ name: 'doesnotexist' })
 
         exists.should.equal(false)
@@ -65,13 +61,13 @@ describe('plant/organizations', () => {
     })
 
     describe('with address', () => {
-      it("it should return true if organization exists in database", async () => {
+      it('it should return true if organization exists in database', async () => {
         const exists = await plant.organizations.exists({ address: origin.address })
 
         exists.should.equal(true)
       })
 
-      it("it should return false if organization does not exist in database", async () => {
+      it('it should return false if organization does not exist in database', async () => {
         const exists = await plant.organizations.exists({ address: 'doesnotexist' })
 
         exists.should.equal(false)
@@ -104,10 +100,13 @@ describe('plant/organizations', () => {
     })
 
     it('it should save organization into database', async () => {
-      // organization.kernel.address.should.exist
-      // organization.acl.address.should.exist
-      // organization.colony.address.should.exist
-      // organization.scheme.address.should.exist
+      let loaded = await plant.organizations.load({ name: 'origin' })
+
+      loaded.address.should.equal(organization.address)
+      loaded.kernel.address.should.equal(organization.kernel.address)
+      loaded.acl.address.should.equal(organization.acl.address)
+      loaded.colony.address.should.equal(organization.colony.address)
+      loaded.scheme.address.should.equal(organization.scheme.address)
     })
 
     it("it should reject with error E_ORGANIZATION_NAME_ALREADY_EXISTS if organization's name already exists", async () => {
@@ -145,13 +144,13 @@ describe('plant/organizations', () => {
     })
 
     it('it should save organization into database', async () => {
-      const loaded = await plant.organizations.load({ name: 'origin' })
+      let loaded = await plant.organizations.load({ name: 'origin' })
 
       loaded.address.should.equal(organization.address)
-      // organization.kernel.address.should.exist
-      // organization.acl.address.should.exist
-      // organization.colony.address.should.exist
-      // organization.scheme.address.should.exist
+      loaded.kernel.address.should.equal(organization.kernel.address)
+      loaded.acl.address.should.equal(organization.acl.address)
+      loaded.colony.address.should.equal(organization.colony.address)
+      loaded.scheme.address.should.equal(organization.scheme.address)
     })
 
     it("it should reject with error E_ORGANIZATION_NAME_ALREADY_EXISTS if organization's name already exists", async () => {
@@ -189,7 +188,7 @@ describe('plant/organizations', () => {
         organization.scheme.address.should.exist
       })
 
-      it("it should reject with error E_ORGANIZATION_NOT_FOUND if organization does not exist", async () => {
+      it('it should reject with error E_ORGANIZATION_NOT_FOUND if organization does not exist', async () => {
         return plant.organizations.load({ name: 'doesnotexist' }).should.be.rejectedWith('E_ORGANIZATION_NOT_FOUND')
       })
     })
@@ -208,15 +207,15 @@ describe('plant/organizations', () => {
         organization.scheme.address.should.exist
       })
 
-      it("it should reject with error E_ORGANIZATION_NOT_FOUND if organization does not exist", async () => {
+      it('it should reject with error E_ORGANIZATION_NOT_FOUND if organization does not exist', async () => {
         return plant.organizations.load({ address: 'doesnotexist' }).should.be.rejectedWith('E_ORGANIZATION_NOT_FOUND')
       })
     })
-
   })
 
   describe('#address', () => {
     let origin
+
     before(async () => {
       await initialize()
       origin = await plant.organizations.deploy('origin')
