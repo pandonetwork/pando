@@ -40,7 +40,7 @@ const Link = styled.a`
   }
 `
 
-function renderItems(state, latestState, setState, name, type) {
+function renderItems(state, latestState, setState, name, type, path) {
   if (type === 'dir') {
     return (
       <Row
@@ -60,7 +60,9 @@ function renderItems(state, latestState, setState, name, type) {
       <Row>
         <Column>
           <IconFile mr=".5rem" />
-          <Link title={name}>{name}</Link>
+          <Link title={name} href={'http://localhost:8080/ipfs/' + path}>
+            {name}
+          </Link>
         </Column>
       </Row>
     )
@@ -71,14 +73,10 @@ export default function Browser({ data, state, setState }) {
   const latestState = state[state.length - 1]
   let content = data.map(({ depth, type, name, path }) => {
     if (latestState.depth === 1 && depth === latestState.depth) {
-      return renderItems(state, latestState, setState, name, type)
+      return renderItems(state, latestState, setState, name, type, path)
     }
-    if (
-      latestState.depth > 1 &&
-      depth === latestState.depth &&
-      path.split('/')[latestState.depth - 1] === latestState.parent
-    ) {
-      return renderItems(state, latestState, setState, name, type)
+    if (latestState.depth > 1 && depth === latestState.depth && path.split('/')[latestState.depth - 1] === latestState.parent) {
+      return renderItems(state, latestState, setState, name, type, path)
     }
   })
   if (latestState.depth > 1) {

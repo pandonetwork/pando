@@ -9,7 +9,8 @@ class ConnectedApp extends React.Component {
   state = {
     app: new Aragon(new providers.WindowMessage(window.parent)),
     observable: null,
-    account: ''
+    account: '',
+    organisms: [],
   }
 
   componentDidMount() {
@@ -17,7 +18,7 @@ class ConnectedApp extends React.Component {
 
     if (module.hot) {
       module.hot.dispose(() => {
-        window.location.reload();
+        window.location.reload()
       })
     }
   }
@@ -42,19 +43,10 @@ class ConnectedApp extends React.Component {
         })
       })
 
-      app.state().subscribe($state => {
-        if($state === null) {
-          console.log('Gonna fetch organisms')
-          app
-            .call('getOrganisms')
-            .subscribe((organisms => {
-              console.log('ORganisms')
-              console.log(organisms)
-              this.setState({ organisms: organisms })
-            }))
-        } else {
-          this.setState({ organisms: $state.organisms })
-        }
+      app.state().subscribe(state => {
+        console.log('State from main.js')
+        console.log(state)
+        this.setState(state)
       })
     }
   }
@@ -68,7 +60,4 @@ class ConnectedApp extends React.Component {
   }
 }
 
-ReactDOM.render(
-  <ConnectedApp />,
-  document.getElementById('root')
-)
+ReactDOM.render(<ConnectedApp />, document.getElementById('root'))
