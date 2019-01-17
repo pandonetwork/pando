@@ -1,11 +1,14 @@
 "use strict";
-var __assign = (this && this.__assign) || Object.assign || function(t) {
-    for (var s, i = 1, n = arguments.length; i < n; i++) {
-        s = arguments[i];
-        for (var p in s) if (Object.prototype.hasOwnProperty.call(s, p))
-            t[p] = s[p];
-    }
-    return t;
+var __assign = (this && this.__assign) || function () {
+    __assign = Object.assign || function(t) {
+        for (var s, i = 1, n = arguments.length; i < n; i++) {
+            s = arguments[i];
+            for (var p in s) if (Object.prototype.hasOwnProperty.call(s, p))
+                t[p] = s[p];
+        }
+        return t;
+    };
+    return __assign.apply(this, arguments);
 };
 var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
     return new (P || (P = Promise))(function (resolve, reject) {
@@ -46,15 +49,15 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-var _1 = __importDefault(require("./"));
+var fs_extra_1 = __importDefault(require("fs-extra"));
+var klaw_1 = __importDefault(require("klaw"));
 var level_1 = __importDefault(require("level"));
 var path_1 = __importDefault(require("path"));
-var klaw_1 = __importDefault(require("klaw"));
-var through2_1 = __importDefault(require("through2"));
-var fs_extra_1 = __importDefault(require("fs-extra"));
 var stream_1 = __importDefault(require("stream"));
+var through2_1 = __importDefault(require("through2"));
 var v1_1 = __importDefault(require("uuid/v1"));
 var error_1 = __importDefault(require("../../error"));
+var _1 = __importDefault(require("./"));
 var FiberFactory = /** @class */ (function () {
     function FiberFactory(plant) {
         this.plant = plant;
@@ -107,7 +110,6 @@ var FiberFactory = /** @class */ (function () {
                 switch (_e.label) {
                     case 0: return [4 /*yield*/, this.exists(name)];
                     case 1:
-                        // Do not return if the load / open options is disabled otherwise it's a misunderstanding for people
                         if (_e.sent()) {
                             throw new error_1.default('E_FIBER_NAME_ALREADY_EXISTS', name);
                         }
@@ -118,7 +120,7 @@ var FiberFactory = /** @class */ (function () {
                         if (!fork) return [3 /*break*/, 6];
                         return [4 /*yield*/, this.current({ uuid: true })];
                     case 3:
-                        current = _e.sent();
+                        current = (_e.sent());
                         return [4 /*yield*/, fs_extra_1.default.copy(path_1.default.join(this.plant.paths.fibers, current, 'snapshots'), path_1.default.join(this.plant.paths.fibers, fiber.uuid, 'snapshots'))];
                     case 4:
                         _e.sent();
@@ -148,8 +150,9 @@ var FiberFactory = /** @class */ (function () {
                 switch (_d.label) {
                     case 0: return [4 /*yield*/, this.exists(nameOrUuid, { uuid: uuid })];
                     case 1:
-                        if (!(_d.sent()))
+                        if (!(_d.sent())) {
                             throw new error_1.default('E_FIBER_NOT_FOUND');
+                        }
                         if (!uuid) return [3 /*break*/, 2];
                         _c = nameOrUuid;
                         return [3 /*break*/, 4];
@@ -173,7 +176,6 @@ var FiberFactory = /** @class */ (function () {
             var uuid;
             var _this = this;
             return __generator(this, function (_a) {
-                uuid = undefined;
                 return [2 /*return*/, new Promise(function (resolve, reject) {
                         _this.db
                             .createReadStream()
@@ -182,8 +184,12 @@ var FiberFactory = /** @class */ (function () {
                                 uuid = fiber.key;
                             }
                         })
-                            .on('end', function () { resolve(uuid); })
-                            .on('error', function (err) { reject(err); });
+                            .on('end', function () {
+                            resolve(uuid);
+                        })
+                            .on('error', function (err) {
+                            reject(err);
+                        });
                     })];
             });
         });
@@ -194,7 +200,6 @@ var FiberFactory = /** @class */ (function () {
             var current;
             var _this = this;
             return __generator(this, function (_c) {
-                current = undefined;
                 return [2 /*return*/, new Promise(function (resolve, reject) {
                         var write = new stream_1.default.Writable({
                             objectMode: true,
@@ -215,18 +220,24 @@ var FiberFactory = /** @class */ (function () {
                                             return [2 /*return*/];
                                     }
                                 });
-                            }); }
+                            }); },
                         });
                         write
-                            .on('finish', function () { return __awaiter(_this, void 0, void 0, function () { return __generator(this, function (_a) {
-                            resolve(current);
-                            return [2 /*return*/];
-                        }); }); })
-                            .on('error', function (err) { reject(err); });
+                            .on('finish', function () { return __awaiter(_this, void 0, void 0, function () {
+                            return __generator(this, function (_a) {
+                                resolve(current);
+                                return [2 /*return*/];
+                            });
+                        }); })
+                            .on('error', function (err) {
+                            reject(err);
+                        });
                         _this.db
                             .createReadStream()
                             .pipe(write)
-                            .on('error', function (err) { reject(err); });
+                            .on('error', function (err) {
+                            reject(err);
+                        });
                     })];
             });
         });
@@ -241,25 +252,26 @@ var FiberFactory = /** @class */ (function () {
                         ops = [];
                         return [4 /*yield*/, this.current({ uuid: true })];
                     case 1:
-                        current = _q.sent();
+                        current = (_q.sent());
                         return [4 /*yield*/, this.uuid(name)];
                     case 2:
                         to = _q.sent();
-                        if (typeof to === 'undefined')
+                        if (typeof to === 'undefined') {
                             throw new error_1.default('E_FIBER_NOT_FOUND');
+                        }
                         if (!(typeof current !== 'undefined')) return [3 /*break*/, 5];
                         _d = (_c = ops).push;
                         _e = { type: 'put', key: current };
                         _f = [{}];
                         return [4 /*yield*/, this.db.get(current)];
                     case 3:
-                        _d.apply(_c, [(_e.value = __assign.apply(void 0, _f.concat([_q.sent(), { current: false }])), _e)]);
+                        _d.apply(_c, [(_e.value = __assign.apply(void 0, _f.concat([(_q.sent()), { current: false }])), _e)]);
                         _h = (_g = ops).push;
                         _j = { type: 'put', key: to };
                         _k = [{}];
                         return [4 /*yield*/, this.db.get(to)];
                     case 4:
-                        _h.apply(_g, [(_j.value = __assign.apply(void 0, _k.concat([_q.sent(), { current: true }])), _j)]);
+                        _h.apply(_g, [(_j.value = __assign.apply(void 0, _k.concat([(_q.sent()), { current: true }])), _j)]);
                         return [3 /*break*/, 7];
                     case 5:
                         _m = (_l = ops).push;
@@ -267,17 +279,14 @@ var FiberFactory = /** @class */ (function () {
                         _p = [{}];
                         return [4 /*yield*/, this.db.get(to)];
                     case 6:
-                        _m.apply(_l, [(_o.value = __assign.apply(void 0, _p.concat([_q.sent(), { current: true }])), _o)]);
+                        _m.apply(_l, [(_o.value = __assign.apply(void 0, _p.concat([(_q.sent()), { current: true }])), _o)]);
                         _q.label = 7;
                     case 7:
                         if (!stash) return [3 /*break*/, 10];
                         return [4 /*yield*/, this._stash(current)];
                     case 8:
                         _q.sent();
-                        return [4 /*yield*/, Promise.all([
-                                this._unstash(to),
-                                this.db.batch(ops)
-                            ])];
+                        return [4 /*yield*/, Promise.all([this._unstash(to), this.db.batch(ops)])];
                     case 9:
                         _q.sent();
                         return [3 /*break*/, 12];
@@ -335,10 +344,12 @@ var FiberFactory = /** @class */ (function () {
                                     next();
                                     return [2 /*return*/];
                                 });
-                            }); }
+                            }); },
                         });
                         write
-                            .on('error', function (err) { reject(err); })
+                            .on('error', function (err) {
+                            reject(err);
+                        })
                             .on('finish', function () { return __awaiter(_this, void 0, void 0, function () {
                             var _i, files_1, file;
                             return __generator(this, function (_a) {
@@ -382,7 +393,7 @@ var FiberFactory = /** @class */ (function () {
                                     next();
                                     return [2 /*return*/];
                                 });
-                            }); }
+                            }); },
                         });
                         write
                             .on('finish', function () { return __awaiter(_this, void 0, void 0, function () {
@@ -402,23 +413,27 @@ var FiberFactory = /** @class */ (function () {
                                 }
                             });
                         }); })
-                            .on('error', function (err) { reject(err); });
-                        _this
-                            ._ls(_this._paths(uuid, 'stash'), { all: true })
+                            .on('error', function (err) {
+                            reject(err);
+                        });
+                        _this._ls(_this._paths(uuid, 'stash'), { all: true })
                             .pipe(write)
-                            .on('error', function (err) { reject(err); });
+                            .on('error', function (err) {
+                            reject(err);
+                        });
                     })];
             });
         });
     };
     FiberFactory.prototype._ls = function (path, _a) {
         var _b = (_a === void 0 ? {} : _a).all, all = _b === void 0 ? false : _b;
-        return klaw_1.default(path)
-            .pipe(through2_1.default.obj(function (item, enc, next) {
-            if (!all && item.path.indexOf('.pando') >= 0) { // ignore .pando directory
+        return klaw_1.default(path).pipe(through2_1.default.obj(function (item, enc, next) {
+            if (!all && item.path.indexOf('.pando') >= 0) {
+                // ignore .pando directory
                 next();
             }
-            else if (item.stats.isDirectory()) { // ignore empty directories
+            else if (item.stats.isDirectory()) {
+                // ignore empty directories
                 next();
             }
             else {

@@ -39,24 +39,24 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 var fs_extra_1 = __importDefault(require("fs-extra"));
-var path_1 = __importDefault(require("path"));
-var factory_1 = __importDefault(require("./organization/factory"));
-var factory_2 = __importDefault(require("./fiber/factory"));
 var ipfs_http_client_1 = __importDefault(require("ipfs-http-client"));
+var path_1 = __importDefault(require("path"));
+var factory_1 = __importDefault(require("./fiber/factory"));
+var factory_2 = __importDefault(require("./organization/factory"));
 var Plant = /** @class */ (function () {
     function Plant(pando, path, node) {
         if (path === void 0) { path = '.'; }
         this.pando = pando;
         this.paths = {
-            root: path,
-            pando: path_1.default.join(path, '.pando'),
+            fibers: path_1.default.join(path, '.pando', 'fibers'),
             ipfs: path_1.default.join(path, '.pando', 'ipfs'),
             organizations: path_1.default.join(path, '.pando', 'organizations'),
-            fibers: path_1.default.join(path, '.pando', 'fibers')
+            pando: path_1.default.join(path, '.pando'),
+            root: path,
         };
         this.node = node;
-        this.organizations = new factory_1.default(this);
-        this.fibers = new factory_2.default(this);
+        this.organizations = new factory_2.default(this);
+        this.fibers = new factory_1.default(this);
     }
     Plant.prototype.publish = function (organizationName, organismName, message) {
         if (message === void 0) { message = 'n/a'; }
@@ -66,24 +66,24 @@ var Plant = /** @class */ (function () {
                 switch (_a.label) {
                     case 0: return [4 /*yield*/, this.fibers.current()];
                     case 1:
-                        fiber = _a.sent();
+                        fiber = (_a.sent());
                         return [4 /*yield*/, fiber.snapshot('Automatic snapshot before RFI')];
                     case 2:
                         snapshot = _a.sent();
                         metadata = {
+                            message: message,
                             tree: snapshot.tree,
-                            message: message
                         };
                         lineage = {
                             destination: this.pando.options.ethereum.account,
+                            metadata: '',
                             minimum: 0,
-                            metadata: ''
                         };
                         return [4 /*yield*/, this.node.dag.put(metadata, { format: 'dag-cbor', hashAlg: 'sha3-512' })];
                     case 3:
                         cid = (_a.sent()).toBaseEncodedString();
                         individuation = {
-                            metadata: cid
+                            metadata: cid,
                         };
                         return [4 /*yield*/, this.organizations.load({ name: organizationName })];
                     case 4:

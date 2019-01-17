@@ -1,11 +1,14 @@
 "use strict";
-var __assign = (this && this.__assign) || Object.assign || function(t) {
-    for (var s, i = 1, n = arguments.length; i < n; i++) {
-        s = arguments[i];
-        for (var p in s) if (Object.prototype.hasOwnProperty.call(s, p))
-            t[p] = s[p];
-    }
-    return t;
+var __assign = (this && this.__assign) || function () {
+    __assign = Object.assign || function(t) {
+        for (var s, i = 1, n = arguments.length; i < n; i++) {
+            s = arguments[i];
+            for (var p in s) if (Object.prototype.hasOwnProperty.call(s, p))
+                t[p] = s[p];
+        }
+        return t;
+    };
+    return __assign.apply(this, arguments);
 };
 var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
     return new (P || (P = Promise))(function (resolve, reject) {
@@ -46,25 +49,34 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-var path_1 = __importDefault(require("path"));
 var level_1 = __importDefault(require("level"));
-var error_1 = __importDefault(require("../../../error"));
+var path_1 = __importDefault(require("path"));
+var stream_1 = __importDefault(require("stream"));
 var _1 = __importDefault(require("."));
+var error_1 = __importDefault(require("../../../error"));
 var OrganismFactory = /** @class */ (function () {
     function OrganismFactory(organization) {
         this.organization = organization;
-        this.db = level_1.default(path_1.default.join(organization.plant.paths.organizations, organization.address + '.db'), { valueEncoding: 'json' });
+        this.path = path_1.default.join(organization.plant.paths.organizations, organization.address);
     }
+    Object.defineProperty(OrganismFactory.prototype, "db", {
+        get: function () {
+            return level_1.default(this.path + '.db', { valueEncoding: 'json' });
+        },
+        enumerable: true,
+        configurable: true
+    });
     OrganismFactory.prototype.exists = function (_a) {
         var _b = _a === void 0 ? {} : _a, name = _b.name, address = _b.address;
         return __awaiter(this, void 0, void 0, function () {
-            var _c;
+            var _c, db;
             var _this = this;
             return __generator(this, function (_d) {
                 switch (_d.label) {
                     case 0:
-                        if (typeof name === 'undefined' && typeof address === 'undefined')
+                        if (typeof name === 'undefined' && typeof address === 'undefined') {
                             throw new error_1.default('E_WRONG_PARAMETERS', name, address);
+                        }
                         if (!(typeof address !== 'undefined')) return [3 /*break*/, 1];
                         _c = address;
                         return [3 /*break*/, 3];
@@ -74,22 +86,32 @@ var OrganismFactory = /** @class */ (function () {
                         _d.label = 3;
                     case 3:
                         address = _c;
-                        if (typeof address === 'undefined')
+                        if (typeof address === 'undefined') {
                             return [2 /*return*/, false];
+                        }
+                        db = this.db;
                         return [2 /*return*/, new Promise(function (resolve, reject) {
-                                _this.db.get(address, function (err, value) {
-                                    if (err) {
-                                        if (err.notFound) {
-                                            resolve(false);
+                                db.get(address, function (err, value) { return __awaiter(_this, void 0, void 0, function () {
+                                    return __generator(this, function (_a) {
+                                        switch (_a.label) {
+                                            case 0: return [4 /*yield*/, db.close()];
+                                            case 1:
+                                                _a.sent();
+                                                if (err) {
+                                                    if (err.notFound) {
+                                                        resolve(false);
+                                                    }
+                                                    else {
+                                                        reject(err);
+                                                    }
+                                                }
+                                                else {
+                                                    resolve(true);
+                                                }
+                                                return [2 /*return*/];
                                         }
-                                        else {
-                                            reject(err);
-                                        }
-                                    }
-                                    else {
-                                        resolve(true);
-                                    }
-                                });
+                                    });
+                                }); });
                             })];
                 }
             });
@@ -114,20 +136,26 @@ var OrganismFactory = /** @class */ (function () {
     };
     OrganismFactory.prototype.add = function (name, address) {
         return __awaiter(this, void 0, void 0, function () {
-            var organism;
+            var organism, db;
             return __generator(this, function (_a) {
                 switch (_a.label) {
                     case 0: return [4 /*yield*/, this.exists({ name: name })];
                     case 1:
-                        if (_a.sent())
+                        if (_a.sent()) {
                             throw new error_1.default('E_ORGANISM_NAME_ALREADY_EXISTS', name);
+                        }
                         return [4 /*yield*/, this.exists({ address: address })];
                     case 2:
-                        if (_a.sent())
+                        if (_a.sent()) {
                             throw new error_1.default('E_ORGANISM_ALREADY_EXISTS', address);
+                        }
                         organism = new _1.default(this.organization, address);
-                        return [4 /*yield*/, this.db.put(organism.address, { name: name })];
+                        db = this.db;
+                        return [4 /*yield*/, db.put(organism.address, { name: name })];
                     case 3:
+                        _a.sent();
+                        return [4 /*yield*/, db.close()];
+                    case 4:
                         _a.sent();
                         return [2 /*return*/, organism];
                 }
@@ -137,16 +165,18 @@ var OrganismFactory = /** @class */ (function () {
     OrganismFactory.prototype.delete = function (_a) {
         var _b = _a === void 0 ? {} : _a, name = _b.name, address = _b.address;
         return __awaiter(this, void 0, void 0, function () {
-            var _c;
+            var _c, db;
             return __generator(this, function (_d) {
                 switch (_d.label) {
                     case 0:
-                        if (typeof name === 'undefined' && typeof address === 'undefined')
+                        if (typeof name === 'undefined' && typeof address === 'undefined') {
                             throw new error_1.default('E_WRONG_PARAMETERS', name, address);
+                        }
                         return [4 /*yield*/, this.exists({ name: name, address: address })];
                     case 1:
-                        if (!(_d.sent()))
+                        if (!(_d.sent())) {
                             throw new error_1.default('E_ORGANISM_NOT_FOUND');
+                        }
                         if (!(typeof address !== 'undefined')) return [3 /*break*/, 2];
                         _c = address;
                         return [3 /*break*/, 4];
@@ -156,8 +186,12 @@ var OrganismFactory = /** @class */ (function () {
                         _d.label = 4;
                     case 4:
                         address = _c;
-                        return [4 /*yield*/, this.db.del(address)];
+                        db = this.db;
+                        return [4 /*yield*/, db.del(address)];
                     case 5:
+                        _d.sent();
+                        return [4 /*yield*/, db.close()];
+                    case 6:
                         _d.sent();
                         return [2 /*return*/];
                 }
@@ -171,12 +205,14 @@ var OrganismFactory = /** @class */ (function () {
             return __generator(this, function (_d) {
                 switch (_d.label) {
                     case 0:
-                        if (typeof name === 'undefined' && typeof address === 'undefined')
+                        if (typeof name === 'undefined' && typeof address === 'undefined') {
                             throw new error_1.default('E_WRONG_PARAMETERS', name, address);
+                        }
                         return [4 /*yield*/, this.exists({ name: name, address: address })];
                     case 1:
-                        if (!(_d.sent()))
+                        if (!(_d.sent())) {
                             throw new error_1.default('E_ORGANISM_NOT_FOUND');
+                        }
                         if (!(typeof address !== 'undefined')) return [3 /*break*/, 2];
                         _c = address;
                         return [3 /*break*/, 4];
@@ -193,45 +229,105 @@ var OrganismFactory = /** @class */ (function () {
     };
     OrganismFactory.prototype.list = function () {
         return __awaiter(this, void 0, void 0, function () {
-            var organisms;
+            var organisms, db;
             var _this = this;
             return __generator(this, function (_a) {
                 organisms = [];
+                db = this.db;
                 return [2 /*return*/, new Promise(function (resolve, reject) {
-                        _this.db
-                            .createReadStream()
+                        db.createReadStream()
                             .on('data', function (organism) {
                             organisms.push(__assign({ address: organism.key }, organism.value));
                         })
-                            .on('end', function () { resolve(organisms); })
-                            .on('error', function (err) { reject(err); });
+                            .on('end', function () { return __awaiter(_this, void 0, void 0, function () {
+                            return __generator(this, function (_a) {
+                                switch (_a.label) {
+                                    case 0: return [4 /*yield*/, db.close()];
+                                    case 1:
+                                        _a.sent();
+                                        resolve(organisms);
+                                        return [2 /*return*/];
+                                }
+                            });
+                        }); })
+                            .on('error', function (err) {
+                            reject(err);
+                        });
                     })];
             });
         });
     };
     OrganismFactory.prototype.address = function (name) {
         return __awaiter(this, void 0, void 0, function () {
-            var address;
+            var address, db;
             var _this = this;
             return __generator(this, function (_a) {
-                address = undefined;
+                db = this.db;
                 return [2 /*return*/, new Promise(function (resolve, reject) {
-                        _this
-                            .db
-                            .createReadStream()
-                            .on('data', function (organism) {
-                            if (organism.value.name === name) {
-                                address = organism.key;
-                            }
-                        })
-                            .on('end', function () { resolve(address); })
-                            .on('error', function (err) { reject(err); });
-                    })];
+                        var write = new stream_1.default.Writable({
+                            objectMode: true,
+                            write: function (organism, encoding, next) { return __awaiter(_this, void 0, void 0, function () {
+                                return __generator(this, function (_a) {
+                                    if (organism.value.name === name) {
+                                        address = organism.key;
+                                    }
+                                    next();
+                                    return [2 /*return*/];
+                                });
+                            }); },
+                        });
+                        write
+                            .on('finish', function () { return __awaiter(_this, void 0, void 0, function () {
+                            return __generator(this, function (_a) {
+                                switch (_a.label) {
+                                    case 0: return [4 /*yield*/, db.close()];
+                                    case 1:
+                                        _a.sent();
+                                        resolve(address);
+                                        return [2 /*return*/];
+                                }
+                            });
+                        }); })
+                            .on('error', function (err) {
+                            reject(err);
+                        });
+                        db.createReadStream()
+                            .pipe(write)
+                            .on('finish', function () { return __awaiter(_this, void 0, void 0, function () {
+                            return __generator(this, function (_a) {
+                                switch (_a.label) {
+                                    case 0: return [4 /*yield*/, db.close()];
+                                    case 1:
+                                        _a.sent();
+                                        return [2 /*return*/];
+                                }
+                            });
+                        }); })
+                            .on('error', function (err) {
+                            reject(err);
+                        });
+                    })
+                    // return new Promise<string | undefined>((resolve, reject) => {
+                    //   this.db
+                    //     .createReadStream()
+                    //     .on('data', organism => {
+                    //       if (organism.value.name === name) {
+                    //         address = organism.key
+                    //       }
+                    //     })
+                    //     .on('end', () => {
+                    //       resolve(address)
+                    //     })
+                    //     .on('error', err => {
+                    //       reject(err)
+                    //     })
+                    // })
+                ];
             });
         });
     };
     OrganismFactory.prototype._getOrganismAddressFromReceipt = function (receipt) {
-        return receipt.logs.filter(function (l) { return l.event == 'DeployOrganism'; })[0].args.organism;
+        return receipt.logs.filter(function (l) { return l.event === 'DeployOrganism'; })[0].args.organism;
     };
     return OrganismFactory;
 }());

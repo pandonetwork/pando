@@ -39,8 +39,8 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 var fs_extra_1 = __importDefault(require("fs-extra"));
-var path_1 = __importDefault(require("path"));
 var ipfs_1 = __importDefault(require("ipfs"));
+var path_1 = __importDefault(require("path"));
 var _1 = __importDefault(require("."));
 var error_1 = __importDefault(require("../error"));
 var PlantFactory = /** @class */ (function () {
@@ -53,11 +53,7 @@ var PlantFactory = /** @class */ (function () {
             var _a, one, two;
             return __generator(this, function (_b) {
                 switch (_b.label) {
-                    case 0: return [4 /*yield*/, Promise.all([
-                            fs_extra_1.default.pathExists(path_1.default.join(path, '.pando', 'ipfs')),
-                            fs_extra_1.default.pathExists(path_1.default.join(path, '.pando', 'fibers', 'db')),
-                            fs_extra_1.default.pathExists(path_1.default.join(path, '.pando', 'organizations', 'db'))
-                        ])];
+                    case 0: return [4 /*yield*/, Promise.all([fs_extra_1.default.pathExists(path_1.default.join(path, '.pando', 'ipfs')), fs_extra_1.default.pathExists(path_1.default.join(path, '.pando', 'fibers', 'db'))])];
                     case 1:
                         _a = _b.sent(), one = _a[0], two = _a[1];
                         return [2 /*return*/, one && two];
@@ -84,20 +80,17 @@ var PlantFactory = /** @class */ (function () {
                                         case 0: return [4 /*yield*/, Promise.all([
                                                 fs_extra_1.default.ensureDir(path_1.default.join(path, '.pando', 'ipfs')),
                                                 fs_extra_1.default.ensureDir(path_1.default.join(path, '.pando', 'organizations')),
-                                                fs_extra_1.default.ensureDir(path_1.default.join(path, '.pando', 'fibers'))
+                                                fs_extra_1.default.ensureDir(path_1.default.join(path, '.pando', 'fibers')),
                                             ])];
                                         case 1:
                                             _a.sent();
                                             node = new ipfs_1.default({
                                                 repo: path_1.default.join(path, '.pando', 'ipfs'),
-                                                start: false
-                                                // },
-                                                // preload: { enabled: true, addresses: [ '/ip4/127.0.0.1/tcp/4001/',
-                                                // '/ipv4/127.0.0.1/tcp/9999/ws/', '/ipv4/127.0.0.1/tcp/9999/ws/ipfs/QmYS164H7ndSirykbAnf9LJ5VJdAQZGB8a2CvjaaVvSRSq', "/ipv4/127.0.0.1/tcp/9999/ws/ipfs/QmbuTRFUhf8EBRjY8rRKcpKEg3ptECvgyqP2PRDij5h8cK",
-                                                // "/ipv4/127.0.0.1/tcp/9999/ws/ipfs/QmYS164H7ndSirykbAnf9LJ5VJdAQZGB8a2CvjaaVvSRSq",
-                                                // "/ip4/127.0.0.1/tcp/4001/ipfs/QmYS164H7ndSirykbAnf9LJ5VJdAQZGB8a2CvjaaVvSRSq"] }
+                                                start: false,
                                             })
-                                                .on('error', function (err) { reject(err); })
+                                                .on('error', function (err) {
+                                                reject(err);
+                                            })
                                                 .on('ready', function () { return __awaiter(_this, void 0, void 0, function () {
                                                 var plant;
                                                 return __generator(this, function (_a) {
@@ -139,7 +132,9 @@ var PlantFactory = /** @class */ (function () {
                                 var _this = this;
                                 return __generator(this, function (_a) {
                                     node = new ipfs_1.default({ repo: path_1.default.join(path, '.pando', 'ipfs'), start: false })
-                                        .on('error', function (err) { reject(err); })
+                                        .on('error', function (err) {
+                                        reject(err);
+                                    })
                                         .on('ready', function () { return __awaiter(_this, void 0, void 0, function () {
                                         return __generator(this, function (_a) {
                                             resolve(new _1.default(this.pando, path, node));

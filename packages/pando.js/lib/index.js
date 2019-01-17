@@ -41,19 +41,9 @@ Object.defineProperty(exports, "__esModule", { value: true });
 var lodash_1 = __importDefault(require("lodash"));
 var truffle_contract_1 = __importDefault(require("truffle-contract"));
 var web3_1 = __importDefault(require("web3"));
-var factory_1 = __importDefault(require("./plant/factory"));
-// import OrganizationFactory from './organization/factory'
 var error_1 = __importDefault(require("./error"));
-var _artifacts = [
-    'Kernel',
-    'ACL',
-    'Colony',
-    'DemocracyScheme',
-    'Organism',
-    'Lineage',
-    'Genesis',
-    'OrganizationFactory'
-].map(function (name) {
+var factory_1 = __importDefault(require("./plant/factory"));
+var _artifacts = ['Kernel', 'ACL', 'Colony', 'DemocracyScheme', 'Organism', 'Lineage', 'Genesis', 'OrganizationFactory'].map(function (name) {
     switch (name) {
         case 'Kernel' || 'ACL':
             return require("@aragon/os/build/contracts/" + name + ".json");
@@ -87,7 +77,6 @@ var Pando = /** @class */ (function () {
     function Pando(options) {
         this.options = options;
         this.plants = new factory_1.default(this);
-        // this.organizations = new OrganizationFactory(this)
         this.contracts = Object.assign.apply(Object, [{}].concat(_artifacts.map(function (artifact) { return truffle_contract_1.default(artifact); }).map(function (contract) {
             var _a;
             return (_a = {}, _a[contract._json.contractName] = contract, _a);
@@ -111,8 +100,9 @@ var Pando = /** @class */ (function () {
     Pando.prototype.close = function () {
         return __awaiter(this, void 0, void 0, function () {
             return __generator(this, function (_a) {
-                // console.log(this.options.ethereum.provider)
-                this.options.ethereum.provider.connection.close();
+                if (typeof this.options.ethereum.provider.connection !== 'undefined') {
+                    this.options.ethereum.provider.connection.close();
+                }
                 return [2 /*return*/];
             });
         });
@@ -122,8 +112,10 @@ var Pando = /** @class */ (function () {
             var contract;
             return __generator(this, function (_a) {
                 for (contract in this.contracts) {
-                    this.contracts[contract].setProvider(this.options.ethereum.provider);
-                    this.contracts[contract].defaults({ from: this.options.ethereum.account, gas: 30e6, gasPrice: 15000000001 });
+                    if (this.contracts.hasOwnProperty(contract)) {
+                        this.contracts[contract].setProvider(this.options.ethereum.provider);
+                        this.contracts[contract].defaults({ from: this.options.ethereum.account, gas: 30e6, gasPrice: 15000000001 });
+                    }
                 }
                 return [2 /*return*/, this];
             });

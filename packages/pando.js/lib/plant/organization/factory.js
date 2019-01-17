@@ -1,11 +1,14 @@
 "use strict";
-var __assign = (this && this.__assign) || Object.assign || function(t) {
-    for (var s, i = 1, n = arguments.length; i < n; i++) {
-        s = arguments[i];
-        for (var p in s) if (Object.prototype.hasOwnProperty.call(s, p))
-            t[p] = s[p];
-    }
-    return t;
+var __assign = (this && this.__assign) || function () {
+    __assign = Object.assign || function(t) {
+        for (var s, i = 1, n = arguments.length; i < n; i++) {
+            s = arguments[i];
+            for (var p in s) if (Object.prototype.hasOwnProperty.call(s, p))
+                t[p] = s[p];
+        }
+        return t;
+    };
+    return __assign.apply(this, arguments);
 };
 var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
     return new (P || (P = Promise))(function (resolve, reject) {
@@ -46,16 +49,17 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-var path_1 = __importDefault(require("path"));
-var level_1 = __importDefault(require("level"));
 var apm_1 = __importDefault(require("@aragon/apm"));
+var fs_extra_1 = __importDefault(require("fs-extra"));
+var level_1 = __importDefault(require("level"));
+var path_1 = __importDefault(require("path"));
 var web3_1 = __importDefault(require("web3"));
-var error_1 = __importDefault(require("../../error"));
 var _1 = __importDefault(require("."));
+var error_1 = __importDefault(require("../../error"));
 var APP_IDS = {
-    'acl': '0xe3262375f45a6e2026b7e7b18c2b807434f2508fe1a2a3dfb493c7df8f4aad6a',
-    'colony': '0x7b1ecd00360e711e0e2f5e06cfaa343df02df7bce0566ae1889b36a81c7ac7c7',
-    'scheme': '0x7dcc2953010d38f70485d098b74f6f8dc58f18ebcd350267fa5f62e7cbc13cfe'
+    acl: '0xe3262375f45a6e2026b7e7b18c2b807434f2508fe1a2a3dfb493c7df8f4aad6a',
+    colony: '0x7b1ecd00360e711e0e2f5e06cfaa343df02df7bce0566ae1889b36a81c7ac7c7',
+    scheme: '0x7dcc2953010d38f70485d098b74f6f8dc58f18ebcd350267fa5f62e7cbc13cfe',
 };
 var OrganizationFactory = /** @class */ (function () {
     function OrganizationFactory(plant) {
@@ -70,8 +74,9 @@ var OrganizationFactory = /** @class */ (function () {
             return __generator(this, function (_d) {
                 switch (_d.label) {
                     case 0:
-                        if (typeof name === 'undefined' && typeof address === 'undefined')
+                        if (typeof name === 'undefined' && typeof address === 'undefined') {
                             throw new error_1.default('E_WRONG_PARAMETERS', name, address);
+                        }
                         if (!(typeof address !== 'undefined')) return [3 /*break*/, 1];
                         _c = address;
                         return [3 /*break*/, 3];
@@ -81,8 +86,9 @@ var OrganizationFactory = /** @class */ (function () {
                         _d.label = 3;
                     case 3:
                         address = _c;
-                        if (typeof address === 'undefined')
+                        if (typeof address === 'undefined') {
                             return [2 /*return*/, false];
+                        }
                         return [2 /*return*/, new Promise(function (resolve, reject) {
                                 _this.db.get(address, function (err, value) {
                                     if (err) {
@@ -109,9 +115,13 @@ var OrganizationFactory = /** @class */ (function () {
                 switch (_c.label) {
                     case 0: return [4 /*yield*/, this.exists({ name: name })];
                     case 1:
-                        if (_c.sent())
+                        if (_c.sent()) {
                             throw new error_1.default('E_ORGANIZATION_NAME_ALREADY_EXISTS', name);
-                        apm = apm_1.default(new web3_1.default(this.plant.pando.options.ethereum.provider), { ensRegistryAddress: this.plant.pando.options.apm.ens, ipfs: 'http://locahost:5001' });
+                        }
+                        apm = apm_1.default(new web3_1.default(this.plant.pando.options.ethereum.provider), {
+                            ensRegistryAddress: this.plant.pando.options.apm.ens,
+                            ipfs: 'http://locahost:5001',
+                        });
                         _b = (_a = this.plant.pando.contracts.OrganizationFactory).at;
                         return [4 /*yield*/, apm.getLatestVersionContract('organization-factory.aragonpm.eth')];
                     case 2: return [4 /*yield*/, _b.apply(_a, [_c.sent()])];
@@ -130,17 +140,19 @@ var OrganizationFactory = /** @class */ (function () {
     };
     OrganizationFactory.prototype.add = function (name, address) {
         return __awaiter(this, void 0, void 0, function () {
-            var kernel, acl, colony, scheme, _a, _b, events, _i, events_1, event_1, _c, organization;
+            var kernel, acl, _a, _b, events, colony, scheme, _i, events_1, event_1, _c, organization;
             return __generator(this, function (_d) {
                 switch (_d.label) {
                     case 0: return [4 /*yield*/, this.exists({ name: name })];
                     case 1:
-                        if (_d.sent())
+                        if (_d.sent()) {
                             throw new error_1.default('E_ORGANIZATION_NAME_ALREADY_EXISTS', name);
+                        }
                         return [4 /*yield*/, this.exists({ address: address })];
                     case 2:
-                        if (_d.sent())
+                        if (_d.sent()) {
                             throw new error_1.default('E_ORGANIZATION_ALREADY_EXISTS', address);
+                        }
                         return [4 /*yield*/, this.plant.pando.contracts.Kernel.at(address)];
                     case 3:
                         kernel = _d.sent();
@@ -149,7 +161,7 @@ var OrganizationFactory = /** @class */ (function () {
                     case 4: return [4 /*yield*/, _b.apply(_a, [_d.sent()])];
                     case 5:
                         acl = _d.sent();
-                        return [4 /*yield*/, kernel.getPastEvents("NewAppProxy", { fromBlock: 0, toBlock: 'latest' })];
+                        return [4 /*yield*/, kernel.getPastEvents('NewAppProxy', { fromBlock: 0, toBlock: 'latest' })];
                     case 6:
                         events = _d.sent();
                         _i = 0, events_1 = events;
@@ -177,10 +189,10 @@ var OrganizationFactory = /** @class */ (function () {
                     case 13:
                         organization = new _1.default(this.plant, address, kernel, acl, colony, scheme);
                         return [4 /*yield*/, this.db.put(organization.address, {
-                                name: name,
                                 acl: organization.acl.address,
                                 colony: organization.colony.address,
-                                scheme: organization.scheme.address
+                                name: name,
+                                scheme: organization.scheme.address,
                             })];
                     case 14:
                         _d.sent();
@@ -196,12 +208,14 @@ var OrganizationFactory = /** @class */ (function () {
             return __generator(this, function (_d) {
                 switch (_d.label) {
                     case 0:
-                        if (typeof name === 'undefined' && typeof address === 'undefined')
+                        if (typeof name === 'undefined' && typeof address === 'undefined') {
                             throw new error_1.default('E_WRONG_PARAMETERS', name, address);
+                        }
                         return [4 /*yield*/, this.exists({ name: name, address: address })];
                     case 1:
-                        if (!(_d.sent()))
+                        if (!(_d.sent())) {
                             throw new error_1.default('E_ORGANIZATION_NOT_FOUND');
+                        }
                         if (!(typeof address !== 'undefined')) return [3 /*break*/, 2];
                         _c = address;
                         return [3 /*break*/, 4];
@@ -213,6 +227,9 @@ var OrganizationFactory = /** @class */ (function () {
                         address = _c;
                         return [4 /*yield*/, this.db.del(address)];
                     case 5:
+                        _d.sent();
+                        return [4 /*yield*/, fs_extra_1.default.remove(path_1.default.join(this.plant.paths.organizations, address + '.db'))];
+                    case 6:
                         _d.sent();
                         return [2 /*return*/];
                 }
@@ -226,12 +243,14 @@ var OrganizationFactory = /** @class */ (function () {
             return __generator(this, function (_d) {
                 switch (_d.label) {
                     case 0:
-                        if (typeof name === 'undefined' && typeof address === 'undefined')
+                        if (typeof name === 'undefined' && typeof address === 'undefined') {
                             throw new error_1.default('E_WRONG_PARAMETERS', name, address);
+                        }
                         return [4 /*yield*/, this.exists({ name: name, address: address })];
                     case 1:
-                        if (!(_d.sent()))
+                        if (!(_d.sent())) {
                             throw new error_1.default('E_ORGANIZATION_NOT_FOUND');
+                        }
                         if (!(typeof address !== 'undefined')) return [3 /*break*/, 2];
                         _c = address;
                         return [3 /*break*/, 4];
@@ -273,8 +292,12 @@ var OrganizationFactory = /** @class */ (function () {
                             .on('data', function (organization) {
                             organizations.push(__assign({ address: organization.key }, organization.value));
                         })
-                            .on('end', function () { resolve(organizations); })
-                            .on('error', function (err) { reject(err); });
+                            .on('end', function () {
+                            resolve(organizations);
+                        })
+                            .on('error', function (err) {
+                            reject(err);
+                        });
                     })];
             });
         });
@@ -284,7 +307,6 @@ var OrganizationFactory = /** @class */ (function () {
             var address;
             var _this = this;
             return __generator(this, function (_a) {
-                address = undefined;
                 return [2 /*return*/, new Promise(function (resolve, reject) {
                         _this.db
                             .createReadStream()
@@ -293,14 +315,18 @@ var OrganizationFactory = /** @class */ (function () {
                                 address = organization.key;
                             }
                         })
-                            .on('end', function () { resolve(address); })
-                            .on('error', function (err) { reject(err); });
+                            .on('end', function () {
+                            resolve(address);
+                        })
+                            .on('error', function (err) {
+                            reject(err);
+                        });
                     })];
             });
         });
     };
     OrganizationFactory.prototype._getDAOAddressFromReceipt = function (receipt) {
-        return receipt.logs.filter(function (l) { return l.event == 'DeployInstance'; })[0].args.dao;
+        return receipt.logs.filter(function (l) { return l.event === 'DeployInstance'; })[0].args.dao;
     };
     return OrganizationFactory;
 }());

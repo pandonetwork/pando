@@ -49,9 +49,9 @@ var fs_extra_1 = __importDefault(require("fs-extra"));
 var level_1 = __importDefault(require("level"));
 var path_1 = __importDefault(require("path"));
 var klaw_1 = __importDefault(require("klaw"));
-var through2_1 = __importDefault(require("through2"));
-var stream_1 = __importDefault(require("stream"));
 var _ = __importStar(require("lodash"));
+var stream_1 = __importDefault(require("stream"));
+var through2_1 = __importDefault(require("through2"));
 var util_1 = __importDefault(require("util"));
 var error_1 = __importDefault(require("../../../error"));
 var ignore = through2_1.default.obj(function (item, enc, next) {
@@ -67,6 +67,20 @@ var Index = /** @class */ (function () {
         this.fiber = fiber;
         this.db = util_1.default.promisify(level_1.default)(fiber.paths.index, { valueEncoding: 'json' });
     }
+    Object.defineProperty(Index.prototype, "plant", {
+        get: function () {
+            return this.fiber.plant;
+        },
+        enumerable: true,
+        configurable: true
+    });
+    Object.defineProperty(Index.prototype, "node", {
+        get: function () {
+            return this.plant.node;
+        },
+        enumerable: true,
+        configurable: true
+    });
     Index.for = function (fiber) {
         return __awaiter(this, void 0, void 0, function () {
             var index;
@@ -97,20 +111,6 @@ var Index = /** @class */ (function () {
             });
         });
     };
-    Object.defineProperty(Index.prototype, "plant", {
-        get: function () {
-            return this.fiber.plant;
-        },
-        enumerable: true,
-        configurable: true
-    });
-    Object.defineProperty(Index.prototype, "node", {
-        get: function () {
-            return this.plant.node;
-        },
-        enumerable: true,
-        configurable: true
-    });
     Index.prototype.current = function () {
         return __awaiter(this, void 0, void 0, function () {
             var index;
@@ -127,14 +127,18 @@ var Index = /** @class */ (function () {
                                     next();
                                     return [2 /*return*/];
                                 });
-                            }); }
+                            }); },
                         });
                         writeStream
-                            .on('finish', function () { resolve(index); })
-                            .on('error', function (err) { reject(err); });
-                        readStream
-                            .pipe(writeStream)
-                            .on('error', function (err) { reject(err); });
+                            .on('finish', function () {
+                            resolve(index);
+                        })
+                            .on('error', function (err) {
+                            reject(err);
+                        });
+                        readStream.pipe(writeStream).on('error', function (err) {
+                            reject(err);
+                        });
                     })];
             });
         });
@@ -203,40 +207,6 @@ var Index = /** @class */ (function () {
             });
         });
     };
-    Index.prototype._ls = function () {
-        return __awaiter(this, void 0, void 0, function () {
-            var files;
-            var _this = this;
-            return __generator(this, function (_a) {
-                files = {};
-                return [2 /*return*/, new Promise(function (resolve, reject) {
-                        klaw_1.default(_this.plant.paths.root)
-                            .pipe(through2_1.default.obj(function (item, enc, next) {
-                            if (item.path.indexOf('.pando') >= 0) {
-                                next();
-                            }
-                            else {
-                                this.push(item);
-                                next();
-                            }
-                        }))
-                            .pipe(through2_1.default.obj(function (item, enc, next) {
-                            if (item.stats.isDirectory()) {
-                                next();
-                            }
-                            else {
-                                this.push(item);
-                                next();
-                            }
-                        }))
-                            .on('data', function (file) {
-                            files[path_1.default.relative(_this.plant.paths.root, file.path)] = { mtime: file.stats.mtime };
-                        })
-                            .on('end', function () { resolve(files); });
-                    })];
-            });
-        });
-    };
     Index.prototype.status = function () {
         return __awaiter(this, void 0, void 0, function () {
             var files, index, untracked, unsnapshot, modified, deleted, updates;
@@ -276,9 +246,9 @@ var Index = /** @class */ (function () {
                                                         cid = _a.sent();
                                                         index[file.key] = {
                                                             mtime: files[file.key].mtime.toISOString(),
+                                                            snapshot: file.value.snapshot,
                                                             tracked: file.value.tracked,
                                                             wdir: cid,
-                                                            snapshot: file.value.snapshot
                                                         };
                                                         updates.push({ type: 'put', key: file.key, value: index[file.key] });
                                                         return [3 /*break*/, 3];
@@ -294,6 +264,7 @@ var Index = /** @class */ (function () {
                                                         }
                                                         return [3 /*break*/, 5];
                                                     case 4:
+                                                        // file does not exist in wdir anymore
                                                         if (file.value.snapshot === 'null') {
                                                             delete index[file.key];
                                                             updates.push({ type: 'del', key: file.key });
@@ -301,9 +272,9 @@ var Index = /** @class */ (function () {
                                                         else {
                                                             index[file.key] = {
                                                                 mtime: new Date(Date.now()).toISOString(),
+                                                                snapshot: file.value.snapshot,
                                                                 tracked: file.value.tracked,
                                                                 wdir: 'null',
-                                                                snapshot: file.value.snapshot
                                                             };
                                                             updates.push({ type: 'put', key: file.key, value: index[file.key] });
                                                             if (!file.value.tracked) {
@@ -323,7 +294,7 @@ var Index = /** @class */ (function () {
                                                         return [2 /*return*/];
                                                 }
                                             });
-                                        }); }
+                                        }); },
                                     });
                                     writeStream
                                         .on('finish', function () { return __awaiter(_this, void 0, void 0, function () {
@@ -339,14 +310,15 @@ var Index = /** @class */ (function () {
                                                 case 1:
                                                     if (!(_i < _a.length)) return [3 /*break*/, 4];
                                                     path = _a[_i];
+                                                    if (!files.hasOwnProperty(path)) return [3 /*break*/, 3];
                                                     return [4 /*yield*/, this.cid(path)];
                                                 case 2:
                                                     cid = _c.sent();
                                                     index[path] = {
                                                         mtime: files[path].mtime.toISOString(),
+                                                        snapshot: 'null',
                                                         tracked: false,
                                                         wdir: cid,
-                                                        snapshot: 'null'
                                                     };
                                                     updates.push({ type: 'put', key: path, value: index[path] });
                                                     untracked.push(path);
@@ -365,9 +337,7 @@ var Index = /** @class */ (function () {
                                         .on('error', function (err) {
                                         reject(err);
                                     });
-                                    readStream
-                                        .pipe(writeStream)
-                                        .on('error', function (err) {
+                                    readStream.pipe(writeStream).on('error', function (err) {
                                         reject(err);
                                     });
                                     return [2 /*return*/];
@@ -420,6 +390,54 @@ var Index = /** @class */ (function () {
             });
         });
     };
+    Index.prototype.extract = function (paths, index) {
+        var _this = this;
+        var extracted = paths.map(function (path) {
+            path = path_1.default.relative(_this.plant.paths.root, path);
+            return _.filter(Object.keys(index), function (entry) {
+                return entry.indexOf(path) === 0;
+            });
+        });
+        return _.uniq(_.flattenDeep(extracted));
+    };
+    Index.prototype._ls = function () {
+        return __awaiter(this, void 0, void 0, function () {
+            var files;
+            var _this = this;
+            return __generator(this, function (_a) {
+                files = {};
+                return [2 /*return*/, new Promise(function (resolve, reject) {
+                        klaw_1.default(_this.plant.paths.root)
+                            .pipe(through2_1.default.obj(function (item, enc, next) {
+                            // ignore .pando directory
+                            if (item.path.indexOf('.pando') >= 0) {
+                                next();
+                            }
+                            else {
+                                this.push(item);
+                                next();
+                            }
+                        }))
+                            .pipe(through2_1.default.obj(function (item, enc, next) {
+                            // ignore directories
+                            if (item.stats.isDirectory()) {
+                                next();
+                            }
+                            else {
+                                this.push(item);
+                                next();
+                            }
+                        }))
+                            .on('data', function (file) {
+                            files[path_1.default.relative(_this.plant.paths.root, file.path)] = { mtime: file.stats.mtime };
+                        })
+                            .on('end', function () {
+                            resolve(files);
+                        });
+                    })];
+            });
+        });
+    };
     Index.prototype.clean = function (path) {
         return __awaiter(this, void 0, void 0, function () {
             var dir, stat;
@@ -446,16 +464,6 @@ var Index = /** @class */ (function () {
                 }
             });
         });
-    };
-    Index.prototype.extract = function (paths, index) {
-        var _this = this;
-        var extracted = paths.map(function (path) {
-            path = path_1.default.relative(_this.plant.paths.root, path);
-            return _.filter(Object.keys(index), function (entry) {
-                return entry.indexOf(path) === 0;
-            });
-        });
-        return _.uniq(_.flattenDeep(extracted));
     };
     return Index;
 }());
