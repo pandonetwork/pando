@@ -2,6 +2,116 @@
   "contractName": "IOrganism",
   "abi": [
     {
+      "constant": true,
+      "inputs": [],
+      "name": "RFLsLength",
+      "outputs": [
+        {
+          "name": "",
+          "type": "uint256"
+        }
+      ],
+      "payable": false,
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "constant": true,
+      "inputs": [
+        {
+          "name": "",
+          "type": "uint256"
+        }
+      ],
+      "name": "RFIs",
+      "outputs": [
+        {
+          "components": [
+            {
+              "name": "metadata",
+              "type": "string"
+            }
+          ],
+          "name": "individuation",
+          "type": "tuple"
+        },
+        {
+          "name": "blockstamp",
+          "type": "uint256"
+        },
+        {
+          "name": "state",
+          "type": "uint8"
+        }
+      ],
+      "payable": false,
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "constant": true,
+      "inputs": [],
+      "name": "RFIsLength",
+      "outputs": [
+        {
+          "name": "",
+          "type": "uint256"
+        }
+      ],
+      "payable": false,
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "constant": true,
+      "inputs": [
+        {
+          "name": "",
+          "type": "uint256"
+        }
+      ],
+      "name": "RFLs",
+      "outputs": [
+        {
+          "components": [
+            {
+              "name": "destination",
+              "type": "address"
+            },
+            {
+              "name": "minimum",
+              "type": "uint256"
+            },
+            {
+              "name": "metadata",
+              "type": "string"
+            }
+          ],
+          "name": "lineage",
+          "type": "tuple"
+        },
+        {
+          "name": "blockstamp",
+          "type": "uint256"
+        },
+        {
+          "name": "value",
+          "type": "uint256"
+        },
+        {
+          "name": "state",
+          "type": "uint8"
+        },
+        {
+          "name": "RFIid",
+          "type": "uint256"
+        }
+      ],
+      "payable": false,
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
       "anonymous": false,
       "inputs": [
         {
@@ -409,6 +519,33 @@
       "constant": true,
       "inputs": [
         {
+          "name": "_RFLid",
+          "type": "uint256"
+        }
+      ],
+      "name": "getRFLLineage",
+      "outputs": [
+        {
+          "name": "destination",
+          "type": "address"
+        },
+        {
+          "name": "minimum",
+          "type": "uint256"
+        },
+        {
+          "name": "metadata",
+          "type": "string"
+        }
+      ],
+      "payable": false,
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "constant": true,
+      "inputs": [
+        {
           "components": [
             {
               "name": "blockstamp",
@@ -477,16 +614,16 @@
   "deployedBytecode": "0x",
   "sourceMap": "",
   "deployedSourceMap": "",
-  "source": "pragma solidity ^0.4.24;\npragma experimental ABIEncoderV2;\n\nimport \"../lib/Pando.sol\";\n\n\ncontract IOrganism {\n    event CreateRFI(uint256 indexed id);\n    event MergeRFI(uint256 indexed id);\n    event RejectRFI(uint256 indexed id);\n    event CancelRFI(uint256 indexed id);\n\n    event CreateRFL(uint256 indexed id);\n    event AcceptRFL(uint256 indexed id, uint256 value);\n    event RejectRFL(uint256 indexed id);\n    event CancelRFL(uint256 indexed id);\n    event IssueRFL(uint256 indexed id, address destination, uint256 value);\n\n    function createRFI(Pando.IIndividuation _individuation, Pando.ILineage[] _lineages) public returns (uint256 RFIid);\n    function mergeRFI(uint256 _RFIid) public;\n    function rejectRFI(uint256 _RFIid) public;\n    function acceptRFL(uint256 _RFLid, uint256 _value) public;\n    function rejectRFL(uint256 _RFLid) public;\n\n    /*--------------------*/\n\n    function canMergeRFI(uint256 _RFIid) public view returns (bool);\n    function canRejectRFI(uint _RFIid) public view returns (bool);\n    function canAcceptRFL(uint256 _RFLid, uint256 _value) public view returns (bool);\n    function canRejectRFL(uint _RFLid) public view returns (bool);\n\n    /*--------------------*/\n\n    function getRFI(uint256 _RFIid) public view returns (Pando.RFI);\n    function getRFL(uint256 _RFLid) public view returns (Pando.RFL);\n    function getIndividuationHash(Pando.Individuation _individuation) public view returns (bytes32);\n    function head() public view returns (bytes32);\n    function getHead() public view returns (Pando.Individuation);\n}\n",
+  "source": "pragma solidity ^0.4.24;\npragma experimental ABIEncoderV2;\n\nimport \"../lib/Pando.sol\";\n\n\ncontract IOrganism {\n    mapping (uint256 => Pando.RFI) public RFIs;\n    mapping (uint256 => Pando.RFL) public RFLs;\n\n    uint256 public RFIsLength = 0;\n    uint256 public RFLsLength = 0;\n\n    event CreateRFI(uint256 indexed id);\n    event MergeRFI(uint256 indexed id);\n    event RejectRFI(uint256 indexed id);\n    event CancelRFI(uint256 indexed id);\n\n    event CreateRFL(uint256 indexed id);\n    event AcceptRFL(uint256 indexed id, uint256 value);\n    event RejectRFL(uint256 indexed id);\n    event CancelRFL(uint256 indexed id);\n    event IssueRFL(uint256 indexed id, address destination, uint256 value);\n\n    function createRFI(Pando.IIndividuation _individuation, Pando.ILineage[] _lineages) public returns (uint256 RFIid);\n    function mergeRFI(uint256 _RFIid) public;\n    function rejectRFI(uint256 _RFIid) public;\n    function acceptRFL(uint256 _RFLid, uint256 _value) public;\n    function rejectRFL(uint256 _RFLid) public;\n\n    /*--------------------*/\n\n    function canMergeRFI(uint256 _RFIid) public view returns (bool);\n    function canRejectRFI(uint _RFIid) public view returns (bool);\n    function canAcceptRFL(uint256 _RFLid, uint256 _value) public view returns (bool);\n    function canRejectRFL(uint _RFLid) public view returns (bool);\n\n    /*--------------------*/\n\n    function getRFI(uint256 _RFIid) public view returns (Pando.RFI);\n    function getRFL(uint256 _RFLid) public view returns (Pando.RFL);\n    function getRFLLineage(uint256 _RFLid) public view returns (address destination, uint256 minimum, string metadata);\n    function getIndividuationHash(Pando.Individuation _individuation) public view returns (bytes32);\n    function head() public view returns (bytes32);\n    function getHead() public view returns (Pando.Individuation);\n}\n",
   "sourcePath": "@pando/core/contracts/organism/IOrganism.sol",
   "ast": {
     "absolutePath": "@pando/core/contracts/organism/IOrganism.sol",
     "exportedSymbols": {
       "IOrganism": [
-        12120
+        12145
       ]
     },
-    "id": 12121,
+    "id": 12146,
     "nodeType": "SourceUnit",
     "nodes": [
       {
@@ -514,7 +651,7 @@
         "file": "../lib/Pando.sol",
         "id": 11984,
         "nodeType": "ImportDirective",
-        "scope": 12121,
+        "scope": 12146,
         "sourceUnit": 11981,
         "src": "60:26:58",
         "symbolAliases": [],
@@ -526,31 +663,211 @@
         "contractKind": "contract",
         "documentation": null,
         "fullyImplemented": false,
-        "id": 12120,
+        "id": 12145,
         "linearizedBaseContracts": [
-          12120
+          12145
         ],
         "name": "IOrganism",
         "nodeType": "ContractDefinition",
         "nodes": [
           {
+            "constant": false,
+            "id": 11988,
+            "name": "RFIs",
+            "nodeType": "VariableDeclaration",
+            "scope": 12145,
+            "src": "114:42:58",
+            "stateVariable": true,
+            "storageLocation": "default",
+            "typeDescriptions": {
+              "typeIdentifier": "t_mapping$_t_uint256_$_t_struct$_RFI_$11939_storage_$",
+              "typeString": "mapping(uint256 => struct Pando.RFI)"
+            },
+            "typeName": {
+              "id": 11987,
+              "keyType": {
+                "id": 11985,
+                "name": "uint256",
+                "nodeType": "ElementaryTypeName",
+                "src": "123:7:58",
+                "typeDescriptions": {
+                  "typeIdentifier": "t_uint256",
+                  "typeString": "uint256"
+                }
+              },
+              "nodeType": "Mapping",
+              "src": "114:30:58",
+              "typeDescriptions": {
+                "typeIdentifier": "t_mapping$_t_uint256_$_t_struct$_RFI_$11939_storage_$",
+                "typeString": "mapping(uint256 => struct Pando.RFI)"
+              },
+              "valueType": {
+                "contractScope": null,
+                "id": 11986,
+                "name": "Pando.RFI",
+                "nodeType": "UserDefinedTypeName",
+                "referencedDeclaration": 11939,
+                "src": "134:9:58",
+                "typeDescriptions": {
+                  "typeIdentifier": "t_struct$_RFI_$11939_storage_ptr",
+                  "typeString": "struct Pando.RFI"
+                }
+              }
+            },
+            "value": null,
+            "visibility": "public"
+          },
+          {
+            "constant": false,
+            "id": 11992,
+            "name": "RFLs",
+            "nodeType": "VariableDeclaration",
+            "scope": 12145,
+            "src": "162:42:58",
+            "stateVariable": true,
+            "storageLocation": "default",
+            "typeDescriptions": {
+              "typeIdentifier": "t_mapping$_t_uint256_$_t_struct$_RFL_$11957_storage_$",
+              "typeString": "mapping(uint256 => struct Pando.RFL)"
+            },
+            "typeName": {
+              "id": 11991,
+              "keyType": {
+                "id": 11989,
+                "name": "uint256",
+                "nodeType": "ElementaryTypeName",
+                "src": "171:7:58",
+                "typeDescriptions": {
+                  "typeIdentifier": "t_uint256",
+                  "typeString": "uint256"
+                }
+              },
+              "nodeType": "Mapping",
+              "src": "162:30:58",
+              "typeDescriptions": {
+                "typeIdentifier": "t_mapping$_t_uint256_$_t_struct$_RFL_$11957_storage_$",
+                "typeString": "mapping(uint256 => struct Pando.RFL)"
+              },
+              "valueType": {
+                "contractScope": null,
+                "id": 11990,
+                "name": "Pando.RFL",
+                "nodeType": "UserDefinedTypeName",
+                "referencedDeclaration": 11957,
+                "src": "182:9:58",
+                "typeDescriptions": {
+                  "typeIdentifier": "t_struct$_RFL_$11957_storage_ptr",
+                  "typeString": "struct Pando.RFL"
+                }
+              }
+            },
+            "value": null,
+            "visibility": "public"
+          },
+          {
+            "constant": false,
+            "id": 11995,
+            "name": "RFIsLength",
+            "nodeType": "VariableDeclaration",
+            "scope": 12145,
+            "src": "211:29:58",
+            "stateVariable": true,
+            "storageLocation": "default",
+            "typeDescriptions": {
+              "typeIdentifier": "t_uint256",
+              "typeString": "uint256"
+            },
+            "typeName": {
+              "id": 11993,
+              "name": "uint256",
+              "nodeType": "ElementaryTypeName",
+              "src": "211:7:58",
+              "typeDescriptions": {
+                "typeIdentifier": "t_uint256",
+                "typeString": "uint256"
+              }
+            },
+            "value": {
+              "argumentTypes": null,
+              "hexValue": "30",
+              "id": 11994,
+              "isConstant": false,
+              "isLValue": false,
+              "isPure": true,
+              "kind": "number",
+              "lValueRequested": false,
+              "nodeType": "Literal",
+              "src": "239:1:58",
+              "subdenomination": null,
+              "typeDescriptions": {
+                "typeIdentifier": "t_rational_0_by_1",
+                "typeString": "int_const 0"
+              },
+              "value": "0"
+            },
+            "visibility": "public"
+          },
+          {
+            "constant": false,
+            "id": 11998,
+            "name": "RFLsLength",
+            "nodeType": "VariableDeclaration",
+            "scope": 12145,
+            "src": "246:29:58",
+            "stateVariable": true,
+            "storageLocation": "default",
+            "typeDescriptions": {
+              "typeIdentifier": "t_uint256",
+              "typeString": "uint256"
+            },
+            "typeName": {
+              "id": 11996,
+              "name": "uint256",
+              "nodeType": "ElementaryTypeName",
+              "src": "246:7:58",
+              "typeDescriptions": {
+                "typeIdentifier": "t_uint256",
+                "typeString": "uint256"
+              }
+            },
+            "value": {
+              "argumentTypes": null,
+              "hexValue": "30",
+              "id": 11997,
+              "isConstant": false,
+              "isLValue": false,
+              "isPure": true,
+              "kind": "number",
+              "lValueRequested": false,
+              "nodeType": "Literal",
+              "src": "274:1:58",
+              "subdenomination": null,
+              "typeDescriptions": {
+                "typeIdentifier": "t_rational_0_by_1",
+                "typeString": "int_const 0"
+              },
+              "value": "0"
+            },
+            "visibility": "public"
+          },
+          {
             "anonymous": false,
             "documentation": null,
-            "id": 11988,
+            "id": 12002,
             "name": "CreateRFI",
             "nodeType": "EventDefinition",
             "parameters": {
-              "id": 11987,
+              "id": 12001,
               "nodeType": "ParameterList",
               "parameters": [
                 {
                   "constant": false,
-                  "id": 11986,
+                  "id": 12000,
                   "indexed": true,
                   "name": "id",
                   "nodeType": "VariableDeclaration",
-                  "scope": 11988,
-                  "src": "130:18:58",
+                  "scope": 12002,
+                  "src": "298:18:58",
                   "stateVariable": false,
                   "storageLocation": "default",
                   "typeDescriptions": {
@@ -558,10 +875,10 @@
                     "typeString": "uint256"
                   },
                   "typeName": {
-                    "id": 11985,
+                    "id": 11999,
                     "name": "uint256",
                     "nodeType": "ElementaryTypeName",
-                    "src": "130:7:58",
+                    "src": "298:7:58",
                     "typeDescriptions": {
                       "typeIdentifier": "t_uint256",
                       "typeString": "uint256"
@@ -571,28 +888,28 @@
                   "visibility": "internal"
                 }
               ],
-              "src": "129:20:58"
+              "src": "297:20:58"
             },
-            "src": "114:36:58"
+            "src": "282:36:58"
           },
           {
             "anonymous": false,
             "documentation": null,
-            "id": 11992,
+            "id": 12006,
             "name": "MergeRFI",
             "nodeType": "EventDefinition",
             "parameters": {
-              "id": 11991,
+              "id": 12005,
               "nodeType": "ParameterList",
               "parameters": [
                 {
                   "constant": false,
-                  "id": 11990,
+                  "id": 12004,
                   "indexed": true,
                   "name": "id",
                   "nodeType": "VariableDeclaration",
-                  "scope": 11992,
-                  "src": "170:18:58",
+                  "scope": 12006,
+                  "src": "338:18:58",
                   "stateVariable": false,
                   "storageLocation": "default",
                   "typeDescriptions": {
@@ -600,10 +917,10 @@
                     "typeString": "uint256"
                   },
                   "typeName": {
-                    "id": 11989,
+                    "id": 12003,
                     "name": "uint256",
                     "nodeType": "ElementaryTypeName",
-                    "src": "170:7:58",
+                    "src": "338:7:58",
                     "typeDescriptions": {
                       "typeIdentifier": "t_uint256",
                       "typeString": "uint256"
@@ -613,141 +930,15 @@
                   "visibility": "internal"
                 }
               ],
-              "src": "169:20:58"
+              "src": "337:20:58"
             },
-            "src": "155:35:58"
-          },
-          {
-            "anonymous": false,
-            "documentation": null,
-            "id": 11996,
-            "name": "RejectRFI",
-            "nodeType": "EventDefinition",
-            "parameters": {
-              "id": 11995,
-              "nodeType": "ParameterList",
-              "parameters": [
-                {
-                  "constant": false,
-                  "id": 11994,
-                  "indexed": true,
-                  "name": "id",
-                  "nodeType": "VariableDeclaration",
-                  "scope": 11996,
-                  "src": "211:18:58",
-                  "stateVariable": false,
-                  "storageLocation": "default",
-                  "typeDescriptions": {
-                    "typeIdentifier": "t_uint256",
-                    "typeString": "uint256"
-                  },
-                  "typeName": {
-                    "id": 11993,
-                    "name": "uint256",
-                    "nodeType": "ElementaryTypeName",
-                    "src": "211:7:58",
-                    "typeDescriptions": {
-                      "typeIdentifier": "t_uint256",
-                      "typeString": "uint256"
-                    }
-                  },
-                  "value": null,
-                  "visibility": "internal"
-                }
-              ],
-              "src": "210:20:58"
-            },
-            "src": "195:36:58"
-          },
-          {
-            "anonymous": false,
-            "documentation": null,
-            "id": 12000,
-            "name": "CancelRFI",
-            "nodeType": "EventDefinition",
-            "parameters": {
-              "id": 11999,
-              "nodeType": "ParameterList",
-              "parameters": [
-                {
-                  "constant": false,
-                  "id": 11998,
-                  "indexed": true,
-                  "name": "id",
-                  "nodeType": "VariableDeclaration",
-                  "scope": 12000,
-                  "src": "252:18:58",
-                  "stateVariable": false,
-                  "storageLocation": "default",
-                  "typeDescriptions": {
-                    "typeIdentifier": "t_uint256",
-                    "typeString": "uint256"
-                  },
-                  "typeName": {
-                    "id": 11997,
-                    "name": "uint256",
-                    "nodeType": "ElementaryTypeName",
-                    "src": "252:7:58",
-                    "typeDescriptions": {
-                      "typeIdentifier": "t_uint256",
-                      "typeString": "uint256"
-                    }
-                  },
-                  "value": null,
-                  "visibility": "internal"
-                }
-              ],
-              "src": "251:20:58"
-            },
-            "src": "236:36:58"
-          },
-          {
-            "anonymous": false,
-            "documentation": null,
-            "id": 12004,
-            "name": "CreateRFL",
-            "nodeType": "EventDefinition",
-            "parameters": {
-              "id": 12003,
-              "nodeType": "ParameterList",
-              "parameters": [
-                {
-                  "constant": false,
-                  "id": 12002,
-                  "indexed": true,
-                  "name": "id",
-                  "nodeType": "VariableDeclaration",
-                  "scope": 12004,
-                  "src": "294:18:58",
-                  "stateVariable": false,
-                  "storageLocation": "default",
-                  "typeDescriptions": {
-                    "typeIdentifier": "t_uint256",
-                    "typeString": "uint256"
-                  },
-                  "typeName": {
-                    "id": 12001,
-                    "name": "uint256",
-                    "nodeType": "ElementaryTypeName",
-                    "src": "294:7:58",
-                    "typeDescriptions": {
-                      "typeIdentifier": "t_uint256",
-                      "typeString": "uint256"
-                    }
-                  },
-                  "value": null,
-                  "visibility": "internal"
-                }
-              ],
-              "src": "293:20:58"
-            },
-            "src": "278:36:58"
+            "src": "323:35:58"
           },
           {
             "anonymous": false,
             "documentation": null,
             "id": 12010,
-            "name": "AcceptRFL",
+            "name": "RejectRFI",
             "nodeType": "EventDefinition",
             "parameters": {
               "id": 12009,
@@ -755,39 +946,12 @@
               "parameters": [
                 {
                   "constant": false,
-                  "id": 12006,
+                  "id": 12008,
                   "indexed": true,
                   "name": "id",
                   "nodeType": "VariableDeclaration",
                   "scope": 12010,
-                  "src": "335:18:58",
-                  "stateVariable": false,
-                  "storageLocation": "default",
-                  "typeDescriptions": {
-                    "typeIdentifier": "t_uint256",
-                    "typeString": "uint256"
-                  },
-                  "typeName": {
-                    "id": 12005,
-                    "name": "uint256",
-                    "nodeType": "ElementaryTypeName",
-                    "src": "335:7:58",
-                    "typeDescriptions": {
-                      "typeIdentifier": "t_uint256",
-                      "typeString": "uint256"
-                    }
-                  },
-                  "value": null,
-                  "visibility": "internal"
-                },
-                {
-                  "constant": false,
-                  "id": 12008,
-                  "indexed": false,
-                  "name": "value",
-                  "nodeType": "VariableDeclaration",
-                  "scope": 12010,
-                  "src": "355:13:58",
+                  "src": "379:18:58",
                   "stateVariable": false,
                   "storageLocation": "default",
                   "typeDescriptions": {
@@ -798,7 +962,7 @@
                     "id": 12007,
                     "name": "uint256",
                     "nodeType": "ElementaryTypeName",
-                    "src": "355:7:58",
+                    "src": "379:7:58",
                     "typeDescriptions": {
                       "typeIdentifier": "t_uint256",
                       "typeString": "uint256"
@@ -808,15 +972,15 @@
                   "visibility": "internal"
                 }
               ],
-              "src": "334:35:58"
+              "src": "378:20:58"
             },
-            "src": "319:51:58"
+            "src": "363:36:58"
           },
           {
             "anonymous": false,
             "documentation": null,
             "id": 12014,
-            "name": "RejectRFL",
+            "name": "CancelRFI",
             "nodeType": "EventDefinition",
             "parameters": {
               "id": 12013,
@@ -829,7 +993,7 @@
                   "name": "id",
                   "nodeType": "VariableDeclaration",
                   "scope": 12014,
-                  "src": "391:18:58",
+                  "src": "420:18:58",
                   "stateVariable": false,
                   "storageLocation": "default",
                   "typeDescriptions": {
@@ -840,7 +1004,7 @@
                     "id": 12011,
                     "name": "uint256",
                     "nodeType": "ElementaryTypeName",
-                    "src": "391:7:58",
+                    "src": "420:7:58",
                     "typeDescriptions": {
                       "typeIdentifier": "t_uint256",
                       "typeString": "uint256"
@@ -850,15 +1014,15 @@
                   "visibility": "internal"
                 }
               ],
-              "src": "390:20:58"
+              "src": "419:20:58"
             },
-            "src": "375:36:58"
+            "src": "404:36:58"
           },
           {
             "anonymous": false,
             "documentation": null,
             "id": 12018,
-            "name": "CancelRFL",
+            "name": "CreateRFL",
             "nodeType": "EventDefinition",
             "parameters": {
               "id": 12017,
@@ -871,7 +1035,7 @@
                   "name": "id",
                   "nodeType": "VariableDeclaration",
                   "scope": 12018,
-                  "src": "432:18:58",
+                  "src": "462:18:58",
                   "stateVariable": false,
                   "storageLocation": "default",
                   "typeDescriptions": {
@@ -882,7 +1046,7 @@
                     "id": 12015,
                     "name": "uint256",
                     "nodeType": "ElementaryTypeName",
-                    "src": "432:7:58",
+                    "src": "462:7:58",
                     "typeDescriptions": {
                       "typeIdentifier": "t_uint256",
                       "typeString": "uint256"
@@ -892,18 +1056,18 @@
                   "visibility": "internal"
                 }
               ],
-              "src": "431:20:58"
+              "src": "461:20:58"
             },
-            "src": "416:36:58"
+            "src": "446:36:58"
           },
           {
             "anonymous": false,
             "documentation": null,
-            "id": 12026,
-            "name": "IssueRFL",
+            "id": 12024,
+            "name": "AcceptRFL",
             "nodeType": "EventDefinition",
             "parameters": {
-              "id": 12025,
+              "id": 12023,
               "nodeType": "ParameterList",
               "parameters": [
                 {
@@ -912,8 +1076,8 @@
                   "indexed": true,
                   "name": "id",
                   "nodeType": "VariableDeclaration",
-                  "scope": 12026,
-                  "src": "472:18:58",
+                  "scope": 12024,
+                  "src": "503:18:58",
                   "stateVariable": false,
                   "storageLocation": "default",
                   "typeDescriptions": {
@@ -924,7 +1088,7 @@
                     "id": 12019,
                     "name": "uint256",
                     "nodeType": "ElementaryTypeName",
-                    "src": "472:7:58",
+                    "src": "503:7:58",
                     "typeDescriptions": {
                       "typeIdentifier": "t_uint256",
                       "typeString": "uint256"
@@ -937,37 +1101,10 @@
                   "constant": false,
                   "id": 12022,
                   "indexed": false,
-                  "name": "destination",
-                  "nodeType": "VariableDeclaration",
-                  "scope": 12026,
-                  "src": "492:19:58",
-                  "stateVariable": false,
-                  "storageLocation": "default",
-                  "typeDescriptions": {
-                    "typeIdentifier": "t_address",
-                    "typeString": "address"
-                  },
-                  "typeName": {
-                    "id": 12021,
-                    "name": "address",
-                    "nodeType": "ElementaryTypeName",
-                    "src": "492:7:58",
-                    "typeDescriptions": {
-                      "typeIdentifier": "t_address",
-                      "typeString": "address"
-                    }
-                  },
-                  "value": null,
-                  "visibility": "internal"
-                },
-                {
-                  "constant": false,
-                  "id": 12024,
-                  "indexed": false,
                   "name": "value",
                   "nodeType": "VariableDeclaration",
-                  "scope": 12026,
-                  "src": "513:13:58",
+                  "scope": 12024,
+                  "src": "523:13:58",
                   "stateVariable": false,
                   "storageLocation": "default",
                   "typeDescriptions": {
@@ -975,10 +1112,10 @@
                     "typeString": "uint256"
                   },
                   "typeName": {
-                    "id": 12023,
+                    "id": 12021,
                     "name": "uint256",
                     "nodeType": "ElementaryTypeName",
-                    "src": "513:7:58",
+                    "src": "523:7:58",
                     "typeDescriptions": {
                       "typeIdentifier": "t_uint256",
                       "typeString": "uint256"
@@ -988,105 +1125,112 @@
                   "visibility": "internal"
                 }
               ],
-              "src": "471:56:58"
+              "src": "502:35:58"
             },
-            "src": "457:71:58"
+            "src": "487:51:58"
           },
           {
-            "body": null,
+            "anonymous": false,
             "documentation": null,
-            "id": 12036,
-            "implemented": false,
-            "isConstructor": false,
-            "isDeclaredConst": false,
-            "modifiers": [],
-            "name": "createRFI",
-            "nodeType": "FunctionDefinition",
+            "id": 12028,
+            "name": "RejectRFL",
+            "nodeType": "EventDefinition",
             "parameters": {
-              "id": 12032,
+              "id": 12027,
               "nodeType": "ParameterList",
               "parameters": [
                 {
                   "constant": false,
-                  "id": 12028,
-                  "name": "_individuation",
+                  "id": 12026,
+                  "indexed": true,
+                  "name": "id",
                   "nodeType": "VariableDeclaration",
-                  "scope": 12036,
-                  "src": "553:35:58",
+                  "scope": 12028,
+                  "src": "559:18:58",
                   "stateVariable": false,
                   "storageLocation": "default",
                   "typeDescriptions": {
-                    "typeIdentifier": "t_struct$_IIndividuation_$11924_memory_ptr",
-                    "typeString": "struct Pando.IIndividuation"
+                    "typeIdentifier": "t_uint256",
+                    "typeString": "uint256"
                   },
                   "typeName": {
-                    "contractScope": null,
-                    "id": 12027,
-                    "name": "Pando.IIndividuation",
-                    "nodeType": "UserDefinedTypeName",
-                    "referencedDeclaration": 11924,
-                    "src": "553:20:58",
+                    "id": 12025,
+                    "name": "uint256",
+                    "nodeType": "ElementaryTypeName",
+                    "src": "559:7:58",
                     "typeDescriptions": {
-                      "typeIdentifier": "t_struct$_IIndividuation_$11924_storage_ptr",
-                      "typeString": "struct Pando.IIndividuation"
-                    }
-                  },
-                  "value": null,
-                  "visibility": "internal"
-                },
-                {
-                  "constant": false,
-                  "id": 12031,
-                  "name": "_lineages",
-                  "nodeType": "VariableDeclaration",
-                  "scope": 12036,
-                  "src": "590:26:58",
-                  "stateVariable": false,
-                  "storageLocation": "default",
-                  "typeDescriptions": {
-                    "typeIdentifier": "t_array$_t_struct$_ILineage_$11946_memory_$dyn_memory_ptr",
-                    "typeString": "struct Pando.ILineage[]"
-                  },
-                  "typeName": {
-                    "baseType": {
-                      "contractScope": null,
-                      "id": 12029,
-                      "name": "Pando.ILineage",
-                      "nodeType": "UserDefinedTypeName",
-                      "referencedDeclaration": 11946,
-                      "src": "590:14:58",
-                      "typeDescriptions": {
-                        "typeIdentifier": "t_struct$_ILineage_$11946_storage_ptr",
-                        "typeString": "struct Pando.ILineage"
-                      }
-                    },
-                    "id": 12030,
-                    "length": null,
-                    "nodeType": "ArrayTypeName",
-                    "src": "590:16:58",
-                    "typeDescriptions": {
-                      "typeIdentifier": "t_array$_t_struct$_ILineage_$11946_storage_$dyn_storage_ptr",
-                      "typeString": "struct Pando.ILineage[]"
+                      "typeIdentifier": "t_uint256",
+                      "typeString": "uint256"
                     }
                   },
                   "value": null,
                   "visibility": "internal"
                 }
               ],
-              "src": "552:65:58"
+              "src": "558:20:58"
             },
-            "payable": false,
-            "returnParameters": {
-              "id": 12035,
+            "src": "543:36:58"
+          },
+          {
+            "anonymous": false,
+            "documentation": null,
+            "id": 12032,
+            "name": "CancelRFL",
+            "nodeType": "EventDefinition",
+            "parameters": {
+              "id": 12031,
+              "nodeType": "ParameterList",
+              "parameters": [
+                {
+                  "constant": false,
+                  "id": 12030,
+                  "indexed": true,
+                  "name": "id",
+                  "nodeType": "VariableDeclaration",
+                  "scope": 12032,
+                  "src": "600:18:58",
+                  "stateVariable": false,
+                  "storageLocation": "default",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_uint256",
+                    "typeString": "uint256"
+                  },
+                  "typeName": {
+                    "id": 12029,
+                    "name": "uint256",
+                    "nodeType": "ElementaryTypeName",
+                    "src": "600:7:58",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_uint256",
+                      "typeString": "uint256"
+                    }
+                  },
+                  "value": null,
+                  "visibility": "internal"
+                }
+              ],
+              "src": "599:20:58"
+            },
+            "src": "584:36:58"
+          },
+          {
+            "anonymous": false,
+            "documentation": null,
+            "id": 12040,
+            "name": "IssueRFL",
+            "nodeType": "EventDefinition",
+            "parameters": {
+              "id": 12039,
               "nodeType": "ParameterList",
               "parameters": [
                 {
                   "constant": false,
                   "id": 12034,
-                  "name": "RFIid",
+                  "indexed": true,
+                  "name": "id",
                   "nodeType": "VariableDeclaration",
-                  "scope": 12036,
-                  "src": "634:13:58",
+                  "scope": 12040,
+                  "src": "640:18:58",
                   "stateVariable": false,
                   "storageLocation": "default",
                   "typeDescriptions": {
@@ -1097,7 +1241,7 @@
                     "id": 12033,
                     "name": "uint256",
                     "nodeType": "ElementaryTypeName",
-                    "src": "634:7:58",
+                    "src": "640:7:58",
                     "typeDescriptions": {
                       "typeIdentifier": "t_uint256",
                       "typeString": "uint256"
@@ -1105,37 +1249,42 @@
                   },
                   "value": null,
                   "visibility": "internal"
-                }
-              ],
-              "src": "633:15:58"
-            },
-            "scope": 12120,
-            "src": "534:115:58",
-            "stateMutability": "nonpayable",
-            "superFunction": null,
-            "visibility": "public"
-          },
-          {
-            "body": null,
-            "documentation": null,
-            "id": 12041,
-            "implemented": false,
-            "isConstructor": false,
-            "isDeclaredConst": false,
-            "modifiers": [],
-            "name": "mergeRFI",
-            "nodeType": "FunctionDefinition",
-            "parameters": {
-              "id": 12039,
-              "nodeType": "ParameterList",
-              "parameters": [
+                },
+                {
+                  "constant": false,
+                  "id": 12036,
+                  "indexed": false,
+                  "name": "destination",
+                  "nodeType": "VariableDeclaration",
+                  "scope": 12040,
+                  "src": "660:19:58",
+                  "stateVariable": false,
+                  "storageLocation": "default",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_address",
+                    "typeString": "address"
+                  },
+                  "typeName": {
+                    "id": 12035,
+                    "name": "address",
+                    "nodeType": "ElementaryTypeName",
+                    "src": "660:7:58",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_address",
+                      "typeString": "address"
+                    }
+                  },
+                  "value": null,
+                  "visibility": "internal"
+                },
                 {
                   "constant": false,
                   "id": 12038,
-                  "name": "_RFIid",
+                  "indexed": false,
+                  "name": "value",
                   "nodeType": "VariableDeclaration",
-                  "scope": 12041,
-                  "src": "672:14:58",
+                  "scope": 12040,
+                  "src": "681:13:58",
                   "stateVariable": false,
                   "storageLocation": "default",
                   "typeDescriptions": {
@@ -1146,7 +1295,7 @@
                     "id": 12037,
                     "name": "uint256",
                     "nodeType": "ElementaryTypeName",
-                    "src": "672:7:58",
+                    "src": "681:7:58",
                     "typeDescriptions": {
                       "typeIdentifier": "t_uint256",
                       "typeString": "uint256"
@@ -1156,98 +1305,105 @@
                   "visibility": "internal"
                 }
               ],
-              "src": "671:16:58"
+              "src": "639:56:58"
             },
-            "payable": false,
-            "returnParameters": {
-              "id": 12040,
-              "nodeType": "ParameterList",
-              "parameters": [],
-              "src": "694:0:58"
-            },
-            "scope": 12120,
-            "src": "654:41:58",
-            "stateMutability": "nonpayable",
-            "superFunction": null,
-            "visibility": "public"
+            "src": "625:71:58"
           },
           {
             "body": null,
             "documentation": null,
-            "id": 12046,
+            "id": 12050,
             "implemented": false,
             "isConstructor": false,
             "isDeclaredConst": false,
             "modifiers": [],
-            "name": "rejectRFI",
+            "name": "createRFI",
             "nodeType": "FunctionDefinition",
             "parameters": {
-              "id": 12044,
+              "id": 12046,
               "nodeType": "ParameterList",
               "parameters": [
                 {
                   "constant": false,
-                  "id": 12043,
-                  "name": "_RFIid",
+                  "id": 12042,
+                  "name": "_individuation",
                   "nodeType": "VariableDeclaration",
-                  "scope": 12046,
-                  "src": "719:14:58",
+                  "scope": 12050,
+                  "src": "721:35:58",
                   "stateVariable": false,
                   "storageLocation": "default",
                   "typeDescriptions": {
-                    "typeIdentifier": "t_uint256",
-                    "typeString": "uint256"
+                    "typeIdentifier": "t_struct$_IIndividuation_$11924_memory_ptr",
+                    "typeString": "struct Pando.IIndividuation"
                   },
                   "typeName": {
-                    "id": 12042,
-                    "name": "uint256",
-                    "nodeType": "ElementaryTypeName",
-                    "src": "719:7:58",
+                    "contractScope": null,
+                    "id": 12041,
+                    "name": "Pando.IIndividuation",
+                    "nodeType": "UserDefinedTypeName",
+                    "referencedDeclaration": 11924,
+                    "src": "721:20:58",
                     "typeDescriptions": {
-                      "typeIdentifier": "t_uint256",
-                      "typeString": "uint256"
+                      "typeIdentifier": "t_struct$_IIndividuation_$11924_storage_ptr",
+                      "typeString": "struct Pando.IIndividuation"
+                    }
+                  },
+                  "value": null,
+                  "visibility": "internal"
+                },
+                {
+                  "constant": false,
+                  "id": 12045,
+                  "name": "_lineages",
+                  "nodeType": "VariableDeclaration",
+                  "scope": 12050,
+                  "src": "758:26:58",
+                  "stateVariable": false,
+                  "storageLocation": "default",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_array$_t_struct$_ILineage_$11946_memory_$dyn_memory_ptr",
+                    "typeString": "struct Pando.ILineage[]"
+                  },
+                  "typeName": {
+                    "baseType": {
+                      "contractScope": null,
+                      "id": 12043,
+                      "name": "Pando.ILineage",
+                      "nodeType": "UserDefinedTypeName",
+                      "referencedDeclaration": 11946,
+                      "src": "758:14:58",
+                      "typeDescriptions": {
+                        "typeIdentifier": "t_struct$_ILineage_$11946_storage_ptr",
+                        "typeString": "struct Pando.ILineage"
+                      }
+                    },
+                    "id": 12044,
+                    "length": null,
+                    "nodeType": "ArrayTypeName",
+                    "src": "758:16:58",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_array$_t_struct$_ILineage_$11946_storage_$dyn_storage_ptr",
+                      "typeString": "struct Pando.ILineage[]"
                     }
                   },
                   "value": null,
                   "visibility": "internal"
                 }
               ],
-              "src": "718:16:58"
+              "src": "720:65:58"
             },
             "payable": false,
             "returnParameters": {
-              "id": 12045,
-              "nodeType": "ParameterList",
-              "parameters": [],
-              "src": "741:0:58"
-            },
-            "scope": 12120,
-            "src": "700:42:58",
-            "stateMutability": "nonpayable",
-            "superFunction": null,
-            "visibility": "public"
-          },
-          {
-            "body": null,
-            "documentation": null,
-            "id": 12053,
-            "implemented": false,
-            "isConstructor": false,
-            "isDeclaredConst": false,
-            "modifiers": [],
-            "name": "acceptRFL",
-            "nodeType": "FunctionDefinition",
-            "parameters": {
-              "id": 12051,
+              "id": 12049,
               "nodeType": "ParameterList",
               "parameters": [
                 {
                   "constant": false,
                   "id": 12048,
-                  "name": "_RFLid",
+                  "name": "RFIid",
                   "nodeType": "VariableDeclaration",
-                  "scope": 12053,
-                  "src": "766:14:58",
+                  "scope": 12050,
+                  "src": "802:13:58",
                   "stateVariable": false,
                   "storageLocation": "default",
                   "typeDescriptions": {
@@ -1258,7 +1414,168 @@
                     "id": 12047,
                     "name": "uint256",
                     "nodeType": "ElementaryTypeName",
-                    "src": "766:7:58",
+                    "src": "802:7:58",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_uint256",
+                      "typeString": "uint256"
+                    }
+                  },
+                  "value": null,
+                  "visibility": "internal"
+                }
+              ],
+              "src": "801:15:58"
+            },
+            "scope": 12145,
+            "src": "702:115:58",
+            "stateMutability": "nonpayable",
+            "superFunction": null,
+            "visibility": "public"
+          },
+          {
+            "body": null,
+            "documentation": null,
+            "id": 12055,
+            "implemented": false,
+            "isConstructor": false,
+            "isDeclaredConst": false,
+            "modifiers": [],
+            "name": "mergeRFI",
+            "nodeType": "FunctionDefinition",
+            "parameters": {
+              "id": 12053,
+              "nodeType": "ParameterList",
+              "parameters": [
+                {
+                  "constant": false,
+                  "id": 12052,
+                  "name": "_RFIid",
+                  "nodeType": "VariableDeclaration",
+                  "scope": 12055,
+                  "src": "840:14:58",
+                  "stateVariable": false,
+                  "storageLocation": "default",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_uint256",
+                    "typeString": "uint256"
+                  },
+                  "typeName": {
+                    "id": 12051,
+                    "name": "uint256",
+                    "nodeType": "ElementaryTypeName",
+                    "src": "840:7:58",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_uint256",
+                      "typeString": "uint256"
+                    }
+                  },
+                  "value": null,
+                  "visibility": "internal"
+                }
+              ],
+              "src": "839:16:58"
+            },
+            "payable": false,
+            "returnParameters": {
+              "id": 12054,
+              "nodeType": "ParameterList",
+              "parameters": [],
+              "src": "862:0:58"
+            },
+            "scope": 12145,
+            "src": "822:41:58",
+            "stateMutability": "nonpayable",
+            "superFunction": null,
+            "visibility": "public"
+          },
+          {
+            "body": null,
+            "documentation": null,
+            "id": 12060,
+            "implemented": false,
+            "isConstructor": false,
+            "isDeclaredConst": false,
+            "modifiers": [],
+            "name": "rejectRFI",
+            "nodeType": "FunctionDefinition",
+            "parameters": {
+              "id": 12058,
+              "nodeType": "ParameterList",
+              "parameters": [
+                {
+                  "constant": false,
+                  "id": 12057,
+                  "name": "_RFIid",
+                  "nodeType": "VariableDeclaration",
+                  "scope": 12060,
+                  "src": "887:14:58",
+                  "stateVariable": false,
+                  "storageLocation": "default",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_uint256",
+                    "typeString": "uint256"
+                  },
+                  "typeName": {
+                    "id": 12056,
+                    "name": "uint256",
+                    "nodeType": "ElementaryTypeName",
+                    "src": "887:7:58",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_uint256",
+                      "typeString": "uint256"
+                    }
+                  },
+                  "value": null,
+                  "visibility": "internal"
+                }
+              ],
+              "src": "886:16:58"
+            },
+            "payable": false,
+            "returnParameters": {
+              "id": 12059,
+              "nodeType": "ParameterList",
+              "parameters": [],
+              "src": "909:0:58"
+            },
+            "scope": 12145,
+            "src": "868:42:58",
+            "stateMutability": "nonpayable",
+            "superFunction": null,
+            "visibility": "public"
+          },
+          {
+            "body": null,
+            "documentation": null,
+            "id": 12067,
+            "implemented": false,
+            "isConstructor": false,
+            "isDeclaredConst": false,
+            "modifiers": [],
+            "name": "acceptRFL",
+            "nodeType": "FunctionDefinition",
+            "parameters": {
+              "id": 12065,
+              "nodeType": "ParameterList",
+              "parameters": [
+                {
+                  "constant": false,
+                  "id": 12062,
+                  "name": "_RFLid",
+                  "nodeType": "VariableDeclaration",
+                  "scope": 12067,
+                  "src": "934:14:58",
+                  "stateVariable": false,
+                  "storageLocation": "default",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_uint256",
+                    "typeString": "uint256"
+                  },
+                  "typeName": {
+                    "id": 12061,
+                    "name": "uint256",
+                    "nodeType": "ElementaryTypeName",
+                    "src": "934:7:58",
                     "typeDescriptions": {
                       "typeIdentifier": "t_uint256",
                       "typeString": "uint256"
@@ -1269,11 +1586,11 @@
                 },
                 {
                   "constant": false,
-                  "id": 12050,
+                  "id": 12064,
                   "name": "_value",
                   "nodeType": "VariableDeclaration",
-                  "scope": 12053,
-                  "src": "782:14:58",
+                  "scope": 12067,
+                  "src": "950:14:58",
                   "stateVariable": false,
                   "storageLocation": "default",
                   "typeDescriptions": {
@@ -1281,10 +1598,10 @@
                     "typeString": "uint256"
                   },
                   "typeName": {
-                    "id": 12049,
+                    "id": 12063,
                     "name": "uint256",
                     "nodeType": "ElementaryTypeName",
-                    "src": "782:7:58",
+                    "src": "950:7:58",
                     "typeDescriptions": {
                       "typeIdentifier": "t_uint256",
                       "typeString": "uint256"
@@ -1294,157 +1611,18 @@
                   "visibility": "internal"
                 }
               ],
-              "src": "765:32:58"
+              "src": "933:32:58"
             },
             "payable": false,
             "returnParameters": {
-              "id": 12052,
+              "id": 12066,
               "nodeType": "ParameterList",
               "parameters": [],
-              "src": "804:0:58"
+              "src": "972:0:58"
             },
-            "scope": 12120,
-            "src": "747:58:58",
+            "scope": 12145,
+            "src": "915:58:58",
             "stateMutability": "nonpayable",
-            "superFunction": null,
-            "visibility": "public"
-          },
-          {
-            "body": null,
-            "documentation": null,
-            "id": 12058,
-            "implemented": false,
-            "isConstructor": false,
-            "isDeclaredConst": false,
-            "modifiers": [],
-            "name": "rejectRFL",
-            "nodeType": "FunctionDefinition",
-            "parameters": {
-              "id": 12056,
-              "nodeType": "ParameterList",
-              "parameters": [
-                {
-                  "constant": false,
-                  "id": 12055,
-                  "name": "_RFLid",
-                  "nodeType": "VariableDeclaration",
-                  "scope": 12058,
-                  "src": "829:14:58",
-                  "stateVariable": false,
-                  "storageLocation": "default",
-                  "typeDescriptions": {
-                    "typeIdentifier": "t_uint256",
-                    "typeString": "uint256"
-                  },
-                  "typeName": {
-                    "id": 12054,
-                    "name": "uint256",
-                    "nodeType": "ElementaryTypeName",
-                    "src": "829:7:58",
-                    "typeDescriptions": {
-                      "typeIdentifier": "t_uint256",
-                      "typeString": "uint256"
-                    }
-                  },
-                  "value": null,
-                  "visibility": "internal"
-                }
-              ],
-              "src": "828:16:58"
-            },
-            "payable": false,
-            "returnParameters": {
-              "id": 12057,
-              "nodeType": "ParameterList",
-              "parameters": [],
-              "src": "851:0:58"
-            },
-            "scope": 12120,
-            "src": "810:42:58",
-            "stateMutability": "nonpayable",
-            "superFunction": null,
-            "visibility": "public"
-          },
-          {
-            "body": null,
-            "documentation": null,
-            "id": 12065,
-            "implemented": false,
-            "isConstructor": false,
-            "isDeclaredConst": true,
-            "modifiers": [],
-            "name": "canMergeRFI",
-            "nodeType": "FunctionDefinition",
-            "parameters": {
-              "id": 12061,
-              "nodeType": "ParameterList",
-              "parameters": [
-                {
-                  "constant": false,
-                  "id": 12060,
-                  "name": "_RFIid",
-                  "nodeType": "VariableDeclaration",
-                  "scope": 12065,
-                  "src": "909:14:58",
-                  "stateVariable": false,
-                  "storageLocation": "default",
-                  "typeDescriptions": {
-                    "typeIdentifier": "t_uint256",
-                    "typeString": "uint256"
-                  },
-                  "typeName": {
-                    "id": 12059,
-                    "name": "uint256",
-                    "nodeType": "ElementaryTypeName",
-                    "src": "909:7:58",
-                    "typeDescriptions": {
-                      "typeIdentifier": "t_uint256",
-                      "typeString": "uint256"
-                    }
-                  },
-                  "value": null,
-                  "visibility": "internal"
-                }
-              ],
-              "src": "908:16:58"
-            },
-            "payable": false,
-            "returnParameters": {
-              "id": 12064,
-              "nodeType": "ParameterList",
-              "parameters": [
-                {
-                  "constant": false,
-                  "id": 12063,
-                  "name": "",
-                  "nodeType": "VariableDeclaration",
-                  "scope": 12065,
-                  "src": "946:4:58",
-                  "stateVariable": false,
-                  "storageLocation": "default",
-                  "typeDescriptions": {
-                    "typeIdentifier": "t_bool",
-                    "typeString": "bool"
-                  },
-                  "typeName": {
-                    "id": 12062,
-                    "name": "bool",
-                    "nodeType": "ElementaryTypeName",
-                    "src": "946:4:58",
-                    "typeDescriptions": {
-                      "typeIdentifier": "t_bool",
-                      "typeString": "bool"
-                    }
-                  },
-                  "value": null,
-                  "visibility": "internal"
-                }
-              ],
-              "src": "945:6:58"
-            },
-            "scope": 12120,
-            "src": "888:64:58",
-            "stateMutability": "view",
             "superFunction": null,
             "visibility": "public"
           },
@@ -1454,21 +1632,21 @@
             "id": 12072,
             "implemented": false,
             "isConstructor": false,
-            "isDeclaredConst": true,
+            "isDeclaredConst": false,
             "modifiers": [],
-            "name": "canRejectRFI",
+            "name": "rejectRFL",
             "nodeType": "FunctionDefinition",
             "parameters": {
-              "id": 12068,
+              "id": 12070,
               "nodeType": "ParameterList",
               "parameters": [
                 {
                   "constant": false,
-                  "id": 12067,
-                  "name": "_RFIid",
+                  "id": 12069,
+                  "name": "_RFLid",
                   "nodeType": "VariableDeclaration",
                   "scope": 12072,
-                  "src": "979:11:58",
+                  "src": "997:14:58",
                   "stateVariable": false,
                   "storageLocation": "default",
                   "typeDescriptions": {
@@ -1476,10 +1654,10 @@
                     "typeString": "uint256"
                   },
                   "typeName": {
-                    "id": 12066,
-                    "name": "uint",
+                    "id": 12068,
+                    "name": "uint256",
                     "nodeType": "ElementaryTypeName",
-                    "src": "979:4:58",
+                    "src": "997:7:58",
                     "typeDescriptions": {
                       "typeIdentifier": "t_uint256",
                       "typeString": "uint256"
@@ -1489,69 +1667,42 @@
                   "visibility": "internal"
                 }
               ],
-              "src": "978:13:58"
+              "src": "996:16:58"
             },
             "payable": false,
             "returnParameters": {
               "id": 12071,
               "nodeType": "ParameterList",
-              "parameters": [
-                {
-                  "constant": false,
-                  "id": 12070,
-                  "name": "",
-                  "nodeType": "VariableDeclaration",
-                  "scope": 12072,
-                  "src": "1013:4:58",
-                  "stateVariable": false,
-                  "storageLocation": "default",
-                  "typeDescriptions": {
-                    "typeIdentifier": "t_bool",
-                    "typeString": "bool"
-                  },
-                  "typeName": {
-                    "id": 12069,
-                    "name": "bool",
-                    "nodeType": "ElementaryTypeName",
-                    "src": "1013:4:58",
-                    "typeDescriptions": {
-                      "typeIdentifier": "t_bool",
-                      "typeString": "bool"
-                    }
-                  },
-                  "value": null,
-                  "visibility": "internal"
-                }
-              ],
-              "src": "1012:6:58"
+              "parameters": [],
+              "src": "1019:0:58"
             },
-            "scope": 12120,
-            "src": "957:62:58",
-            "stateMutability": "view",
+            "scope": 12145,
+            "src": "978:42:58",
+            "stateMutability": "nonpayable",
             "superFunction": null,
             "visibility": "public"
           },
           {
             "body": null,
             "documentation": null,
-            "id": 12081,
+            "id": 12079,
             "implemented": false,
             "isConstructor": false,
             "isDeclaredConst": true,
             "modifiers": [],
-            "name": "canAcceptRFL",
+            "name": "canMergeRFI",
             "nodeType": "FunctionDefinition",
             "parameters": {
-              "id": 12077,
+              "id": 12075,
               "nodeType": "ParameterList",
               "parameters": [
                 {
                   "constant": false,
                   "id": 12074,
-                  "name": "_RFLid",
+                  "name": "_RFIid",
                   "nodeType": "VariableDeclaration",
-                  "scope": 12081,
-                  "src": "1046:14:58",
+                  "scope": 12079,
+                  "src": "1077:14:58",
                   "stateVariable": false,
                   "storageLocation": "default",
                   "typeDescriptions": {
@@ -1562,33 +1713,7 @@
                     "id": 12073,
                     "name": "uint256",
                     "nodeType": "ElementaryTypeName",
-                    "src": "1046:7:58",
-                    "typeDescriptions": {
-                      "typeIdentifier": "t_uint256",
-                      "typeString": "uint256"
-                    }
-                  },
-                  "value": null,
-                  "visibility": "internal"
-                },
-                {
-                  "constant": false,
-                  "id": 12076,
-                  "name": "_value",
-                  "nodeType": "VariableDeclaration",
-                  "scope": 12081,
-                  "src": "1062:14:58",
-                  "stateVariable": false,
-                  "storageLocation": "default",
-                  "typeDescriptions": {
-                    "typeIdentifier": "t_uint256",
-                    "typeString": "uint256"
-                  },
-                  "typeName": {
-                    "id": 12075,
-                    "name": "uint256",
-                    "nodeType": "ElementaryTypeName",
-                    "src": "1062:7:58",
+                    "src": "1077:7:58",
                     "typeDescriptions": {
                       "typeIdentifier": "t_uint256",
                       "typeString": "uint256"
@@ -1598,20 +1723,20 @@
                   "visibility": "internal"
                 }
               ],
-              "src": "1045:32:58"
+              "src": "1076:16:58"
             },
             "payable": false,
             "returnParameters": {
-              "id": 12080,
+              "id": 12078,
               "nodeType": "ParameterList",
               "parameters": [
                 {
                   "constant": false,
-                  "id": 12079,
+                  "id": 12077,
                   "name": "",
                   "nodeType": "VariableDeclaration",
-                  "scope": 12081,
-                  "src": "1099:4:58",
+                  "scope": 12079,
+                  "src": "1114:4:58",
                   "stateVariable": false,
                   "storageLocation": "default",
                   "typeDescriptions": {
@@ -1619,10 +1744,10 @@
                     "typeString": "bool"
                   },
                   "typeName": {
-                    "id": 12078,
+                    "id": 12076,
                     "name": "bool",
                     "nodeType": "ElementaryTypeName",
-                    "src": "1099:4:58",
+                    "src": "1114:4:58",
                     "typeDescriptions": {
                       "typeIdentifier": "t_bool",
                       "typeString": "bool"
@@ -1632,10 +1757,10 @@
                   "visibility": "internal"
                 }
               ],
-              "src": "1098:6:58"
+              "src": "1113:6:58"
             },
-            "scope": 12120,
-            "src": "1024:81:58",
+            "scope": 12145,
+            "src": "1056:64:58",
             "stateMutability": "view",
             "superFunction": null,
             "visibility": "public"
@@ -1643,24 +1768,24 @@
           {
             "body": null,
             "documentation": null,
-            "id": 12088,
+            "id": 12086,
             "implemented": false,
             "isConstructor": false,
             "isDeclaredConst": true,
             "modifiers": [],
-            "name": "canRejectRFL",
+            "name": "canRejectRFI",
             "nodeType": "FunctionDefinition",
             "parameters": {
-              "id": 12084,
+              "id": 12082,
               "nodeType": "ParameterList",
               "parameters": [
                 {
                   "constant": false,
-                  "id": 12083,
-                  "name": "_RFLid",
+                  "id": 12081,
+                  "name": "_RFIid",
                   "nodeType": "VariableDeclaration",
-                  "scope": 12088,
-                  "src": "1132:11:58",
+                  "scope": 12086,
+                  "src": "1147:11:58",
                   "stateVariable": false,
                   "storageLocation": "default",
                   "typeDescriptions": {
@@ -1668,10 +1793,10 @@
                     "typeString": "uint256"
                   },
                   "typeName": {
-                    "id": 12082,
+                    "id": 12080,
                     "name": "uint",
                     "nodeType": "ElementaryTypeName",
-                    "src": "1132:4:58",
+                    "src": "1147:4:58",
                     "typeDescriptions": {
                       "typeIdentifier": "t_uint256",
                       "typeString": "uint256"
@@ -1681,20 +1806,20 @@
                   "visibility": "internal"
                 }
               ],
-              "src": "1131:13:58"
+              "src": "1146:13:58"
             },
             "payable": false,
             "returnParameters": {
-              "id": 12087,
+              "id": 12085,
               "nodeType": "ParameterList",
               "parameters": [
                 {
                   "constant": false,
-                  "id": 12086,
+                  "id": 12084,
                   "name": "",
                   "nodeType": "VariableDeclaration",
-                  "scope": 12088,
-                  "src": "1166:4:58",
+                  "scope": 12086,
+                  "src": "1181:4:58",
                   "stateVariable": false,
                   "storageLocation": "default",
                   "typeDescriptions": {
@@ -1702,10 +1827,10 @@
                     "typeString": "bool"
                   },
                   "typeName": {
-                    "id": 12085,
+                    "id": 12083,
                     "name": "bool",
                     "nodeType": "ElementaryTypeName",
-                    "src": "1166:4:58",
+                    "src": "1181:4:58",
                     "typeDescriptions": {
                       "typeIdentifier": "t_bool",
                       "typeString": "bool"
@@ -1715,10 +1840,10 @@
                   "visibility": "internal"
                 }
               ],
-              "src": "1165:6:58"
+              "src": "1180:6:58"
             },
-            "scope": 12120,
-            "src": "1110:62:58",
+            "scope": 12145,
+            "src": "1125:62:58",
             "stateMutability": "view",
             "superFunction": null,
             "visibility": "public"
@@ -1731,7 +1856,7 @@
             "isConstructor": false,
             "isDeclaredConst": true,
             "modifiers": [],
-            "name": "getRFI",
+            "name": "canAcceptRFL",
             "nodeType": "FunctionDefinition",
             "parameters": {
               "id": 12091,
@@ -1739,11 +1864,37 @@
               "parameters": [
                 {
                   "constant": false,
-                  "id": 12090,
-                  "name": "_RFIid",
+                  "id": 12088,
+                  "name": "_RFLid",
                   "nodeType": "VariableDeclaration",
                   "scope": 12095,
-                  "src": "1224:14:58",
+                  "src": "1214:14:58",
+                  "stateVariable": false,
+                  "storageLocation": "default",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_uint256",
+                    "typeString": "uint256"
+                  },
+                  "typeName": {
+                    "id": 12087,
+                    "name": "uint256",
+                    "nodeType": "ElementaryTypeName",
+                    "src": "1214:7:58",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_uint256",
+                      "typeString": "uint256"
+                    }
+                  },
+                  "value": null,
+                  "visibility": "internal"
+                },
+                {
+                  "constant": false,
+                  "id": 12090,
+                  "name": "_value",
+                  "nodeType": "VariableDeclaration",
+                  "scope": 12095,
+                  "src": "1230:14:58",
                   "stateVariable": false,
                   "storageLocation": "default",
                   "typeDescriptions": {
@@ -1754,7 +1905,7 @@
                     "id": 12089,
                     "name": "uint256",
                     "nodeType": "ElementaryTypeName",
-                    "src": "1224:7:58",
+                    "src": "1230:7:58",
                     "typeDescriptions": {
                       "typeIdentifier": "t_uint256",
                       "typeString": "uint256"
@@ -1764,7 +1915,7 @@
                   "visibility": "internal"
                 }
               ],
-              "src": "1223:16:58"
+              "src": "1213:32:58"
             },
             "payable": false,
             "returnParameters": {
@@ -1777,33 +1928,31 @@
                   "name": "",
                   "nodeType": "VariableDeclaration",
                   "scope": 12095,
-                  "src": "1261:9:58",
+                  "src": "1267:4:58",
                   "stateVariable": false,
                   "storageLocation": "default",
                   "typeDescriptions": {
-                    "typeIdentifier": "t_struct$_RFI_$11939_memory_ptr",
-                    "typeString": "struct Pando.RFI"
+                    "typeIdentifier": "t_bool",
+                    "typeString": "bool"
                   },
                   "typeName": {
-                    "contractScope": null,
                     "id": 12092,
-                    "name": "Pando.RFI",
-                    "nodeType": "UserDefinedTypeName",
-                    "referencedDeclaration": 11939,
-                    "src": "1261:9:58",
+                    "name": "bool",
+                    "nodeType": "ElementaryTypeName",
+                    "src": "1267:4:58",
                     "typeDescriptions": {
-                      "typeIdentifier": "t_struct$_RFI_$11939_storage_ptr",
-                      "typeString": "struct Pando.RFI"
+                      "typeIdentifier": "t_bool",
+                      "typeString": "bool"
                     }
                   },
                   "value": null,
                   "visibility": "internal"
                 }
               ],
-              "src": "1260:11:58"
+              "src": "1266:6:58"
             },
-            "scope": 12120,
-            "src": "1208:64:58",
+            "scope": 12145,
+            "src": "1192:81:58",
             "stateMutability": "view",
             "superFunction": null,
             "visibility": "public"
@@ -1816,7 +1965,7 @@
             "isConstructor": false,
             "isDeclaredConst": true,
             "modifiers": [],
-            "name": "getRFL",
+            "name": "canRejectRFL",
             "nodeType": "FunctionDefinition",
             "parameters": {
               "id": 12098,
@@ -1828,7 +1977,7 @@
                   "name": "_RFLid",
                   "nodeType": "VariableDeclaration",
                   "scope": 12102,
-                  "src": "1293:14:58",
+                  "src": "1300:11:58",
                   "stateVariable": false,
                   "storageLocation": "default",
                   "typeDescriptions": {
@@ -1837,9 +1986,9 @@
                   },
                   "typeName": {
                     "id": 12096,
-                    "name": "uint256",
+                    "name": "uint",
                     "nodeType": "ElementaryTypeName",
-                    "src": "1293:7:58",
+                    "src": "1300:4:58",
                     "typeDescriptions": {
                       "typeIdentifier": "t_uint256",
                       "typeString": "uint256"
@@ -1849,7 +1998,7 @@
                   "visibility": "internal"
                 }
               ],
-              "src": "1292:16:58"
+              "src": "1299:13:58"
             },
             "payable": false,
             "returnParameters": {
@@ -1862,33 +2011,31 @@
                   "name": "",
                   "nodeType": "VariableDeclaration",
                   "scope": 12102,
-                  "src": "1330:9:58",
+                  "src": "1334:4:58",
                   "stateVariable": false,
                   "storageLocation": "default",
                   "typeDescriptions": {
-                    "typeIdentifier": "t_struct$_RFL_$11957_memory_ptr",
-                    "typeString": "struct Pando.RFL"
+                    "typeIdentifier": "t_bool",
+                    "typeString": "bool"
                   },
                   "typeName": {
-                    "contractScope": null,
                     "id": 12099,
-                    "name": "Pando.RFL",
-                    "nodeType": "UserDefinedTypeName",
-                    "referencedDeclaration": 11957,
-                    "src": "1330:9:58",
+                    "name": "bool",
+                    "nodeType": "ElementaryTypeName",
+                    "src": "1334:4:58",
                     "typeDescriptions": {
-                      "typeIdentifier": "t_struct$_RFL_$11957_storage_ptr",
-                      "typeString": "struct Pando.RFL"
+                      "typeIdentifier": "t_bool",
+                      "typeString": "bool"
                     }
                   },
                   "value": null,
                   "visibility": "internal"
                 }
               ],
-              "src": "1329:11:58"
+              "src": "1333:6:58"
             },
-            "scope": 12120,
-            "src": "1277:64:58",
+            "scope": 12145,
+            "src": "1278:62:58",
             "stateMutability": "view",
             "superFunction": null,
             "visibility": "public"
@@ -1901,7 +2048,7 @@
             "isConstructor": false,
             "isDeclaredConst": true,
             "modifiers": [],
-            "name": "getIndividuationHash",
+            "name": "getRFI",
             "nodeType": "FunctionDefinition",
             "parameters": {
               "id": 12105,
@@ -1910,33 +2057,31 @@
                 {
                   "constant": false,
                   "id": 12104,
-                  "name": "_individuation",
+                  "name": "_RFIid",
                   "nodeType": "VariableDeclaration",
                   "scope": 12109,
-                  "src": "1376:34:58",
+                  "src": "1392:14:58",
                   "stateVariable": false,
                   "storageLocation": "default",
                   "typeDescriptions": {
-                    "typeIdentifier": "t_struct$_Individuation_$11929_memory_ptr",
-                    "typeString": "struct Pando.Individuation"
+                    "typeIdentifier": "t_uint256",
+                    "typeString": "uint256"
                   },
                   "typeName": {
-                    "contractScope": null,
                     "id": 12103,
-                    "name": "Pando.Individuation",
-                    "nodeType": "UserDefinedTypeName",
-                    "referencedDeclaration": 11929,
-                    "src": "1376:19:58",
+                    "name": "uint256",
+                    "nodeType": "ElementaryTypeName",
+                    "src": "1392:7:58",
                     "typeDescriptions": {
-                      "typeIdentifier": "t_struct$_Individuation_$11929_storage_ptr",
-                      "typeString": "struct Pando.Individuation"
+                      "typeIdentifier": "t_uint256",
+                      "typeString": "uint256"
                     }
                   },
                   "value": null,
                   "visibility": "internal"
                 }
               ],
-              "src": "1375:36:58"
+              "src": "1391:16:58"
             },
             "payable": false,
             "returnParameters": {
@@ -1949,31 +2094,33 @@
                   "name": "",
                   "nodeType": "VariableDeclaration",
                   "scope": 12109,
-                  "src": "1433:7:58",
+                  "src": "1429:9:58",
                   "stateVariable": false,
                   "storageLocation": "default",
                   "typeDescriptions": {
-                    "typeIdentifier": "t_bytes32",
-                    "typeString": "bytes32"
+                    "typeIdentifier": "t_struct$_RFI_$11939_memory_ptr",
+                    "typeString": "struct Pando.RFI"
                   },
                   "typeName": {
+                    "contractScope": null,
                     "id": 12106,
-                    "name": "bytes32",
-                    "nodeType": "ElementaryTypeName",
-                    "src": "1433:7:58",
+                    "name": "Pando.RFI",
+                    "nodeType": "UserDefinedTypeName",
+                    "referencedDeclaration": 11939,
+                    "src": "1429:9:58",
                     "typeDescriptions": {
-                      "typeIdentifier": "t_bytes32",
-                      "typeString": "bytes32"
+                      "typeIdentifier": "t_struct$_RFI_$11939_storage_ptr",
+                      "typeString": "struct Pando.RFI"
                     }
                   },
                   "value": null,
                   "visibility": "internal"
                 }
               ],
-              "src": "1432:9:58"
+              "src": "1428:11:58"
             },
-            "scope": 12120,
-            "src": "1346:96:58",
+            "scope": 12145,
+            "src": "1376:64:58",
             "stateMutability": "view",
             "superFunction": null,
             "visibility": "public"
@@ -1981,87 +2128,244 @@
           {
             "body": null,
             "documentation": null,
-            "id": 12114,
+            "id": 12116,
             "implemented": false,
             "isConstructor": false,
             "isDeclaredConst": true,
             "modifiers": [],
-            "name": "head",
+            "name": "getRFL",
             "nodeType": "FunctionDefinition",
             "parameters": {
-              "id": 12110,
-              "nodeType": "ParameterList",
-              "parameters": [],
-              "src": "1460:2:58"
-            },
-            "payable": false,
-            "returnParameters": {
-              "id": 12113,
+              "id": 12112,
               "nodeType": "ParameterList",
               "parameters": [
                 {
                   "constant": false,
-                  "id": 12112,
-                  "name": "",
+                  "id": 12111,
+                  "name": "_RFLid",
                   "nodeType": "VariableDeclaration",
-                  "scope": 12114,
-                  "src": "1484:7:58",
+                  "scope": 12116,
+                  "src": "1461:14:58",
                   "stateVariable": false,
                   "storageLocation": "default",
                   "typeDescriptions": {
-                    "typeIdentifier": "t_bytes32",
-                    "typeString": "bytes32"
+                    "typeIdentifier": "t_uint256",
+                    "typeString": "uint256"
                   },
                   "typeName": {
-                    "id": 12111,
-                    "name": "bytes32",
+                    "id": 12110,
+                    "name": "uint256",
                     "nodeType": "ElementaryTypeName",
-                    "src": "1484:7:58",
+                    "src": "1461:7:58",
                     "typeDescriptions": {
-                      "typeIdentifier": "t_bytes32",
-                      "typeString": "bytes32"
+                      "typeIdentifier": "t_uint256",
+                      "typeString": "uint256"
                     }
                   },
                   "value": null,
                   "visibility": "internal"
                 }
               ],
-              "src": "1483:9:58"
+              "src": "1460:16:58"
             },
-            "scope": 12120,
-            "src": "1447:46:58",
-            "stateMutability": "view",
-            "superFunction": null,
-            "visibility": "public"
-          },
-          {
-            "body": null,
-            "documentation": null,
-            "id": 12119,
-            "implemented": false,
-            "isConstructor": false,
-            "isDeclaredConst": true,
-            "modifiers": [],
-            "name": "getHead",
-            "nodeType": "FunctionDefinition",
-            "parameters": {
+            "payable": false,
+            "returnParameters": {
               "id": 12115,
               "nodeType": "ParameterList",
-              "parameters": [],
-              "src": "1514:2:58"
+              "parameters": [
+                {
+                  "constant": false,
+                  "id": 12114,
+                  "name": "",
+                  "nodeType": "VariableDeclaration",
+                  "scope": 12116,
+                  "src": "1498:9:58",
+                  "stateVariable": false,
+                  "storageLocation": "default",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_struct$_RFL_$11957_memory_ptr",
+                    "typeString": "struct Pando.RFL"
+                  },
+                  "typeName": {
+                    "contractScope": null,
+                    "id": 12113,
+                    "name": "Pando.RFL",
+                    "nodeType": "UserDefinedTypeName",
+                    "referencedDeclaration": 11957,
+                    "src": "1498:9:58",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_struct$_RFL_$11957_storage_ptr",
+                      "typeString": "struct Pando.RFL"
+                    }
+                  },
+                  "value": null,
+                  "visibility": "internal"
+                }
+              ],
+              "src": "1497:11:58"
             },
-            "payable": false,
-            "returnParameters": {
-              "id": 12118,
+            "scope": 12145,
+            "src": "1445:64:58",
+            "stateMutability": "view",
+            "superFunction": null,
+            "visibility": "public"
+          },
+          {
+            "body": null,
+            "documentation": null,
+            "id": 12127,
+            "implemented": false,
+            "isConstructor": false,
+            "isDeclaredConst": true,
+            "modifiers": [],
+            "name": "getRFLLineage",
+            "nodeType": "FunctionDefinition",
+            "parameters": {
+              "id": 12119,
               "nodeType": "ParameterList",
               "parameters": [
                 {
                   "constant": false,
-                  "id": 12117,
-                  "name": "",
+                  "id": 12118,
+                  "name": "_RFLid",
                   "nodeType": "VariableDeclaration",
-                  "scope": 12119,
-                  "src": "1538:19:58",
+                  "scope": 12127,
+                  "src": "1537:14:58",
+                  "stateVariable": false,
+                  "storageLocation": "default",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_uint256",
+                    "typeString": "uint256"
+                  },
+                  "typeName": {
+                    "id": 12117,
+                    "name": "uint256",
+                    "nodeType": "ElementaryTypeName",
+                    "src": "1537:7:58",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_uint256",
+                      "typeString": "uint256"
+                    }
+                  },
+                  "value": null,
+                  "visibility": "internal"
+                }
+              ],
+              "src": "1536:16:58"
+            },
+            "payable": false,
+            "returnParameters": {
+              "id": 12126,
+              "nodeType": "ParameterList",
+              "parameters": [
+                {
+                  "constant": false,
+                  "id": 12121,
+                  "name": "destination",
+                  "nodeType": "VariableDeclaration",
+                  "scope": 12127,
+                  "src": "1574:19:58",
+                  "stateVariable": false,
+                  "storageLocation": "default",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_address",
+                    "typeString": "address"
+                  },
+                  "typeName": {
+                    "id": 12120,
+                    "name": "address",
+                    "nodeType": "ElementaryTypeName",
+                    "src": "1574:7:58",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_address",
+                      "typeString": "address"
+                    }
+                  },
+                  "value": null,
+                  "visibility": "internal"
+                },
+                {
+                  "constant": false,
+                  "id": 12123,
+                  "name": "minimum",
+                  "nodeType": "VariableDeclaration",
+                  "scope": 12127,
+                  "src": "1595:15:58",
+                  "stateVariable": false,
+                  "storageLocation": "default",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_uint256",
+                    "typeString": "uint256"
+                  },
+                  "typeName": {
+                    "id": 12122,
+                    "name": "uint256",
+                    "nodeType": "ElementaryTypeName",
+                    "src": "1595:7:58",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_uint256",
+                      "typeString": "uint256"
+                    }
+                  },
+                  "value": null,
+                  "visibility": "internal"
+                },
+                {
+                  "constant": false,
+                  "id": 12125,
+                  "name": "metadata",
+                  "nodeType": "VariableDeclaration",
+                  "scope": 12127,
+                  "src": "1612:15:58",
+                  "stateVariable": false,
+                  "storageLocation": "default",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_string_memory_ptr",
+                    "typeString": "string"
+                  },
+                  "typeName": {
+                    "id": 12124,
+                    "name": "string",
+                    "nodeType": "ElementaryTypeName",
+                    "src": "1612:6:58",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_string_storage_ptr",
+                      "typeString": "string"
+                    }
+                  },
+                  "value": null,
+                  "visibility": "internal"
+                }
+              ],
+              "src": "1573:55:58"
+            },
+            "scope": 12145,
+            "src": "1514:115:58",
+            "stateMutability": "view",
+            "superFunction": null,
+            "visibility": "public"
+          },
+          {
+            "body": null,
+            "documentation": null,
+            "id": 12134,
+            "implemented": false,
+            "isConstructor": false,
+            "isDeclaredConst": true,
+            "modifiers": [],
+            "name": "getIndividuationHash",
+            "nodeType": "FunctionDefinition",
+            "parameters": {
+              "id": 12130,
+              "nodeType": "ParameterList",
+              "parameters": [
+                {
+                  "constant": false,
+                  "id": 12129,
+                  "name": "_individuation",
+                  "nodeType": "VariableDeclaration",
+                  "scope": 12134,
+                  "src": "1664:34:58",
                   "stateVariable": false,
                   "storageLocation": "default",
                   "typeDescriptions": {
@@ -2070,11 +2374,11 @@
                   },
                   "typeName": {
                     "contractScope": null,
-                    "id": 12116,
+                    "id": 12128,
                     "name": "Pando.Individuation",
                     "nodeType": "UserDefinedTypeName",
                     "referencedDeclaration": 11929,
-                    "src": "1538:19:58",
+                    "src": "1664:19:58",
                     "typeDescriptions": {
                       "typeIdentifier": "t_struct$_Individuation_$11929_storage_ptr",
                       "typeString": "struct Pando.Individuation"
@@ -2084,29 +2388,177 @@
                   "visibility": "internal"
                 }
               ],
-              "src": "1537:21:58"
+              "src": "1663:36:58"
             },
-            "scope": 12120,
-            "src": "1498:61:58",
+            "payable": false,
+            "returnParameters": {
+              "id": 12133,
+              "nodeType": "ParameterList",
+              "parameters": [
+                {
+                  "constant": false,
+                  "id": 12132,
+                  "name": "",
+                  "nodeType": "VariableDeclaration",
+                  "scope": 12134,
+                  "src": "1721:7:58",
+                  "stateVariable": false,
+                  "storageLocation": "default",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_bytes32",
+                    "typeString": "bytes32"
+                  },
+                  "typeName": {
+                    "id": 12131,
+                    "name": "bytes32",
+                    "nodeType": "ElementaryTypeName",
+                    "src": "1721:7:58",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_bytes32",
+                      "typeString": "bytes32"
+                    }
+                  },
+                  "value": null,
+                  "visibility": "internal"
+                }
+              ],
+              "src": "1720:9:58"
+            },
+            "scope": 12145,
+            "src": "1634:96:58",
+            "stateMutability": "view",
+            "superFunction": null,
+            "visibility": "public"
+          },
+          {
+            "body": null,
+            "documentation": null,
+            "id": 12139,
+            "implemented": false,
+            "isConstructor": false,
+            "isDeclaredConst": true,
+            "modifiers": [],
+            "name": "head",
+            "nodeType": "FunctionDefinition",
+            "parameters": {
+              "id": 12135,
+              "nodeType": "ParameterList",
+              "parameters": [],
+              "src": "1748:2:58"
+            },
+            "payable": false,
+            "returnParameters": {
+              "id": 12138,
+              "nodeType": "ParameterList",
+              "parameters": [
+                {
+                  "constant": false,
+                  "id": 12137,
+                  "name": "",
+                  "nodeType": "VariableDeclaration",
+                  "scope": 12139,
+                  "src": "1772:7:58",
+                  "stateVariable": false,
+                  "storageLocation": "default",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_bytes32",
+                    "typeString": "bytes32"
+                  },
+                  "typeName": {
+                    "id": 12136,
+                    "name": "bytes32",
+                    "nodeType": "ElementaryTypeName",
+                    "src": "1772:7:58",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_bytes32",
+                      "typeString": "bytes32"
+                    }
+                  },
+                  "value": null,
+                  "visibility": "internal"
+                }
+              ],
+              "src": "1771:9:58"
+            },
+            "scope": 12145,
+            "src": "1735:46:58",
+            "stateMutability": "view",
+            "superFunction": null,
+            "visibility": "public"
+          },
+          {
+            "body": null,
+            "documentation": null,
+            "id": 12144,
+            "implemented": false,
+            "isConstructor": false,
+            "isDeclaredConst": true,
+            "modifiers": [],
+            "name": "getHead",
+            "nodeType": "FunctionDefinition",
+            "parameters": {
+              "id": 12140,
+              "nodeType": "ParameterList",
+              "parameters": [],
+              "src": "1802:2:58"
+            },
+            "payable": false,
+            "returnParameters": {
+              "id": 12143,
+              "nodeType": "ParameterList",
+              "parameters": [
+                {
+                  "constant": false,
+                  "id": 12142,
+                  "name": "",
+                  "nodeType": "VariableDeclaration",
+                  "scope": 12144,
+                  "src": "1826:19:58",
+                  "stateVariable": false,
+                  "storageLocation": "default",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_struct$_Individuation_$11929_memory_ptr",
+                    "typeString": "struct Pando.Individuation"
+                  },
+                  "typeName": {
+                    "contractScope": null,
+                    "id": 12141,
+                    "name": "Pando.Individuation",
+                    "nodeType": "UserDefinedTypeName",
+                    "referencedDeclaration": 11929,
+                    "src": "1826:19:58",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_struct$_Individuation_$11929_storage_ptr",
+                      "typeString": "struct Pando.Individuation"
+                    }
+                  },
+                  "value": null,
+                  "visibility": "internal"
+                }
+              ],
+              "src": "1825:21:58"
+            },
+            "scope": 12145,
+            "src": "1786:61:58",
             "stateMutability": "view",
             "superFunction": null,
             "visibility": "public"
           }
         ],
-        "scope": 12121,
-        "src": "89:1472:58"
+        "scope": 12146,
+        "src": "89:1760:58"
       }
     ],
-    "src": "0:1562:58"
+    "src": "0:1850:58"
   },
   "legacyAST": {
     "absolutePath": "@pando/core/contracts/organism/IOrganism.sol",
     "exportedSymbols": {
       "IOrganism": [
-        12120
+        12145
       ]
     },
-    "id": 12121,
+    "id": 12146,
     "nodeType": "SourceUnit",
     "nodes": [
       {
@@ -2134,7 +2586,7 @@
         "file": "../lib/Pando.sol",
         "id": 11984,
         "nodeType": "ImportDirective",
-        "scope": 12121,
+        "scope": 12146,
         "sourceUnit": 11981,
         "src": "60:26:58",
         "symbolAliases": [],
@@ -2146,31 +2598,211 @@
         "contractKind": "contract",
         "documentation": null,
         "fullyImplemented": false,
-        "id": 12120,
+        "id": 12145,
         "linearizedBaseContracts": [
-          12120
+          12145
         ],
         "name": "IOrganism",
         "nodeType": "ContractDefinition",
         "nodes": [
           {
+            "constant": false,
+            "id": 11988,
+            "name": "RFIs",
+            "nodeType": "VariableDeclaration",
+            "scope": 12145,
+            "src": "114:42:58",
+            "stateVariable": true,
+            "storageLocation": "default",
+            "typeDescriptions": {
+              "typeIdentifier": "t_mapping$_t_uint256_$_t_struct$_RFI_$11939_storage_$",
+              "typeString": "mapping(uint256 => struct Pando.RFI)"
+            },
+            "typeName": {
+              "id": 11987,
+              "keyType": {
+                "id": 11985,
+                "name": "uint256",
+                "nodeType": "ElementaryTypeName",
+                "src": "123:7:58",
+                "typeDescriptions": {
+                  "typeIdentifier": "t_uint256",
+                  "typeString": "uint256"
+                }
+              },
+              "nodeType": "Mapping",
+              "src": "114:30:58",
+              "typeDescriptions": {
+                "typeIdentifier": "t_mapping$_t_uint256_$_t_struct$_RFI_$11939_storage_$",
+                "typeString": "mapping(uint256 => struct Pando.RFI)"
+              },
+              "valueType": {
+                "contractScope": null,
+                "id": 11986,
+                "name": "Pando.RFI",
+                "nodeType": "UserDefinedTypeName",
+                "referencedDeclaration": 11939,
+                "src": "134:9:58",
+                "typeDescriptions": {
+                  "typeIdentifier": "t_struct$_RFI_$11939_storage_ptr",
+                  "typeString": "struct Pando.RFI"
+                }
+              }
+            },
+            "value": null,
+            "visibility": "public"
+          },
+          {
+            "constant": false,
+            "id": 11992,
+            "name": "RFLs",
+            "nodeType": "VariableDeclaration",
+            "scope": 12145,
+            "src": "162:42:58",
+            "stateVariable": true,
+            "storageLocation": "default",
+            "typeDescriptions": {
+              "typeIdentifier": "t_mapping$_t_uint256_$_t_struct$_RFL_$11957_storage_$",
+              "typeString": "mapping(uint256 => struct Pando.RFL)"
+            },
+            "typeName": {
+              "id": 11991,
+              "keyType": {
+                "id": 11989,
+                "name": "uint256",
+                "nodeType": "ElementaryTypeName",
+                "src": "171:7:58",
+                "typeDescriptions": {
+                  "typeIdentifier": "t_uint256",
+                  "typeString": "uint256"
+                }
+              },
+              "nodeType": "Mapping",
+              "src": "162:30:58",
+              "typeDescriptions": {
+                "typeIdentifier": "t_mapping$_t_uint256_$_t_struct$_RFL_$11957_storage_$",
+                "typeString": "mapping(uint256 => struct Pando.RFL)"
+              },
+              "valueType": {
+                "contractScope": null,
+                "id": 11990,
+                "name": "Pando.RFL",
+                "nodeType": "UserDefinedTypeName",
+                "referencedDeclaration": 11957,
+                "src": "182:9:58",
+                "typeDescriptions": {
+                  "typeIdentifier": "t_struct$_RFL_$11957_storage_ptr",
+                  "typeString": "struct Pando.RFL"
+                }
+              }
+            },
+            "value": null,
+            "visibility": "public"
+          },
+          {
+            "constant": false,
+            "id": 11995,
+            "name": "RFIsLength",
+            "nodeType": "VariableDeclaration",
+            "scope": 12145,
+            "src": "211:29:58",
+            "stateVariable": true,
+            "storageLocation": "default",
+            "typeDescriptions": {
+              "typeIdentifier": "t_uint256",
+              "typeString": "uint256"
+            },
+            "typeName": {
+              "id": 11993,
+              "name": "uint256",
+              "nodeType": "ElementaryTypeName",
+              "src": "211:7:58",
+              "typeDescriptions": {
+                "typeIdentifier": "t_uint256",
+                "typeString": "uint256"
+              }
+            },
+            "value": {
+              "argumentTypes": null,
+              "hexValue": "30",
+              "id": 11994,
+              "isConstant": false,
+              "isLValue": false,
+              "isPure": true,
+              "kind": "number",
+              "lValueRequested": false,
+              "nodeType": "Literal",
+              "src": "239:1:58",
+              "subdenomination": null,
+              "typeDescriptions": {
+                "typeIdentifier": "t_rational_0_by_1",
+                "typeString": "int_const 0"
+              },
+              "value": "0"
+            },
+            "visibility": "public"
+          },
+          {
+            "constant": false,
+            "id": 11998,
+            "name": "RFLsLength",
+            "nodeType": "VariableDeclaration",
+            "scope": 12145,
+            "src": "246:29:58",
+            "stateVariable": true,
+            "storageLocation": "default",
+            "typeDescriptions": {
+              "typeIdentifier": "t_uint256",
+              "typeString": "uint256"
+            },
+            "typeName": {
+              "id": 11996,
+              "name": "uint256",
+              "nodeType": "ElementaryTypeName",
+              "src": "246:7:58",
+              "typeDescriptions": {
+                "typeIdentifier": "t_uint256",
+                "typeString": "uint256"
+              }
+            },
+            "value": {
+              "argumentTypes": null,
+              "hexValue": "30",
+              "id": 11997,
+              "isConstant": false,
+              "isLValue": false,
+              "isPure": true,
+              "kind": "number",
+              "lValueRequested": false,
+              "nodeType": "Literal",
+              "src": "274:1:58",
+              "subdenomination": null,
+              "typeDescriptions": {
+                "typeIdentifier": "t_rational_0_by_1",
+                "typeString": "int_const 0"
+              },
+              "value": "0"
+            },
+            "visibility": "public"
+          },
+          {
             "anonymous": false,
             "documentation": null,
-            "id": 11988,
+            "id": 12002,
             "name": "CreateRFI",
             "nodeType": "EventDefinition",
             "parameters": {
-              "id": 11987,
+              "id": 12001,
               "nodeType": "ParameterList",
               "parameters": [
                 {
                   "constant": false,
-                  "id": 11986,
+                  "id": 12000,
                   "indexed": true,
                   "name": "id",
                   "nodeType": "VariableDeclaration",
-                  "scope": 11988,
-                  "src": "130:18:58",
+                  "scope": 12002,
+                  "src": "298:18:58",
                   "stateVariable": false,
                   "storageLocation": "default",
                   "typeDescriptions": {
@@ -2178,10 +2810,10 @@
                     "typeString": "uint256"
                   },
                   "typeName": {
-                    "id": 11985,
+                    "id": 11999,
                     "name": "uint256",
                     "nodeType": "ElementaryTypeName",
-                    "src": "130:7:58",
+                    "src": "298:7:58",
                     "typeDescriptions": {
                       "typeIdentifier": "t_uint256",
                       "typeString": "uint256"
@@ -2191,28 +2823,28 @@
                   "visibility": "internal"
                 }
               ],
-              "src": "129:20:58"
+              "src": "297:20:58"
             },
-            "src": "114:36:58"
+            "src": "282:36:58"
           },
           {
             "anonymous": false,
             "documentation": null,
-            "id": 11992,
+            "id": 12006,
             "name": "MergeRFI",
             "nodeType": "EventDefinition",
             "parameters": {
-              "id": 11991,
+              "id": 12005,
               "nodeType": "ParameterList",
               "parameters": [
                 {
                   "constant": false,
-                  "id": 11990,
+                  "id": 12004,
                   "indexed": true,
                   "name": "id",
                   "nodeType": "VariableDeclaration",
-                  "scope": 11992,
-                  "src": "170:18:58",
+                  "scope": 12006,
+                  "src": "338:18:58",
                   "stateVariable": false,
                   "storageLocation": "default",
                   "typeDescriptions": {
@@ -2220,10 +2852,10 @@
                     "typeString": "uint256"
                   },
                   "typeName": {
-                    "id": 11989,
+                    "id": 12003,
                     "name": "uint256",
                     "nodeType": "ElementaryTypeName",
-                    "src": "170:7:58",
+                    "src": "338:7:58",
                     "typeDescriptions": {
                       "typeIdentifier": "t_uint256",
                       "typeString": "uint256"
@@ -2233,141 +2865,15 @@
                   "visibility": "internal"
                 }
               ],
-              "src": "169:20:58"
+              "src": "337:20:58"
             },
-            "src": "155:35:58"
-          },
-          {
-            "anonymous": false,
-            "documentation": null,
-            "id": 11996,
-            "name": "RejectRFI",
-            "nodeType": "EventDefinition",
-            "parameters": {
-              "id": 11995,
-              "nodeType": "ParameterList",
-              "parameters": [
-                {
-                  "constant": false,
-                  "id": 11994,
-                  "indexed": true,
-                  "name": "id",
-                  "nodeType": "VariableDeclaration",
-                  "scope": 11996,
-                  "src": "211:18:58",
-                  "stateVariable": false,
-                  "storageLocation": "default",
-                  "typeDescriptions": {
-                    "typeIdentifier": "t_uint256",
-                    "typeString": "uint256"
-                  },
-                  "typeName": {
-                    "id": 11993,
-                    "name": "uint256",
-                    "nodeType": "ElementaryTypeName",
-                    "src": "211:7:58",
-                    "typeDescriptions": {
-                      "typeIdentifier": "t_uint256",
-                      "typeString": "uint256"
-                    }
-                  },
-                  "value": null,
-                  "visibility": "internal"
-                }
-              ],
-              "src": "210:20:58"
-            },
-            "src": "195:36:58"
-          },
-          {
-            "anonymous": false,
-            "documentation": null,
-            "id": 12000,
-            "name": "CancelRFI",
-            "nodeType": "EventDefinition",
-            "parameters": {
-              "id": 11999,
-              "nodeType": "ParameterList",
-              "parameters": [
-                {
-                  "constant": false,
-                  "id": 11998,
-                  "indexed": true,
-                  "name": "id",
-                  "nodeType": "VariableDeclaration",
-                  "scope": 12000,
-                  "src": "252:18:58",
-                  "stateVariable": false,
-                  "storageLocation": "default",
-                  "typeDescriptions": {
-                    "typeIdentifier": "t_uint256",
-                    "typeString": "uint256"
-                  },
-                  "typeName": {
-                    "id": 11997,
-                    "name": "uint256",
-                    "nodeType": "ElementaryTypeName",
-                    "src": "252:7:58",
-                    "typeDescriptions": {
-                      "typeIdentifier": "t_uint256",
-                      "typeString": "uint256"
-                    }
-                  },
-                  "value": null,
-                  "visibility": "internal"
-                }
-              ],
-              "src": "251:20:58"
-            },
-            "src": "236:36:58"
-          },
-          {
-            "anonymous": false,
-            "documentation": null,
-            "id": 12004,
-            "name": "CreateRFL",
-            "nodeType": "EventDefinition",
-            "parameters": {
-              "id": 12003,
-              "nodeType": "ParameterList",
-              "parameters": [
-                {
-                  "constant": false,
-                  "id": 12002,
-                  "indexed": true,
-                  "name": "id",
-                  "nodeType": "VariableDeclaration",
-                  "scope": 12004,
-                  "src": "294:18:58",
-                  "stateVariable": false,
-                  "storageLocation": "default",
-                  "typeDescriptions": {
-                    "typeIdentifier": "t_uint256",
-                    "typeString": "uint256"
-                  },
-                  "typeName": {
-                    "id": 12001,
-                    "name": "uint256",
-                    "nodeType": "ElementaryTypeName",
-                    "src": "294:7:58",
-                    "typeDescriptions": {
-                      "typeIdentifier": "t_uint256",
-                      "typeString": "uint256"
-                    }
-                  },
-                  "value": null,
-                  "visibility": "internal"
-                }
-              ],
-              "src": "293:20:58"
-            },
-            "src": "278:36:58"
+            "src": "323:35:58"
           },
           {
             "anonymous": false,
             "documentation": null,
             "id": 12010,
-            "name": "AcceptRFL",
+            "name": "RejectRFI",
             "nodeType": "EventDefinition",
             "parameters": {
               "id": 12009,
@@ -2375,39 +2881,12 @@
               "parameters": [
                 {
                   "constant": false,
-                  "id": 12006,
+                  "id": 12008,
                   "indexed": true,
                   "name": "id",
                   "nodeType": "VariableDeclaration",
                   "scope": 12010,
-                  "src": "335:18:58",
-                  "stateVariable": false,
-                  "storageLocation": "default",
-                  "typeDescriptions": {
-                    "typeIdentifier": "t_uint256",
-                    "typeString": "uint256"
-                  },
-                  "typeName": {
-                    "id": 12005,
-                    "name": "uint256",
-                    "nodeType": "ElementaryTypeName",
-                    "src": "335:7:58",
-                    "typeDescriptions": {
-                      "typeIdentifier": "t_uint256",
-                      "typeString": "uint256"
-                    }
-                  },
-                  "value": null,
-                  "visibility": "internal"
-                },
-                {
-                  "constant": false,
-                  "id": 12008,
-                  "indexed": false,
-                  "name": "value",
-                  "nodeType": "VariableDeclaration",
-                  "scope": 12010,
-                  "src": "355:13:58",
+                  "src": "379:18:58",
                   "stateVariable": false,
                   "storageLocation": "default",
                   "typeDescriptions": {
@@ -2418,7 +2897,7 @@
                     "id": 12007,
                     "name": "uint256",
                     "nodeType": "ElementaryTypeName",
-                    "src": "355:7:58",
+                    "src": "379:7:58",
                     "typeDescriptions": {
                       "typeIdentifier": "t_uint256",
                       "typeString": "uint256"
@@ -2428,15 +2907,15 @@
                   "visibility": "internal"
                 }
               ],
-              "src": "334:35:58"
+              "src": "378:20:58"
             },
-            "src": "319:51:58"
+            "src": "363:36:58"
           },
           {
             "anonymous": false,
             "documentation": null,
             "id": 12014,
-            "name": "RejectRFL",
+            "name": "CancelRFI",
             "nodeType": "EventDefinition",
             "parameters": {
               "id": 12013,
@@ -2449,7 +2928,7 @@
                   "name": "id",
                   "nodeType": "VariableDeclaration",
                   "scope": 12014,
-                  "src": "391:18:58",
+                  "src": "420:18:58",
                   "stateVariable": false,
                   "storageLocation": "default",
                   "typeDescriptions": {
@@ -2460,7 +2939,7 @@
                     "id": 12011,
                     "name": "uint256",
                     "nodeType": "ElementaryTypeName",
-                    "src": "391:7:58",
+                    "src": "420:7:58",
                     "typeDescriptions": {
                       "typeIdentifier": "t_uint256",
                       "typeString": "uint256"
@@ -2470,15 +2949,15 @@
                   "visibility": "internal"
                 }
               ],
-              "src": "390:20:58"
+              "src": "419:20:58"
             },
-            "src": "375:36:58"
+            "src": "404:36:58"
           },
           {
             "anonymous": false,
             "documentation": null,
             "id": 12018,
-            "name": "CancelRFL",
+            "name": "CreateRFL",
             "nodeType": "EventDefinition",
             "parameters": {
               "id": 12017,
@@ -2491,7 +2970,7 @@
                   "name": "id",
                   "nodeType": "VariableDeclaration",
                   "scope": 12018,
-                  "src": "432:18:58",
+                  "src": "462:18:58",
                   "stateVariable": false,
                   "storageLocation": "default",
                   "typeDescriptions": {
@@ -2502,7 +2981,7 @@
                     "id": 12015,
                     "name": "uint256",
                     "nodeType": "ElementaryTypeName",
-                    "src": "432:7:58",
+                    "src": "462:7:58",
                     "typeDescriptions": {
                       "typeIdentifier": "t_uint256",
                       "typeString": "uint256"
@@ -2512,18 +2991,18 @@
                   "visibility": "internal"
                 }
               ],
-              "src": "431:20:58"
+              "src": "461:20:58"
             },
-            "src": "416:36:58"
+            "src": "446:36:58"
           },
           {
             "anonymous": false,
             "documentation": null,
-            "id": 12026,
-            "name": "IssueRFL",
+            "id": 12024,
+            "name": "AcceptRFL",
             "nodeType": "EventDefinition",
             "parameters": {
-              "id": 12025,
+              "id": 12023,
               "nodeType": "ParameterList",
               "parameters": [
                 {
@@ -2532,8 +3011,8 @@
                   "indexed": true,
                   "name": "id",
                   "nodeType": "VariableDeclaration",
-                  "scope": 12026,
-                  "src": "472:18:58",
+                  "scope": 12024,
+                  "src": "503:18:58",
                   "stateVariable": false,
                   "storageLocation": "default",
                   "typeDescriptions": {
@@ -2544,7 +3023,7 @@
                     "id": 12019,
                     "name": "uint256",
                     "nodeType": "ElementaryTypeName",
-                    "src": "472:7:58",
+                    "src": "503:7:58",
                     "typeDescriptions": {
                       "typeIdentifier": "t_uint256",
                       "typeString": "uint256"
@@ -2557,37 +3036,10 @@
                   "constant": false,
                   "id": 12022,
                   "indexed": false,
-                  "name": "destination",
-                  "nodeType": "VariableDeclaration",
-                  "scope": 12026,
-                  "src": "492:19:58",
-                  "stateVariable": false,
-                  "storageLocation": "default",
-                  "typeDescriptions": {
-                    "typeIdentifier": "t_address",
-                    "typeString": "address"
-                  },
-                  "typeName": {
-                    "id": 12021,
-                    "name": "address",
-                    "nodeType": "ElementaryTypeName",
-                    "src": "492:7:58",
-                    "typeDescriptions": {
-                      "typeIdentifier": "t_address",
-                      "typeString": "address"
-                    }
-                  },
-                  "value": null,
-                  "visibility": "internal"
-                },
-                {
-                  "constant": false,
-                  "id": 12024,
-                  "indexed": false,
                   "name": "value",
                   "nodeType": "VariableDeclaration",
-                  "scope": 12026,
-                  "src": "513:13:58",
+                  "scope": 12024,
+                  "src": "523:13:58",
                   "stateVariable": false,
                   "storageLocation": "default",
                   "typeDescriptions": {
@@ -2595,10 +3047,10 @@
                     "typeString": "uint256"
                   },
                   "typeName": {
-                    "id": 12023,
+                    "id": 12021,
                     "name": "uint256",
                     "nodeType": "ElementaryTypeName",
-                    "src": "513:7:58",
+                    "src": "523:7:58",
                     "typeDescriptions": {
                       "typeIdentifier": "t_uint256",
                       "typeString": "uint256"
@@ -2608,105 +3060,112 @@
                   "visibility": "internal"
                 }
               ],
-              "src": "471:56:58"
+              "src": "502:35:58"
             },
-            "src": "457:71:58"
+            "src": "487:51:58"
           },
           {
-            "body": null,
+            "anonymous": false,
             "documentation": null,
-            "id": 12036,
-            "implemented": false,
-            "isConstructor": false,
-            "isDeclaredConst": false,
-            "modifiers": [],
-            "name": "createRFI",
-            "nodeType": "FunctionDefinition",
+            "id": 12028,
+            "name": "RejectRFL",
+            "nodeType": "EventDefinition",
             "parameters": {
-              "id": 12032,
+              "id": 12027,
               "nodeType": "ParameterList",
               "parameters": [
                 {
                   "constant": false,
-                  "id": 12028,
-                  "name": "_individuation",
+                  "id": 12026,
+                  "indexed": true,
+                  "name": "id",
                   "nodeType": "VariableDeclaration",
-                  "scope": 12036,
-                  "src": "553:35:58",
+                  "scope": 12028,
+                  "src": "559:18:58",
                   "stateVariable": false,
                   "storageLocation": "default",
                   "typeDescriptions": {
-                    "typeIdentifier": "t_struct$_IIndividuation_$11924_memory_ptr",
-                    "typeString": "struct Pando.IIndividuation"
+                    "typeIdentifier": "t_uint256",
+                    "typeString": "uint256"
                   },
                   "typeName": {
-                    "contractScope": null,
-                    "id": 12027,
-                    "name": "Pando.IIndividuation",
-                    "nodeType": "UserDefinedTypeName",
-                    "referencedDeclaration": 11924,
-                    "src": "553:20:58",
+                    "id": 12025,
+                    "name": "uint256",
+                    "nodeType": "ElementaryTypeName",
+                    "src": "559:7:58",
                     "typeDescriptions": {
-                      "typeIdentifier": "t_struct$_IIndividuation_$11924_storage_ptr",
-                      "typeString": "struct Pando.IIndividuation"
-                    }
-                  },
-                  "value": null,
-                  "visibility": "internal"
-                },
-                {
-                  "constant": false,
-                  "id": 12031,
-                  "name": "_lineages",
-                  "nodeType": "VariableDeclaration",
-                  "scope": 12036,
-                  "src": "590:26:58",
-                  "stateVariable": false,
-                  "storageLocation": "default",
-                  "typeDescriptions": {
-                    "typeIdentifier": "t_array$_t_struct$_ILineage_$11946_memory_$dyn_memory_ptr",
-                    "typeString": "struct Pando.ILineage[]"
-                  },
-                  "typeName": {
-                    "baseType": {
-                      "contractScope": null,
-                      "id": 12029,
-                      "name": "Pando.ILineage",
-                      "nodeType": "UserDefinedTypeName",
-                      "referencedDeclaration": 11946,
-                      "src": "590:14:58",
-                      "typeDescriptions": {
-                        "typeIdentifier": "t_struct$_ILineage_$11946_storage_ptr",
-                        "typeString": "struct Pando.ILineage"
-                      }
-                    },
-                    "id": 12030,
-                    "length": null,
-                    "nodeType": "ArrayTypeName",
-                    "src": "590:16:58",
-                    "typeDescriptions": {
-                      "typeIdentifier": "t_array$_t_struct$_ILineage_$11946_storage_$dyn_storage_ptr",
-                      "typeString": "struct Pando.ILineage[]"
+                      "typeIdentifier": "t_uint256",
+                      "typeString": "uint256"
                     }
                   },
                   "value": null,
                   "visibility": "internal"
                 }
               ],
-              "src": "552:65:58"
+              "src": "558:20:58"
             },
-            "payable": false,
-            "returnParameters": {
-              "id": 12035,
+            "src": "543:36:58"
+          },
+          {
+            "anonymous": false,
+            "documentation": null,
+            "id": 12032,
+            "name": "CancelRFL",
+            "nodeType": "EventDefinition",
+            "parameters": {
+              "id": 12031,
+              "nodeType": "ParameterList",
+              "parameters": [
+                {
+                  "constant": false,
+                  "id": 12030,
+                  "indexed": true,
+                  "name": "id",
+                  "nodeType": "VariableDeclaration",
+                  "scope": 12032,
+                  "src": "600:18:58",
+                  "stateVariable": false,
+                  "storageLocation": "default",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_uint256",
+                    "typeString": "uint256"
+                  },
+                  "typeName": {
+                    "id": 12029,
+                    "name": "uint256",
+                    "nodeType": "ElementaryTypeName",
+                    "src": "600:7:58",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_uint256",
+                      "typeString": "uint256"
+                    }
+                  },
+                  "value": null,
+                  "visibility": "internal"
+                }
+              ],
+              "src": "599:20:58"
+            },
+            "src": "584:36:58"
+          },
+          {
+            "anonymous": false,
+            "documentation": null,
+            "id": 12040,
+            "name": "IssueRFL",
+            "nodeType": "EventDefinition",
+            "parameters": {
+              "id": 12039,
               "nodeType": "ParameterList",
               "parameters": [
                 {
                   "constant": false,
                   "id": 12034,
-                  "name": "RFIid",
+                  "indexed": true,
+                  "name": "id",
                   "nodeType": "VariableDeclaration",
-                  "scope": 12036,
-                  "src": "634:13:58",
+                  "scope": 12040,
+                  "src": "640:18:58",
                   "stateVariable": false,
                   "storageLocation": "default",
                   "typeDescriptions": {
@@ -2717,7 +3176,7 @@
                     "id": 12033,
                     "name": "uint256",
                     "nodeType": "ElementaryTypeName",
-                    "src": "634:7:58",
+                    "src": "640:7:58",
                     "typeDescriptions": {
                       "typeIdentifier": "t_uint256",
                       "typeString": "uint256"
@@ -2725,37 +3184,42 @@
                   },
                   "value": null,
                   "visibility": "internal"
-                }
-              ],
-              "src": "633:15:58"
-            },
-            "scope": 12120,
-            "src": "534:115:58",
-            "stateMutability": "nonpayable",
-            "superFunction": null,
-            "visibility": "public"
-          },
-          {
-            "body": null,
-            "documentation": null,
-            "id": 12041,
-            "implemented": false,
-            "isConstructor": false,
-            "isDeclaredConst": false,
-            "modifiers": [],
-            "name": "mergeRFI",
-            "nodeType": "FunctionDefinition",
-            "parameters": {
-              "id": 12039,
-              "nodeType": "ParameterList",
-              "parameters": [
+                },
+                {
+                  "constant": false,
+                  "id": 12036,
+                  "indexed": false,
+                  "name": "destination",
+                  "nodeType": "VariableDeclaration",
+                  "scope": 12040,
+                  "src": "660:19:58",
+                  "stateVariable": false,
+                  "storageLocation": "default",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_address",
+                    "typeString": "address"
+                  },
+                  "typeName": {
+                    "id": 12035,
+                    "name": "address",
+                    "nodeType": "ElementaryTypeName",
+                    "src": "660:7:58",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_address",
+                      "typeString": "address"
+                    }
+                  },
+                  "value": null,
+                  "visibility": "internal"
+                },
                 {
                   "constant": false,
                   "id": 12038,
-                  "name": "_RFIid",
+                  "indexed": false,
+                  "name": "value",
                   "nodeType": "VariableDeclaration",
-                  "scope": 12041,
-                  "src": "672:14:58",
+                  "scope": 12040,
+                  "src": "681:13:58",
                   "stateVariable": false,
                   "storageLocation": "default",
                   "typeDescriptions": {
@@ -2766,7 +3230,7 @@
                     "id": 12037,
                     "name": "uint256",
                     "nodeType": "ElementaryTypeName",
-                    "src": "672:7:58",
+                    "src": "681:7:58",
                     "typeDescriptions": {
                       "typeIdentifier": "t_uint256",
                       "typeString": "uint256"
@@ -2776,98 +3240,105 @@
                   "visibility": "internal"
                 }
               ],
-              "src": "671:16:58"
+              "src": "639:56:58"
             },
-            "payable": false,
-            "returnParameters": {
-              "id": 12040,
-              "nodeType": "ParameterList",
-              "parameters": [],
-              "src": "694:0:58"
-            },
-            "scope": 12120,
-            "src": "654:41:58",
-            "stateMutability": "nonpayable",
-            "superFunction": null,
-            "visibility": "public"
+            "src": "625:71:58"
           },
           {
             "body": null,
             "documentation": null,
-            "id": 12046,
+            "id": 12050,
             "implemented": false,
             "isConstructor": false,
             "isDeclaredConst": false,
             "modifiers": [],
-            "name": "rejectRFI",
+            "name": "createRFI",
             "nodeType": "FunctionDefinition",
             "parameters": {
-              "id": 12044,
+              "id": 12046,
               "nodeType": "ParameterList",
               "parameters": [
                 {
                   "constant": false,
-                  "id": 12043,
-                  "name": "_RFIid",
+                  "id": 12042,
+                  "name": "_individuation",
                   "nodeType": "VariableDeclaration",
-                  "scope": 12046,
-                  "src": "719:14:58",
+                  "scope": 12050,
+                  "src": "721:35:58",
                   "stateVariable": false,
                   "storageLocation": "default",
                   "typeDescriptions": {
-                    "typeIdentifier": "t_uint256",
-                    "typeString": "uint256"
+                    "typeIdentifier": "t_struct$_IIndividuation_$11924_memory_ptr",
+                    "typeString": "struct Pando.IIndividuation"
                   },
                   "typeName": {
-                    "id": 12042,
-                    "name": "uint256",
-                    "nodeType": "ElementaryTypeName",
-                    "src": "719:7:58",
+                    "contractScope": null,
+                    "id": 12041,
+                    "name": "Pando.IIndividuation",
+                    "nodeType": "UserDefinedTypeName",
+                    "referencedDeclaration": 11924,
+                    "src": "721:20:58",
                     "typeDescriptions": {
-                      "typeIdentifier": "t_uint256",
-                      "typeString": "uint256"
+                      "typeIdentifier": "t_struct$_IIndividuation_$11924_storage_ptr",
+                      "typeString": "struct Pando.IIndividuation"
+                    }
+                  },
+                  "value": null,
+                  "visibility": "internal"
+                },
+                {
+                  "constant": false,
+                  "id": 12045,
+                  "name": "_lineages",
+                  "nodeType": "VariableDeclaration",
+                  "scope": 12050,
+                  "src": "758:26:58",
+                  "stateVariable": false,
+                  "storageLocation": "default",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_array$_t_struct$_ILineage_$11946_memory_$dyn_memory_ptr",
+                    "typeString": "struct Pando.ILineage[]"
+                  },
+                  "typeName": {
+                    "baseType": {
+                      "contractScope": null,
+                      "id": 12043,
+                      "name": "Pando.ILineage",
+                      "nodeType": "UserDefinedTypeName",
+                      "referencedDeclaration": 11946,
+                      "src": "758:14:58",
+                      "typeDescriptions": {
+                        "typeIdentifier": "t_struct$_ILineage_$11946_storage_ptr",
+                        "typeString": "struct Pando.ILineage"
+                      }
+                    },
+                    "id": 12044,
+                    "length": null,
+                    "nodeType": "ArrayTypeName",
+                    "src": "758:16:58",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_array$_t_struct$_ILineage_$11946_storage_$dyn_storage_ptr",
+                      "typeString": "struct Pando.ILineage[]"
                     }
                   },
                   "value": null,
                   "visibility": "internal"
                 }
               ],
-              "src": "718:16:58"
+              "src": "720:65:58"
             },
             "payable": false,
             "returnParameters": {
-              "id": 12045,
-              "nodeType": "ParameterList",
-              "parameters": [],
-              "src": "741:0:58"
-            },
-            "scope": 12120,
-            "src": "700:42:58",
-            "stateMutability": "nonpayable",
-            "superFunction": null,
-            "visibility": "public"
-          },
-          {
-            "body": null,
-            "documentation": null,
-            "id": 12053,
-            "implemented": false,
-            "isConstructor": false,
-            "isDeclaredConst": false,
-            "modifiers": [],
-            "name": "acceptRFL",
-            "nodeType": "FunctionDefinition",
-            "parameters": {
-              "id": 12051,
+              "id": 12049,
               "nodeType": "ParameterList",
               "parameters": [
                 {
                   "constant": false,
                   "id": 12048,
-                  "name": "_RFLid",
+                  "name": "RFIid",
                   "nodeType": "VariableDeclaration",
-                  "scope": 12053,
-                  "src": "766:14:58",
+                  "scope": 12050,
+                  "src": "802:13:58",
                   "stateVariable": false,
                   "storageLocation": "default",
                   "typeDescriptions": {
@@ -2878,7 +3349,168 @@
                     "id": 12047,
                     "name": "uint256",
                     "nodeType": "ElementaryTypeName",
-                    "src": "766:7:58",
+                    "src": "802:7:58",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_uint256",
+                      "typeString": "uint256"
+                    }
+                  },
+                  "value": null,
+                  "visibility": "internal"
+                }
+              ],
+              "src": "801:15:58"
+            },
+            "scope": 12145,
+            "src": "702:115:58",
+            "stateMutability": "nonpayable",
+            "superFunction": null,
+            "visibility": "public"
+          },
+          {
+            "body": null,
+            "documentation": null,
+            "id": 12055,
+            "implemented": false,
+            "isConstructor": false,
+            "isDeclaredConst": false,
+            "modifiers": [],
+            "name": "mergeRFI",
+            "nodeType": "FunctionDefinition",
+            "parameters": {
+              "id": 12053,
+              "nodeType": "ParameterList",
+              "parameters": [
+                {
+                  "constant": false,
+                  "id": 12052,
+                  "name": "_RFIid",
+                  "nodeType": "VariableDeclaration",
+                  "scope": 12055,
+                  "src": "840:14:58",
+                  "stateVariable": false,
+                  "storageLocation": "default",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_uint256",
+                    "typeString": "uint256"
+                  },
+                  "typeName": {
+                    "id": 12051,
+                    "name": "uint256",
+                    "nodeType": "ElementaryTypeName",
+                    "src": "840:7:58",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_uint256",
+                      "typeString": "uint256"
+                    }
+                  },
+                  "value": null,
+                  "visibility": "internal"
+                }
+              ],
+              "src": "839:16:58"
+            },
+            "payable": false,
+            "returnParameters": {
+              "id": 12054,
+              "nodeType": "ParameterList",
+              "parameters": [],
+              "src": "862:0:58"
+            },
+            "scope": 12145,
+            "src": "822:41:58",
+            "stateMutability": "nonpayable",
+            "superFunction": null,
+            "visibility": "public"
+          },
+          {
+            "body": null,
+            "documentation": null,
+            "id": 12060,
+            "implemented": false,
+            "isConstructor": false,
+            "isDeclaredConst": false,
+            "modifiers": [],
+            "name": "rejectRFI",
+            "nodeType": "FunctionDefinition",
+            "parameters": {
+              "id": 12058,
+              "nodeType": "ParameterList",
+              "parameters": [
+                {
+                  "constant": false,
+                  "id": 12057,
+                  "name": "_RFIid",
+                  "nodeType": "VariableDeclaration",
+                  "scope": 12060,
+                  "src": "887:14:58",
+                  "stateVariable": false,
+                  "storageLocation": "default",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_uint256",
+                    "typeString": "uint256"
+                  },
+                  "typeName": {
+                    "id": 12056,
+                    "name": "uint256",
+                    "nodeType": "ElementaryTypeName",
+                    "src": "887:7:58",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_uint256",
+                      "typeString": "uint256"
+                    }
+                  },
+                  "value": null,
+                  "visibility": "internal"
+                }
+              ],
+              "src": "886:16:58"
+            },
+            "payable": false,
+            "returnParameters": {
+              "id": 12059,
+              "nodeType": "ParameterList",
+              "parameters": [],
+              "src": "909:0:58"
+            },
+            "scope": 12145,
+            "src": "868:42:58",
+            "stateMutability": "nonpayable",
+            "superFunction": null,
+            "visibility": "public"
+          },
+          {
+            "body": null,
+            "documentation": null,
+            "id": 12067,
+            "implemented": false,
+            "isConstructor": false,
+            "isDeclaredConst": false,
+            "modifiers": [],
+            "name": "acceptRFL",
+            "nodeType": "FunctionDefinition",
+            "parameters": {
+              "id": 12065,
+              "nodeType": "ParameterList",
+              "parameters": [
+                {
+                  "constant": false,
+                  "id": 12062,
+                  "name": "_RFLid",
+                  "nodeType": "VariableDeclaration",
+                  "scope": 12067,
+                  "src": "934:14:58",
+                  "stateVariable": false,
+                  "storageLocation": "default",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_uint256",
+                    "typeString": "uint256"
+                  },
+                  "typeName": {
+                    "id": 12061,
+                    "name": "uint256",
+                    "nodeType": "ElementaryTypeName",
+                    "src": "934:7:58",
                     "typeDescriptions": {
                       "typeIdentifier": "t_uint256",
                       "typeString": "uint256"
@@ -2889,11 +3521,11 @@
                 },
                 {
                   "constant": false,
-                  "id": 12050,
+                  "id": 12064,
                   "name": "_value",
                   "nodeType": "VariableDeclaration",
-                  "scope": 12053,
-                  "src": "782:14:58",
+                  "scope": 12067,
+                  "src": "950:14:58",
                   "stateVariable": false,
                   "storageLocation": "default",
                   "typeDescriptions": {
@@ -2901,10 +3533,10 @@
                     "typeString": "uint256"
                   },
                   "typeName": {
-                    "id": 12049,
+                    "id": 12063,
                     "name": "uint256",
                     "nodeType": "ElementaryTypeName",
-                    "src": "782:7:58",
+                    "src": "950:7:58",
                     "typeDescriptions": {
                       "typeIdentifier": "t_uint256",
                       "typeString": "uint256"
@@ -2914,157 +3546,18 @@
                   "visibility": "internal"
                 }
               ],
-              "src": "765:32:58"
+              "src": "933:32:58"
             },
             "payable": false,
             "returnParameters": {
-              "id": 12052,
+              "id": 12066,
               "nodeType": "ParameterList",
               "parameters": [],
-              "src": "804:0:58"
+              "src": "972:0:58"
             },
-            "scope": 12120,
-            "src": "747:58:58",
+            "scope": 12145,
+            "src": "915:58:58",
             "stateMutability": "nonpayable",
-            "superFunction": null,
-            "visibility": "public"
-          },
-          {
-            "body": null,
-            "documentation": null,
-            "id": 12058,
-            "implemented": false,
-            "isConstructor": false,
-            "isDeclaredConst": false,
-            "modifiers": [],
-            "name": "rejectRFL",
-            "nodeType": "FunctionDefinition",
-            "parameters": {
-              "id": 12056,
-              "nodeType": "ParameterList",
-              "parameters": [
-                {
-                  "constant": false,
-                  "id": 12055,
-                  "name": "_RFLid",
-                  "nodeType": "VariableDeclaration",
-                  "scope": 12058,
-                  "src": "829:14:58",
-                  "stateVariable": false,
-                  "storageLocation": "default",
-                  "typeDescriptions": {
-                    "typeIdentifier": "t_uint256",
-                    "typeString": "uint256"
-                  },
-                  "typeName": {
-                    "id": 12054,
-                    "name": "uint256",
-                    "nodeType": "ElementaryTypeName",
-                    "src": "829:7:58",
-                    "typeDescriptions": {
-                      "typeIdentifier": "t_uint256",
-                      "typeString": "uint256"
-                    }
-                  },
-                  "value": null,
-                  "visibility": "internal"
-                }
-              ],
-              "src": "828:16:58"
-            },
-            "payable": false,
-            "returnParameters": {
-              "id": 12057,
-              "nodeType": "ParameterList",
-              "parameters": [],
-              "src": "851:0:58"
-            },
-            "scope": 12120,
-            "src": "810:42:58",
-            "stateMutability": "nonpayable",
-            "superFunction": null,
-            "visibility": "public"
-          },
-          {
-            "body": null,
-            "documentation": null,
-            "id": 12065,
-            "implemented": false,
-            "isConstructor": false,
-            "isDeclaredConst": true,
-            "modifiers": [],
-            "name": "canMergeRFI",
-            "nodeType": "FunctionDefinition",
-            "parameters": {
-              "id": 12061,
-              "nodeType": "ParameterList",
-              "parameters": [
-                {
-                  "constant": false,
-                  "id": 12060,
-                  "name": "_RFIid",
-                  "nodeType": "VariableDeclaration",
-                  "scope": 12065,
-                  "src": "909:14:58",
-                  "stateVariable": false,
-                  "storageLocation": "default",
-                  "typeDescriptions": {
-                    "typeIdentifier": "t_uint256",
-                    "typeString": "uint256"
-                  },
-                  "typeName": {
-                    "id": 12059,
-                    "name": "uint256",
-                    "nodeType": "ElementaryTypeName",
-                    "src": "909:7:58",
-                    "typeDescriptions": {
-                      "typeIdentifier": "t_uint256",
-                      "typeString": "uint256"
-                    }
-                  },
-                  "value": null,
-                  "visibility": "internal"
-                }
-              ],
-              "src": "908:16:58"
-            },
-            "payable": false,
-            "returnParameters": {
-              "id": 12064,
-              "nodeType": "ParameterList",
-              "parameters": [
-                {
-                  "constant": false,
-                  "id": 12063,
-                  "name": "",
-                  "nodeType": "VariableDeclaration",
-                  "scope": 12065,
-                  "src": "946:4:58",
-                  "stateVariable": false,
-                  "storageLocation": "default",
-                  "typeDescriptions": {
-                    "typeIdentifier": "t_bool",
-                    "typeString": "bool"
-                  },
-                  "typeName": {
-                    "id": 12062,
-                    "name": "bool",
-                    "nodeType": "ElementaryTypeName",
-                    "src": "946:4:58",
-                    "typeDescriptions": {
-                      "typeIdentifier": "t_bool",
-                      "typeString": "bool"
-                    }
-                  },
-                  "value": null,
-                  "visibility": "internal"
-                }
-              ],
-              "src": "945:6:58"
-            },
-            "scope": 12120,
-            "src": "888:64:58",
-            "stateMutability": "view",
             "superFunction": null,
             "visibility": "public"
           },
@@ -3074,21 +3567,21 @@
             "id": 12072,
             "implemented": false,
             "isConstructor": false,
-            "isDeclaredConst": true,
+            "isDeclaredConst": false,
             "modifiers": [],
-            "name": "canRejectRFI",
+            "name": "rejectRFL",
             "nodeType": "FunctionDefinition",
             "parameters": {
-              "id": 12068,
+              "id": 12070,
               "nodeType": "ParameterList",
               "parameters": [
                 {
                   "constant": false,
-                  "id": 12067,
-                  "name": "_RFIid",
+                  "id": 12069,
+                  "name": "_RFLid",
                   "nodeType": "VariableDeclaration",
                   "scope": 12072,
-                  "src": "979:11:58",
+                  "src": "997:14:58",
                   "stateVariable": false,
                   "storageLocation": "default",
                   "typeDescriptions": {
@@ -3096,10 +3589,10 @@
                     "typeString": "uint256"
                   },
                   "typeName": {
-                    "id": 12066,
-                    "name": "uint",
+                    "id": 12068,
+                    "name": "uint256",
                     "nodeType": "ElementaryTypeName",
-                    "src": "979:4:58",
+                    "src": "997:7:58",
                     "typeDescriptions": {
                       "typeIdentifier": "t_uint256",
                       "typeString": "uint256"
@@ -3109,69 +3602,42 @@
                   "visibility": "internal"
                 }
               ],
-              "src": "978:13:58"
+              "src": "996:16:58"
             },
             "payable": false,
             "returnParameters": {
               "id": 12071,
               "nodeType": "ParameterList",
-              "parameters": [
-                {
-                  "constant": false,
-                  "id": 12070,
-                  "name": "",
-                  "nodeType": "VariableDeclaration",
-                  "scope": 12072,
-                  "src": "1013:4:58",
-                  "stateVariable": false,
-                  "storageLocation": "default",
-                  "typeDescriptions": {
-                    "typeIdentifier": "t_bool",
-                    "typeString": "bool"
-                  },
-                  "typeName": {
-                    "id": 12069,
-                    "name": "bool",
-                    "nodeType": "ElementaryTypeName",
-                    "src": "1013:4:58",
-                    "typeDescriptions": {
-                      "typeIdentifier": "t_bool",
-                      "typeString": "bool"
-                    }
-                  },
-                  "value": null,
-                  "visibility": "internal"
-                }
-              ],
-              "src": "1012:6:58"
+              "parameters": [],
+              "src": "1019:0:58"
             },
-            "scope": 12120,
-            "src": "957:62:58",
-            "stateMutability": "view",
+            "scope": 12145,
+            "src": "978:42:58",
+            "stateMutability": "nonpayable",
             "superFunction": null,
             "visibility": "public"
           },
           {
             "body": null,
             "documentation": null,
-            "id": 12081,
+            "id": 12079,
             "implemented": false,
             "isConstructor": false,
             "isDeclaredConst": true,
             "modifiers": [],
-            "name": "canAcceptRFL",
+            "name": "canMergeRFI",
             "nodeType": "FunctionDefinition",
             "parameters": {
-              "id": 12077,
+              "id": 12075,
               "nodeType": "ParameterList",
               "parameters": [
                 {
                   "constant": false,
                   "id": 12074,
-                  "name": "_RFLid",
+                  "name": "_RFIid",
                   "nodeType": "VariableDeclaration",
-                  "scope": 12081,
-                  "src": "1046:14:58",
+                  "scope": 12079,
+                  "src": "1077:14:58",
                   "stateVariable": false,
                   "storageLocation": "default",
                   "typeDescriptions": {
@@ -3182,33 +3648,7 @@
                     "id": 12073,
                     "name": "uint256",
                     "nodeType": "ElementaryTypeName",
-                    "src": "1046:7:58",
-                    "typeDescriptions": {
-                      "typeIdentifier": "t_uint256",
-                      "typeString": "uint256"
-                    }
-                  },
-                  "value": null,
-                  "visibility": "internal"
-                },
-                {
-                  "constant": false,
-                  "id": 12076,
-                  "name": "_value",
-                  "nodeType": "VariableDeclaration",
-                  "scope": 12081,
-                  "src": "1062:14:58",
-                  "stateVariable": false,
-                  "storageLocation": "default",
-                  "typeDescriptions": {
-                    "typeIdentifier": "t_uint256",
-                    "typeString": "uint256"
-                  },
-                  "typeName": {
-                    "id": 12075,
-                    "name": "uint256",
-                    "nodeType": "ElementaryTypeName",
-                    "src": "1062:7:58",
+                    "src": "1077:7:58",
                     "typeDescriptions": {
                       "typeIdentifier": "t_uint256",
                       "typeString": "uint256"
@@ -3218,20 +3658,20 @@
                   "visibility": "internal"
                 }
               ],
-              "src": "1045:32:58"
+              "src": "1076:16:58"
             },
             "payable": false,
             "returnParameters": {
-              "id": 12080,
+              "id": 12078,
               "nodeType": "ParameterList",
               "parameters": [
                 {
                   "constant": false,
-                  "id": 12079,
+                  "id": 12077,
                   "name": "",
                   "nodeType": "VariableDeclaration",
-                  "scope": 12081,
-                  "src": "1099:4:58",
+                  "scope": 12079,
+                  "src": "1114:4:58",
                   "stateVariable": false,
                   "storageLocation": "default",
                   "typeDescriptions": {
@@ -3239,10 +3679,10 @@
                     "typeString": "bool"
                   },
                   "typeName": {
-                    "id": 12078,
+                    "id": 12076,
                     "name": "bool",
                     "nodeType": "ElementaryTypeName",
-                    "src": "1099:4:58",
+                    "src": "1114:4:58",
                     "typeDescriptions": {
                       "typeIdentifier": "t_bool",
                       "typeString": "bool"
@@ -3252,10 +3692,10 @@
                   "visibility": "internal"
                 }
               ],
-              "src": "1098:6:58"
+              "src": "1113:6:58"
             },
-            "scope": 12120,
-            "src": "1024:81:58",
+            "scope": 12145,
+            "src": "1056:64:58",
             "stateMutability": "view",
             "superFunction": null,
             "visibility": "public"
@@ -3263,24 +3703,24 @@
           {
             "body": null,
             "documentation": null,
-            "id": 12088,
+            "id": 12086,
             "implemented": false,
             "isConstructor": false,
             "isDeclaredConst": true,
             "modifiers": [],
-            "name": "canRejectRFL",
+            "name": "canRejectRFI",
             "nodeType": "FunctionDefinition",
             "parameters": {
-              "id": 12084,
+              "id": 12082,
               "nodeType": "ParameterList",
               "parameters": [
                 {
                   "constant": false,
-                  "id": 12083,
-                  "name": "_RFLid",
+                  "id": 12081,
+                  "name": "_RFIid",
                   "nodeType": "VariableDeclaration",
-                  "scope": 12088,
-                  "src": "1132:11:58",
+                  "scope": 12086,
+                  "src": "1147:11:58",
                   "stateVariable": false,
                   "storageLocation": "default",
                   "typeDescriptions": {
@@ -3288,10 +3728,10 @@
                     "typeString": "uint256"
                   },
                   "typeName": {
-                    "id": 12082,
+                    "id": 12080,
                     "name": "uint",
                     "nodeType": "ElementaryTypeName",
-                    "src": "1132:4:58",
+                    "src": "1147:4:58",
                     "typeDescriptions": {
                       "typeIdentifier": "t_uint256",
                       "typeString": "uint256"
@@ -3301,20 +3741,20 @@
                   "visibility": "internal"
                 }
               ],
-              "src": "1131:13:58"
+              "src": "1146:13:58"
             },
             "payable": false,
             "returnParameters": {
-              "id": 12087,
+              "id": 12085,
               "nodeType": "ParameterList",
               "parameters": [
                 {
                   "constant": false,
-                  "id": 12086,
+                  "id": 12084,
                   "name": "",
                   "nodeType": "VariableDeclaration",
-                  "scope": 12088,
-                  "src": "1166:4:58",
+                  "scope": 12086,
+                  "src": "1181:4:58",
                   "stateVariable": false,
                   "storageLocation": "default",
                   "typeDescriptions": {
@@ -3322,10 +3762,10 @@
                     "typeString": "bool"
                   },
                   "typeName": {
-                    "id": 12085,
+                    "id": 12083,
                     "name": "bool",
                     "nodeType": "ElementaryTypeName",
-                    "src": "1166:4:58",
+                    "src": "1181:4:58",
                     "typeDescriptions": {
                       "typeIdentifier": "t_bool",
                       "typeString": "bool"
@@ -3335,10 +3775,10 @@
                   "visibility": "internal"
                 }
               ],
-              "src": "1165:6:58"
+              "src": "1180:6:58"
             },
-            "scope": 12120,
-            "src": "1110:62:58",
+            "scope": 12145,
+            "src": "1125:62:58",
             "stateMutability": "view",
             "superFunction": null,
             "visibility": "public"
@@ -3351,7 +3791,7 @@
             "isConstructor": false,
             "isDeclaredConst": true,
             "modifiers": [],
-            "name": "getRFI",
+            "name": "canAcceptRFL",
             "nodeType": "FunctionDefinition",
             "parameters": {
               "id": 12091,
@@ -3359,11 +3799,37 @@
               "parameters": [
                 {
                   "constant": false,
-                  "id": 12090,
-                  "name": "_RFIid",
+                  "id": 12088,
+                  "name": "_RFLid",
                   "nodeType": "VariableDeclaration",
                   "scope": 12095,
-                  "src": "1224:14:58",
+                  "src": "1214:14:58",
+                  "stateVariable": false,
+                  "storageLocation": "default",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_uint256",
+                    "typeString": "uint256"
+                  },
+                  "typeName": {
+                    "id": 12087,
+                    "name": "uint256",
+                    "nodeType": "ElementaryTypeName",
+                    "src": "1214:7:58",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_uint256",
+                      "typeString": "uint256"
+                    }
+                  },
+                  "value": null,
+                  "visibility": "internal"
+                },
+                {
+                  "constant": false,
+                  "id": 12090,
+                  "name": "_value",
+                  "nodeType": "VariableDeclaration",
+                  "scope": 12095,
+                  "src": "1230:14:58",
                   "stateVariable": false,
                   "storageLocation": "default",
                   "typeDescriptions": {
@@ -3374,7 +3840,7 @@
                     "id": 12089,
                     "name": "uint256",
                     "nodeType": "ElementaryTypeName",
-                    "src": "1224:7:58",
+                    "src": "1230:7:58",
                     "typeDescriptions": {
                       "typeIdentifier": "t_uint256",
                       "typeString": "uint256"
@@ -3384,7 +3850,7 @@
                   "visibility": "internal"
                 }
               ],
-              "src": "1223:16:58"
+              "src": "1213:32:58"
             },
             "payable": false,
             "returnParameters": {
@@ -3397,33 +3863,31 @@
                   "name": "",
                   "nodeType": "VariableDeclaration",
                   "scope": 12095,
-                  "src": "1261:9:58",
+                  "src": "1267:4:58",
                   "stateVariable": false,
                   "storageLocation": "default",
                   "typeDescriptions": {
-                    "typeIdentifier": "t_struct$_RFI_$11939_memory_ptr",
-                    "typeString": "struct Pando.RFI"
+                    "typeIdentifier": "t_bool",
+                    "typeString": "bool"
                   },
                   "typeName": {
-                    "contractScope": null,
                     "id": 12092,
-                    "name": "Pando.RFI",
-                    "nodeType": "UserDefinedTypeName",
-                    "referencedDeclaration": 11939,
-                    "src": "1261:9:58",
+                    "name": "bool",
+                    "nodeType": "ElementaryTypeName",
+                    "src": "1267:4:58",
                     "typeDescriptions": {
-                      "typeIdentifier": "t_struct$_RFI_$11939_storage_ptr",
-                      "typeString": "struct Pando.RFI"
+                      "typeIdentifier": "t_bool",
+                      "typeString": "bool"
                     }
                   },
                   "value": null,
                   "visibility": "internal"
                 }
               ],
-              "src": "1260:11:58"
+              "src": "1266:6:58"
             },
-            "scope": 12120,
-            "src": "1208:64:58",
+            "scope": 12145,
+            "src": "1192:81:58",
             "stateMutability": "view",
             "superFunction": null,
             "visibility": "public"
@@ -3436,7 +3900,7 @@
             "isConstructor": false,
             "isDeclaredConst": true,
             "modifiers": [],
-            "name": "getRFL",
+            "name": "canRejectRFL",
             "nodeType": "FunctionDefinition",
             "parameters": {
               "id": 12098,
@@ -3448,7 +3912,7 @@
                   "name": "_RFLid",
                   "nodeType": "VariableDeclaration",
                   "scope": 12102,
-                  "src": "1293:14:58",
+                  "src": "1300:11:58",
                   "stateVariable": false,
                   "storageLocation": "default",
                   "typeDescriptions": {
@@ -3457,9 +3921,9 @@
                   },
                   "typeName": {
                     "id": 12096,
-                    "name": "uint256",
+                    "name": "uint",
                     "nodeType": "ElementaryTypeName",
-                    "src": "1293:7:58",
+                    "src": "1300:4:58",
                     "typeDescriptions": {
                       "typeIdentifier": "t_uint256",
                       "typeString": "uint256"
@@ -3469,7 +3933,7 @@
                   "visibility": "internal"
                 }
               ],
-              "src": "1292:16:58"
+              "src": "1299:13:58"
             },
             "payable": false,
             "returnParameters": {
@@ -3482,33 +3946,31 @@
                   "name": "",
                   "nodeType": "VariableDeclaration",
                   "scope": 12102,
-                  "src": "1330:9:58",
+                  "src": "1334:4:58",
                   "stateVariable": false,
                   "storageLocation": "default",
                   "typeDescriptions": {
-                    "typeIdentifier": "t_struct$_RFL_$11957_memory_ptr",
-                    "typeString": "struct Pando.RFL"
+                    "typeIdentifier": "t_bool",
+                    "typeString": "bool"
                   },
                   "typeName": {
-                    "contractScope": null,
                     "id": 12099,
-                    "name": "Pando.RFL",
-                    "nodeType": "UserDefinedTypeName",
-                    "referencedDeclaration": 11957,
-                    "src": "1330:9:58",
+                    "name": "bool",
+                    "nodeType": "ElementaryTypeName",
+                    "src": "1334:4:58",
                     "typeDescriptions": {
-                      "typeIdentifier": "t_struct$_RFL_$11957_storage_ptr",
-                      "typeString": "struct Pando.RFL"
+                      "typeIdentifier": "t_bool",
+                      "typeString": "bool"
                     }
                   },
                   "value": null,
                   "visibility": "internal"
                 }
               ],
-              "src": "1329:11:58"
+              "src": "1333:6:58"
             },
-            "scope": 12120,
-            "src": "1277:64:58",
+            "scope": 12145,
+            "src": "1278:62:58",
             "stateMutability": "view",
             "superFunction": null,
             "visibility": "public"
@@ -3521,7 +3983,7 @@
             "isConstructor": false,
             "isDeclaredConst": true,
             "modifiers": [],
-            "name": "getIndividuationHash",
+            "name": "getRFI",
             "nodeType": "FunctionDefinition",
             "parameters": {
               "id": 12105,
@@ -3530,33 +3992,31 @@
                 {
                   "constant": false,
                   "id": 12104,
-                  "name": "_individuation",
+                  "name": "_RFIid",
                   "nodeType": "VariableDeclaration",
                   "scope": 12109,
-                  "src": "1376:34:58",
+                  "src": "1392:14:58",
                   "stateVariable": false,
                   "storageLocation": "default",
                   "typeDescriptions": {
-                    "typeIdentifier": "t_struct$_Individuation_$11929_memory_ptr",
-                    "typeString": "struct Pando.Individuation"
+                    "typeIdentifier": "t_uint256",
+                    "typeString": "uint256"
                   },
                   "typeName": {
-                    "contractScope": null,
                     "id": 12103,
-                    "name": "Pando.Individuation",
-                    "nodeType": "UserDefinedTypeName",
-                    "referencedDeclaration": 11929,
-                    "src": "1376:19:58",
+                    "name": "uint256",
+                    "nodeType": "ElementaryTypeName",
+                    "src": "1392:7:58",
                     "typeDescriptions": {
-                      "typeIdentifier": "t_struct$_Individuation_$11929_storage_ptr",
-                      "typeString": "struct Pando.Individuation"
+                      "typeIdentifier": "t_uint256",
+                      "typeString": "uint256"
                     }
                   },
                   "value": null,
                   "visibility": "internal"
                 }
               ],
-              "src": "1375:36:58"
+              "src": "1391:16:58"
             },
             "payable": false,
             "returnParameters": {
@@ -3569,31 +4029,33 @@
                   "name": "",
                   "nodeType": "VariableDeclaration",
                   "scope": 12109,
-                  "src": "1433:7:58",
+                  "src": "1429:9:58",
                   "stateVariable": false,
                   "storageLocation": "default",
                   "typeDescriptions": {
-                    "typeIdentifier": "t_bytes32",
-                    "typeString": "bytes32"
+                    "typeIdentifier": "t_struct$_RFI_$11939_memory_ptr",
+                    "typeString": "struct Pando.RFI"
                   },
                   "typeName": {
+                    "contractScope": null,
                     "id": 12106,
-                    "name": "bytes32",
-                    "nodeType": "ElementaryTypeName",
-                    "src": "1433:7:58",
+                    "name": "Pando.RFI",
+                    "nodeType": "UserDefinedTypeName",
+                    "referencedDeclaration": 11939,
+                    "src": "1429:9:58",
                     "typeDescriptions": {
-                      "typeIdentifier": "t_bytes32",
-                      "typeString": "bytes32"
+                      "typeIdentifier": "t_struct$_RFI_$11939_storage_ptr",
+                      "typeString": "struct Pando.RFI"
                     }
                   },
                   "value": null,
                   "visibility": "internal"
                 }
               ],
-              "src": "1432:9:58"
+              "src": "1428:11:58"
             },
-            "scope": 12120,
-            "src": "1346:96:58",
+            "scope": 12145,
+            "src": "1376:64:58",
             "stateMutability": "view",
             "superFunction": null,
             "visibility": "public"
@@ -3601,87 +4063,244 @@
           {
             "body": null,
             "documentation": null,
-            "id": 12114,
+            "id": 12116,
             "implemented": false,
             "isConstructor": false,
             "isDeclaredConst": true,
             "modifiers": [],
-            "name": "head",
+            "name": "getRFL",
             "nodeType": "FunctionDefinition",
             "parameters": {
-              "id": 12110,
-              "nodeType": "ParameterList",
-              "parameters": [],
-              "src": "1460:2:58"
-            },
-            "payable": false,
-            "returnParameters": {
-              "id": 12113,
+              "id": 12112,
               "nodeType": "ParameterList",
               "parameters": [
                 {
                   "constant": false,
-                  "id": 12112,
-                  "name": "",
+                  "id": 12111,
+                  "name": "_RFLid",
                   "nodeType": "VariableDeclaration",
-                  "scope": 12114,
-                  "src": "1484:7:58",
+                  "scope": 12116,
+                  "src": "1461:14:58",
                   "stateVariable": false,
                   "storageLocation": "default",
                   "typeDescriptions": {
-                    "typeIdentifier": "t_bytes32",
-                    "typeString": "bytes32"
+                    "typeIdentifier": "t_uint256",
+                    "typeString": "uint256"
                   },
                   "typeName": {
-                    "id": 12111,
-                    "name": "bytes32",
+                    "id": 12110,
+                    "name": "uint256",
                     "nodeType": "ElementaryTypeName",
-                    "src": "1484:7:58",
+                    "src": "1461:7:58",
                     "typeDescriptions": {
-                      "typeIdentifier": "t_bytes32",
-                      "typeString": "bytes32"
+                      "typeIdentifier": "t_uint256",
+                      "typeString": "uint256"
                     }
                   },
                   "value": null,
                   "visibility": "internal"
                 }
               ],
-              "src": "1483:9:58"
+              "src": "1460:16:58"
             },
-            "scope": 12120,
-            "src": "1447:46:58",
-            "stateMutability": "view",
-            "superFunction": null,
-            "visibility": "public"
-          },
-          {
-            "body": null,
-            "documentation": null,
-            "id": 12119,
-            "implemented": false,
-            "isConstructor": false,
-            "isDeclaredConst": true,
-            "modifiers": [],
-            "name": "getHead",
-            "nodeType": "FunctionDefinition",
-            "parameters": {
+            "payable": false,
+            "returnParameters": {
               "id": 12115,
               "nodeType": "ParameterList",
-              "parameters": [],
-              "src": "1514:2:58"
+              "parameters": [
+                {
+                  "constant": false,
+                  "id": 12114,
+                  "name": "",
+                  "nodeType": "VariableDeclaration",
+                  "scope": 12116,
+                  "src": "1498:9:58",
+                  "stateVariable": false,
+                  "storageLocation": "default",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_struct$_RFL_$11957_memory_ptr",
+                    "typeString": "struct Pando.RFL"
+                  },
+                  "typeName": {
+                    "contractScope": null,
+                    "id": 12113,
+                    "name": "Pando.RFL",
+                    "nodeType": "UserDefinedTypeName",
+                    "referencedDeclaration": 11957,
+                    "src": "1498:9:58",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_struct$_RFL_$11957_storage_ptr",
+                      "typeString": "struct Pando.RFL"
+                    }
+                  },
+                  "value": null,
+                  "visibility": "internal"
+                }
+              ],
+              "src": "1497:11:58"
             },
-            "payable": false,
-            "returnParameters": {
-              "id": 12118,
+            "scope": 12145,
+            "src": "1445:64:58",
+            "stateMutability": "view",
+            "superFunction": null,
+            "visibility": "public"
+          },
+          {
+            "body": null,
+            "documentation": null,
+            "id": 12127,
+            "implemented": false,
+            "isConstructor": false,
+            "isDeclaredConst": true,
+            "modifiers": [],
+            "name": "getRFLLineage",
+            "nodeType": "FunctionDefinition",
+            "parameters": {
+              "id": 12119,
               "nodeType": "ParameterList",
               "parameters": [
                 {
                   "constant": false,
-                  "id": 12117,
-                  "name": "",
+                  "id": 12118,
+                  "name": "_RFLid",
                   "nodeType": "VariableDeclaration",
-                  "scope": 12119,
-                  "src": "1538:19:58",
+                  "scope": 12127,
+                  "src": "1537:14:58",
+                  "stateVariable": false,
+                  "storageLocation": "default",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_uint256",
+                    "typeString": "uint256"
+                  },
+                  "typeName": {
+                    "id": 12117,
+                    "name": "uint256",
+                    "nodeType": "ElementaryTypeName",
+                    "src": "1537:7:58",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_uint256",
+                      "typeString": "uint256"
+                    }
+                  },
+                  "value": null,
+                  "visibility": "internal"
+                }
+              ],
+              "src": "1536:16:58"
+            },
+            "payable": false,
+            "returnParameters": {
+              "id": 12126,
+              "nodeType": "ParameterList",
+              "parameters": [
+                {
+                  "constant": false,
+                  "id": 12121,
+                  "name": "destination",
+                  "nodeType": "VariableDeclaration",
+                  "scope": 12127,
+                  "src": "1574:19:58",
+                  "stateVariable": false,
+                  "storageLocation": "default",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_address",
+                    "typeString": "address"
+                  },
+                  "typeName": {
+                    "id": 12120,
+                    "name": "address",
+                    "nodeType": "ElementaryTypeName",
+                    "src": "1574:7:58",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_address",
+                      "typeString": "address"
+                    }
+                  },
+                  "value": null,
+                  "visibility": "internal"
+                },
+                {
+                  "constant": false,
+                  "id": 12123,
+                  "name": "minimum",
+                  "nodeType": "VariableDeclaration",
+                  "scope": 12127,
+                  "src": "1595:15:58",
+                  "stateVariable": false,
+                  "storageLocation": "default",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_uint256",
+                    "typeString": "uint256"
+                  },
+                  "typeName": {
+                    "id": 12122,
+                    "name": "uint256",
+                    "nodeType": "ElementaryTypeName",
+                    "src": "1595:7:58",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_uint256",
+                      "typeString": "uint256"
+                    }
+                  },
+                  "value": null,
+                  "visibility": "internal"
+                },
+                {
+                  "constant": false,
+                  "id": 12125,
+                  "name": "metadata",
+                  "nodeType": "VariableDeclaration",
+                  "scope": 12127,
+                  "src": "1612:15:58",
+                  "stateVariable": false,
+                  "storageLocation": "default",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_string_memory_ptr",
+                    "typeString": "string"
+                  },
+                  "typeName": {
+                    "id": 12124,
+                    "name": "string",
+                    "nodeType": "ElementaryTypeName",
+                    "src": "1612:6:58",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_string_storage_ptr",
+                      "typeString": "string"
+                    }
+                  },
+                  "value": null,
+                  "visibility": "internal"
+                }
+              ],
+              "src": "1573:55:58"
+            },
+            "scope": 12145,
+            "src": "1514:115:58",
+            "stateMutability": "view",
+            "superFunction": null,
+            "visibility": "public"
+          },
+          {
+            "body": null,
+            "documentation": null,
+            "id": 12134,
+            "implemented": false,
+            "isConstructor": false,
+            "isDeclaredConst": true,
+            "modifiers": [],
+            "name": "getIndividuationHash",
+            "nodeType": "FunctionDefinition",
+            "parameters": {
+              "id": 12130,
+              "nodeType": "ParameterList",
+              "parameters": [
+                {
+                  "constant": false,
+                  "id": 12129,
+                  "name": "_individuation",
+                  "nodeType": "VariableDeclaration",
+                  "scope": 12134,
+                  "src": "1664:34:58",
                   "stateVariable": false,
                   "storageLocation": "default",
                   "typeDescriptions": {
@@ -3690,11 +4309,11 @@
                   },
                   "typeName": {
                     "contractScope": null,
-                    "id": 12116,
+                    "id": 12128,
                     "name": "Pando.Individuation",
                     "nodeType": "UserDefinedTypeName",
                     "referencedDeclaration": 11929,
-                    "src": "1538:19:58",
+                    "src": "1664:19:58",
                     "typeDescriptions": {
                       "typeIdentifier": "t_struct$_Individuation_$11929_storage_ptr",
                       "typeString": "struct Pando.Individuation"
@@ -3704,20 +4323,168 @@
                   "visibility": "internal"
                 }
               ],
-              "src": "1537:21:58"
+              "src": "1663:36:58"
             },
-            "scope": 12120,
-            "src": "1498:61:58",
+            "payable": false,
+            "returnParameters": {
+              "id": 12133,
+              "nodeType": "ParameterList",
+              "parameters": [
+                {
+                  "constant": false,
+                  "id": 12132,
+                  "name": "",
+                  "nodeType": "VariableDeclaration",
+                  "scope": 12134,
+                  "src": "1721:7:58",
+                  "stateVariable": false,
+                  "storageLocation": "default",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_bytes32",
+                    "typeString": "bytes32"
+                  },
+                  "typeName": {
+                    "id": 12131,
+                    "name": "bytes32",
+                    "nodeType": "ElementaryTypeName",
+                    "src": "1721:7:58",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_bytes32",
+                      "typeString": "bytes32"
+                    }
+                  },
+                  "value": null,
+                  "visibility": "internal"
+                }
+              ],
+              "src": "1720:9:58"
+            },
+            "scope": 12145,
+            "src": "1634:96:58",
+            "stateMutability": "view",
+            "superFunction": null,
+            "visibility": "public"
+          },
+          {
+            "body": null,
+            "documentation": null,
+            "id": 12139,
+            "implemented": false,
+            "isConstructor": false,
+            "isDeclaredConst": true,
+            "modifiers": [],
+            "name": "head",
+            "nodeType": "FunctionDefinition",
+            "parameters": {
+              "id": 12135,
+              "nodeType": "ParameterList",
+              "parameters": [],
+              "src": "1748:2:58"
+            },
+            "payable": false,
+            "returnParameters": {
+              "id": 12138,
+              "nodeType": "ParameterList",
+              "parameters": [
+                {
+                  "constant": false,
+                  "id": 12137,
+                  "name": "",
+                  "nodeType": "VariableDeclaration",
+                  "scope": 12139,
+                  "src": "1772:7:58",
+                  "stateVariable": false,
+                  "storageLocation": "default",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_bytes32",
+                    "typeString": "bytes32"
+                  },
+                  "typeName": {
+                    "id": 12136,
+                    "name": "bytes32",
+                    "nodeType": "ElementaryTypeName",
+                    "src": "1772:7:58",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_bytes32",
+                      "typeString": "bytes32"
+                    }
+                  },
+                  "value": null,
+                  "visibility": "internal"
+                }
+              ],
+              "src": "1771:9:58"
+            },
+            "scope": 12145,
+            "src": "1735:46:58",
+            "stateMutability": "view",
+            "superFunction": null,
+            "visibility": "public"
+          },
+          {
+            "body": null,
+            "documentation": null,
+            "id": 12144,
+            "implemented": false,
+            "isConstructor": false,
+            "isDeclaredConst": true,
+            "modifiers": [],
+            "name": "getHead",
+            "nodeType": "FunctionDefinition",
+            "parameters": {
+              "id": 12140,
+              "nodeType": "ParameterList",
+              "parameters": [],
+              "src": "1802:2:58"
+            },
+            "payable": false,
+            "returnParameters": {
+              "id": 12143,
+              "nodeType": "ParameterList",
+              "parameters": [
+                {
+                  "constant": false,
+                  "id": 12142,
+                  "name": "",
+                  "nodeType": "VariableDeclaration",
+                  "scope": 12144,
+                  "src": "1826:19:58",
+                  "stateVariable": false,
+                  "storageLocation": "default",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_struct$_Individuation_$11929_memory_ptr",
+                    "typeString": "struct Pando.Individuation"
+                  },
+                  "typeName": {
+                    "contractScope": null,
+                    "id": 12141,
+                    "name": "Pando.Individuation",
+                    "nodeType": "UserDefinedTypeName",
+                    "referencedDeclaration": 11929,
+                    "src": "1826:19:58",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_struct$_Individuation_$11929_storage_ptr",
+                      "typeString": "struct Pando.Individuation"
+                    }
+                  },
+                  "value": null,
+                  "visibility": "internal"
+                }
+              ],
+              "src": "1825:21:58"
+            },
+            "scope": 12145,
+            "src": "1786:61:58",
             "stateMutability": "view",
             "superFunction": null,
             "visibility": "public"
           }
         ],
-        "scope": 12121,
-        "src": "89:1472:58"
+        "scope": 12146,
+        "src": "89:1760:58"
       }
     ],
-    "src": "0:1562:58"
+    "src": "0:1850:58"
   },
   "compiler": {
     "name": "solc",
@@ -3725,7 +4492,7 @@
   },
   "networks": {},
   "schemaVersion": "3.0.0-beta.2",
-  "updatedAt": "2019-01-12T11:43:17.702Z",
+  "updatedAt": "2019-01-16T10:35:39.922Z",
   "devdoc": {
     "methods": {}
   },

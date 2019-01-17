@@ -1,0 +1,2625 @@
+{
+  "contractName": "IPandoScheme",
+  "abi": [
+    {
+      "anonymous": false,
+      "inputs": [
+        {
+          "indexed": true,
+          "name": "organism",
+          "type": "address"
+        },
+        {
+          "indexed": true,
+          "name": "id",
+          "type": "uint256"
+        },
+        {
+          "indexed": false,
+          "name": "sender",
+          "type": "address"
+        }
+      ],
+      "name": "CreateRFI",
+      "type": "event"
+    },
+    {
+      "anonymous": false,
+      "inputs": [
+        {
+          "indexed": true,
+          "name": "organism",
+          "type": "address"
+        },
+        {
+          "indexed": true,
+          "name": "id",
+          "type": "uint256"
+        },
+        {
+          "indexed": false,
+          "name": "sender",
+          "type": "address"
+        }
+      ],
+      "name": "MergeRFI",
+      "type": "event"
+    },
+    {
+      "anonymous": false,
+      "inputs": [
+        {
+          "indexed": true,
+          "name": "organism",
+          "type": "address"
+        },
+        {
+          "indexed": true,
+          "name": "id",
+          "type": "uint256"
+        },
+        {
+          "indexed": false,
+          "name": "sender",
+          "type": "address"
+        }
+      ],
+      "name": "RejectRFI",
+      "type": "event"
+    },
+    {
+      "anonymous": false,
+      "inputs": [
+        {
+          "indexed": true,
+          "name": "organism",
+          "type": "address"
+        },
+        {
+          "indexed": true,
+          "name": "id",
+          "type": "uint256"
+        },
+        {
+          "indexed": false,
+          "name": "sender",
+          "type": "address"
+        }
+      ],
+      "name": "CreateRFL",
+      "type": "event"
+    },
+    {
+      "anonymous": false,
+      "inputs": [
+        {
+          "indexed": true,
+          "name": "organism",
+          "type": "address"
+        },
+        {
+          "indexed": true,
+          "name": "id",
+          "type": "uint256"
+        },
+        {
+          "indexed": false,
+          "name": "value",
+          "type": "uint256"
+        },
+        {
+          "indexed": false,
+          "name": "sender",
+          "type": "address"
+        }
+      ],
+      "name": "AcceptRFL",
+      "type": "event"
+    },
+    {
+      "anonymous": false,
+      "inputs": [
+        {
+          "indexed": true,
+          "name": "organism",
+          "type": "address"
+        },
+        {
+          "indexed": true,
+          "name": "id",
+          "type": "uint256"
+        },
+        {
+          "indexed": false,
+          "name": "sender",
+          "type": "address"
+        }
+      ],
+      "name": "RejectRFL",
+      "type": "event"
+    },
+    {
+      "constant": false,
+      "inputs": [
+        {
+          "name": "_organism",
+          "type": "address"
+        },
+        {
+          "components": [
+            {
+              "name": "metadata",
+              "type": "string"
+            }
+          ],
+          "name": "_individuation",
+          "type": "tuple"
+        },
+        {
+          "components": [
+            {
+              "name": "destination",
+              "type": "address"
+            },
+            {
+              "name": "minimum",
+              "type": "uint256"
+            },
+            {
+              "name": "metadata",
+              "type": "string"
+            }
+          ],
+          "name": "_lineages",
+          "type": "tuple[]"
+        }
+      ],
+      "name": "createRFI",
+      "outputs": [],
+      "payable": false,
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "constant": false,
+      "inputs": [
+        {
+          "name": "_organism",
+          "type": "address"
+        },
+        {
+          "name": "_RFIid",
+          "type": "uint256"
+        }
+      ],
+      "name": "mergeRFI",
+      "outputs": [],
+      "payable": false,
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "constant": false,
+      "inputs": [
+        {
+          "name": "_organism",
+          "type": "address"
+        },
+        {
+          "name": "_RFIid",
+          "type": "uint256"
+        }
+      ],
+      "name": "rejectRFI",
+      "outputs": [],
+      "payable": false,
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "constant": false,
+      "inputs": [
+        {
+          "name": "_organism",
+          "type": "address"
+        },
+        {
+          "name": "_RFLid",
+          "type": "uint256"
+        },
+        {
+          "name": "_value",
+          "type": "uint256"
+        }
+      ],
+      "name": "acceptRFL",
+      "outputs": [],
+      "payable": false,
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "constant": false,
+      "inputs": [
+        {
+          "name": "_organism",
+          "type": "address"
+        },
+        {
+          "name": "_RFLid",
+          "type": "uint256"
+        }
+      ],
+      "name": "rejectRFL",
+      "outputs": [],
+      "payable": false,
+      "stateMutability": "nonpayable",
+      "type": "function"
+    }
+  ],
+  "bytecode": "0x",
+  "deployedBytecode": "0x",
+  "sourceMap": "",
+  "deployedSourceMap": "",
+  "source": "pragma solidity ^0.4.24;\npragma experimental ABIEncoderV2;\n\nimport \"../lib/Pando.sol\";\nimport \"../organism/IOrganism.sol\";\n\n\ncontract IPandoScheme {\n    event CreateRFI(IOrganism indexed organism, uint256 indexed id, address sender);\n    event MergeRFI(IOrganism indexed organism, uint256 indexed id, address sender);\n    event RejectRFI(IOrganism indexed organism, uint256 indexed id, address sender);\n    event CreateRFL(IOrganism indexed organism, uint256 indexed id, address sender);\n    event AcceptRFL(IOrganism indexed organism, uint256 indexed id, uint256 value, address sender);\n    event RejectRFL(IOrganism indexed organism, uint256 indexed id, address sender);\n\n    function createRFI(IOrganism _organism, Pando.IIndividuation _individuation, Pando.ILineage[] _lineages) public;\n    function mergeRFI(IOrganism _organism, uint256 _RFIid) public;\n    function rejectRFI(IOrganism _organism, uint256 _RFIid) public;\n    function acceptRFL(IOrganism _organism, uint256 _RFLid, uint256 _value) public;\n    function rejectRFL(IOrganism _organism, uint256 _RFLid) public;\n}\n",
+  "sourcePath": "@pando/core/contracts/scheme/IPandoScheme.sol",
+  "ast": {
+    "absolutePath": "@pando/core/contracts/scheme/IPandoScheme.sol",
+    "exportedSymbols": {
+      "IPandoScheme": [
+        12045
+      ]
+    },
+    "id": 12046,
+    "nodeType": "SourceUnit",
+    "nodes": [
+      {
+        "id": 11951,
+        "literals": [
+          "solidity",
+          "^",
+          "0.4",
+          ".24"
+        ],
+        "nodeType": "PragmaDirective",
+        "src": "0:24:62"
+      },
+      {
+        "id": 11952,
+        "literals": [
+          "experimental",
+          "ABIEncoderV2"
+        ],
+        "nodeType": "PragmaDirective",
+        "src": "25:33:62"
+      },
+      {
+        "absolutePath": "@pando/core/contracts/lib/Pando.sol",
+        "file": "../lib/Pando.sol",
+        "id": 11953,
+        "nodeType": "ImportDirective",
+        "scope": 12046,
+        "sourceUnit": 11682,
+        "src": "60:26:62",
+        "symbolAliases": [],
+        "unitAlias": ""
+      },
+      {
+        "absolutePath": "@pando/core/contracts/organism/IOrganism.sol",
+        "file": "../organism/IOrganism.sol",
+        "id": 11954,
+        "nodeType": "ImportDirective",
+        "scope": 12046,
+        "sourceUnit": 11950,
+        "src": "87:35:62",
+        "symbolAliases": [],
+        "unitAlias": ""
+      },
+      {
+        "baseContracts": [],
+        "contractDependencies": [],
+        "contractKind": "contract",
+        "documentation": null,
+        "fullyImplemented": false,
+        "id": 12045,
+        "linearizedBaseContracts": [
+          12045
+        ],
+        "name": "IPandoScheme",
+        "nodeType": "ContractDefinition",
+        "nodes": [
+          {
+            "anonymous": false,
+            "documentation": null,
+            "id": 11962,
+            "name": "CreateRFI",
+            "nodeType": "EventDefinition",
+            "parameters": {
+              "id": 11961,
+              "nodeType": "ParameterList",
+              "parameters": [
+                {
+                  "constant": false,
+                  "id": 11956,
+                  "indexed": true,
+                  "name": "organism",
+                  "nodeType": "VariableDeclaration",
+                  "scope": 11962,
+                  "src": "169:26:62",
+                  "stateVariable": false,
+                  "storageLocation": "default",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_contract$_IOrganism_$11949",
+                    "typeString": "contract IOrganism"
+                  },
+                  "typeName": {
+                    "contractScope": null,
+                    "id": 11955,
+                    "name": "IOrganism",
+                    "nodeType": "UserDefinedTypeName",
+                    "referencedDeclaration": 11949,
+                    "src": "169:9:62",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_contract$_IOrganism_$11949",
+                      "typeString": "contract IOrganism"
+                    }
+                  },
+                  "value": null,
+                  "visibility": "internal"
+                },
+                {
+                  "constant": false,
+                  "id": 11958,
+                  "indexed": true,
+                  "name": "id",
+                  "nodeType": "VariableDeclaration",
+                  "scope": 11962,
+                  "src": "197:18:62",
+                  "stateVariable": false,
+                  "storageLocation": "default",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_uint256",
+                    "typeString": "uint256"
+                  },
+                  "typeName": {
+                    "id": 11957,
+                    "name": "uint256",
+                    "nodeType": "ElementaryTypeName",
+                    "src": "197:7:62",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_uint256",
+                      "typeString": "uint256"
+                    }
+                  },
+                  "value": null,
+                  "visibility": "internal"
+                },
+                {
+                  "constant": false,
+                  "id": 11960,
+                  "indexed": false,
+                  "name": "sender",
+                  "nodeType": "VariableDeclaration",
+                  "scope": 11962,
+                  "src": "217:14:62",
+                  "stateVariable": false,
+                  "storageLocation": "default",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_address",
+                    "typeString": "address"
+                  },
+                  "typeName": {
+                    "id": 11959,
+                    "name": "address",
+                    "nodeType": "ElementaryTypeName",
+                    "src": "217:7:62",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_address",
+                      "typeString": "address"
+                    }
+                  },
+                  "value": null,
+                  "visibility": "internal"
+                }
+              ],
+              "src": "168:64:62"
+            },
+            "src": "153:80:62"
+          },
+          {
+            "anonymous": false,
+            "documentation": null,
+            "id": 11970,
+            "name": "MergeRFI",
+            "nodeType": "EventDefinition",
+            "parameters": {
+              "id": 11969,
+              "nodeType": "ParameterList",
+              "parameters": [
+                {
+                  "constant": false,
+                  "id": 11964,
+                  "indexed": true,
+                  "name": "organism",
+                  "nodeType": "VariableDeclaration",
+                  "scope": 11970,
+                  "src": "253:26:62",
+                  "stateVariable": false,
+                  "storageLocation": "default",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_contract$_IOrganism_$11949",
+                    "typeString": "contract IOrganism"
+                  },
+                  "typeName": {
+                    "contractScope": null,
+                    "id": 11963,
+                    "name": "IOrganism",
+                    "nodeType": "UserDefinedTypeName",
+                    "referencedDeclaration": 11949,
+                    "src": "253:9:62",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_contract$_IOrganism_$11949",
+                      "typeString": "contract IOrganism"
+                    }
+                  },
+                  "value": null,
+                  "visibility": "internal"
+                },
+                {
+                  "constant": false,
+                  "id": 11966,
+                  "indexed": true,
+                  "name": "id",
+                  "nodeType": "VariableDeclaration",
+                  "scope": 11970,
+                  "src": "281:18:62",
+                  "stateVariable": false,
+                  "storageLocation": "default",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_uint256",
+                    "typeString": "uint256"
+                  },
+                  "typeName": {
+                    "id": 11965,
+                    "name": "uint256",
+                    "nodeType": "ElementaryTypeName",
+                    "src": "281:7:62",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_uint256",
+                      "typeString": "uint256"
+                    }
+                  },
+                  "value": null,
+                  "visibility": "internal"
+                },
+                {
+                  "constant": false,
+                  "id": 11968,
+                  "indexed": false,
+                  "name": "sender",
+                  "nodeType": "VariableDeclaration",
+                  "scope": 11970,
+                  "src": "301:14:62",
+                  "stateVariable": false,
+                  "storageLocation": "default",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_address",
+                    "typeString": "address"
+                  },
+                  "typeName": {
+                    "id": 11967,
+                    "name": "address",
+                    "nodeType": "ElementaryTypeName",
+                    "src": "301:7:62",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_address",
+                      "typeString": "address"
+                    }
+                  },
+                  "value": null,
+                  "visibility": "internal"
+                }
+              ],
+              "src": "252:64:62"
+            },
+            "src": "238:79:62"
+          },
+          {
+            "anonymous": false,
+            "documentation": null,
+            "id": 11978,
+            "name": "RejectRFI",
+            "nodeType": "EventDefinition",
+            "parameters": {
+              "id": 11977,
+              "nodeType": "ParameterList",
+              "parameters": [
+                {
+                  "constant": false,
+                  "id": 11972,
+                  "indexed": true,
+                  "name": "organism",
+                  "nodeType": "VariableDeclaration",
+                  "scope": 11978,
+                  "src": "338:26:62",
+                  "stateVariable": false,
+                  "storageLocation": "default",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_contract$_IOrganism_$11949",
+                    "typeString": "contract IOrganism"
+                  },
+                  "typeName": {
+                    "contractScope": null,
+                    "id": 11971,
+                    "name": "IOrganism",
+                    "nodeType": "UserDefinedTypeName",
+                    "referencedDeclaration": 11949,
+                    "src": "338:9:62",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_contract$_IOrganism_$11949",
+                      "typeString": "contract IOrganism"
+                    }
+                  },
+                  "value": null,
+                  "visibility": "internal"
+                },
+                {
+                  "constant": false,
+                  "id": 11974,
+                  "indexed": true,
+                  "name": "id",
+                  "nodeType": "VariableDeclaration",
+                  "scope": 11978,
+                  "src": "366:18:62",
+                  "stateVariable": false,
+                  "storageLocation": "default",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_uint256",
+                    "typeString": "uint256"
+                  },
+                  "typeName": {
+                    "id": 11973,
+                    "name": "uint256",
+                    "nodeType": "ElementaryTypeName",
+                    "src": "366:7:62",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_uint256",
+                      "typeString": "uint256"
+                    }
+                  },
+                  "value": null,
+                  "visibility": "internal"
+                },
+                {
+                  "constant": false,
+                  "id": 11976,
+                  "indexed": false,
+                  "name": "sender",
+                  "nodeType": "VariableDeclaration",
+                  "scope": 11978,
+                  "src": "386:14:62",
+                  "stateVariable": false,
+                  "storageLocation": "default",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_address",
+                    "typeString": "address"
+                  },
+                  "typeName": {
+                    "id": 11975,
+                    "name": "address",
+                    "nodeType": "ElementaryTypeName",
+                    "src": "386:7:62",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_address",
+                      "typeString": "address"
+                    }
+                  },
+                  "value": null,
+                  "visibility": "internal"
+                }
+              ],
+              "src": "337:64:62"
+            },
+            "src": "322:80:62"
+          },
+          {
+            "anonymous": false,
+            "documentation": null,
+            "id": 11986,
+            "name": "CreateRFL",
+            "nodeType": "EventDefinition",
+            "parameters": {
+              "id": 11985,
+              "nodeType": "ParameterList",
+              "parameters": [
+                {
+                  "constant": false,
+                  "id": 11980,
+                  "indexed": true,
+                  "name": "organism",
+                  "nodeType": "VariableDeclaration",
+                  "scope": 11986,
+                  "src": "423:26:62",
+                  "stateVariable": false,
+                  "storageLocation": "default",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_contract$_IOrganism_$11949",
+                    "typeString": "contract IOrganism"
+                  },
+                  "typeName": {
+                    "contractScope": null,
+                    "id": 11979,
+                    "name": "IOrganism",
+                    "nodeType": "UserDefinedTypeName",
+                    "referencedDeclaration": 11949,
+                    "src": "423:9:62",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_contract$_IOrganism_$11949",
+                      "typeString": "contract IOrganism"
+                    }
+                  },
+                  "value": null,
+                  "visibility": "internal"
+                },
+                {
+                  "constant": false,
+                  "id": 11982,
+                  "indexed": true,
+                  "name": "id",
+                  "nodeType": "VariableDeclaration",
+                  "scope": 11986,
+                  "src": "451:18:62",
+                  "stateVariable": false,
+                  "storageLocation": "default",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_uint256",
+                    "typeString": "uint256"
+                  },
+                  "typeName": {
+                    "id": 11981,
+                    "name": "uint256",
+                    "nodeType": "ElementaryTypeName",
+                    "src": "451:7:62",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_uint256",
+                      "typeString": "uint256"
+                    }
+                  },
+                  "value": null,
+                  "visibility": "internal"
+                },
+                {
+                  "constant": false,
+                  "id": 11984,
+                  "indexed": false,
+                  "name": "sender",
+                  "nodeType": "VariableDeclaration",
+                  "scope": 11986,
+                  "src": "471:14:62",
+                  "stateVariable": false,
+                  "storageLocation": "default",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_address",
+                    "typeString": "address"
+                  },
+                  "typeName": {
+                    "id": 11983,
+                    "name": "address",
+                    "nodeType": "ElementaryTypeName",
+                    "src": "471:7:62",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_address",
+                      "typeString": "address"
+                    }
+                  },
+                  "value": null,
+                  "visibility": "internal"
+                }
+              ],
+              "src": "422:64:62"
+            },
+            "src": "407:80:62"
+          },
+          {
+            "anonymous": false,
+            "documentation": null,
+            "id": 11996,
+            "name": "AcceptRFL",
+            "nodeType": "EventDefinition",
+            "parameters": {
+              "id": 11995,
+              "nodeType": "ParameterList",
+              "parameters": [
+                {
+                  "constant": false,
+                  "id": 11988,
+                  "indexed": true,
+                  "name": "organism",
+                  "nodeType": "VariableDeclaration",
+                  "scope": 11996,
+                  "src": "508:26:62",
+                  "stateVariable": false,
+                  "storageLocation": "default",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_contract$_IOrganism_$11949",
+                    "typeString": "contract IOrganism"
+                  },
+                  "typeName": {
+                    "contractScope": null,
+                    "id": 11987,
+                    "name": "IOrganism",
+                    "nodeType": "UserDefinedTypeName",
+                    "referencedDeclaration": 11949,
+                    "src": "508:9:62",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_contract$_IOrganism_$11949",
+                      "typeString": "contract IOrganism"
+                    }
+                  },
+                  "value": null,
+                  "visibility": "internal"
+                },
+                {
+                  "constant": false,
+                  "id": 11990,
+                  "indexed": true,
+                  "name": "id",
+                  "nodeType": "VariableDeclaration",
+                  "scope": 11996,
+                  "src": "536:18:62",
+                  "stateVariable": false,
+                  "storageLocation": "default",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_uint256",
+                    "typeString": "uint256"
+                  },
+                  "typeName": {
+                    "id": 11989,
+                    "name": "uint256",
+                    "nodeType": "ElementaryTypeName",
+                    "src": "536:7:62",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_uint256",
+                      "typeString": "uint256"
+                    }
+                  },
+                  "value": null,
+                  "visibility": "internal"
+                },
+                {
+                  "constant": false,
+                  "id": 11992,
+                  "indexed": false,
+                  "name": "value",
+                  "nodeType": "VariableDeclaration",
+                  "scope": 11996,
+                  "src": "556:13:62",
+                  "stateVariable": false,
+                  "storageLocation": "default",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_uint256",
+                    "typeString": "uint256"
+                  },
+                  "typeName": {
+                    "id": 11991,
+                    "name": "uint256",
+                    "nodeType": "ElementaryTypeName",
+                    "src": "556:7:62",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_uint256",
+                      "typeString": "uint256"
+                    }
+                  },
+                  "value": null,
+                  "visibility": "internal"
+                },
+                {
+                  "constant": false,
+                  "id": 11994,
+                  "indexed": false,
+                  "name": "sender",
+                  "nodeType": "VariableDeclaration",
+                  "scope": 11996,
+                  "src": "571:14:62",
+                  "stateVariable": false,
+                  "storageLocation": "default",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_address",
+                    "typeString": "address"
+                  },
+                  "typeName": {
+                    "id": 11993,
+                    "name": "address",
+                    "nodeType": "ElementaryTypeName",
+                    "src": "571:7:62",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_address",
+                      "typeString": "address"
+                    }
+                  },
+                  "value": null,
+                  "visibility": "internal"
+                }
+              ],
+              "src": "507:79:62"
+            },
+            "src": "492:95:62"
+          },
+          {
+            "anonymous": false,
+            "documentation": null,
+            "id": 12004,
+            "name": "RejectRFL",
+            "nodeType": "EventDefinition",
+            "parameters": {
+              "id": 12003,
+              "nodeType": "ParameterList",
+              "parameters": [
+                {
+                  "constant": false,
+                  "id": 11998,
+                  "indexed": true,
+                  "name": "organism",
+                  "nodeType": "VariableDeclaration",
+                  "scope": 12004,
+                  "src": "608:26:62",
+                  "stateVariable": false,
+                  "storageLocation": "default",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_contract$_IOrganism_$11949",
+                    "typeString": "contract IOrganism"
+                  },
+                  "typeName": {
+                    "contractScope": null,
+                    "id": 11997,
+                    "name": "IOrganism",
+                    "nodeType": "UserDefinedTypeName",
+                    "referencedDeclaration": 11949,
+                    "src": "608:9:62",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_contract$_IOrganism_$11949",
+                      "typeString": "contract IOrganism"
+                    }
+                  },
+                  "value": null,
+                  "visibility": "internal"
+                },
+                {
+                  "constant": false,
+                  "id": 12000,
+                  "indexed": true,
+                  "name": "id",
+                  "nodeType": "VariableDeclaration",
+                  "scope": 12004,
+                  "src": "636:18:62",
+                  "stateVariable": false,
+                  "storageLocation": "default",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_uint256",
+                    "typeString": "uint256"
+                  },
+                  "typeName": {
+                    "id": 11999,
+                    "name": "uint256",
+                    "nodeType": "ElementaryTypeName",
+                    "src": "636:7:62",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_uint256",
+                      "typeString": "uint256"
+                    }
+                  },
+                  "value": null,
+                  "visibility": "internal"
+                },
+                {
+                  "constant": false,
+                  "id": 12002,
+                  "indexed": false,
+                  "name": "sender",
+                  "nodeType": "VariableDeclaration",
+                  "scope": 12004,
+                  "src": "656:14:62",
+                  "stateVariable": false,
+                  "storageLocation": "default",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_address",
+                    "typeString": "address"
+                  },
+                  "typeName": {
+                    "id": 12001,
+                    "name": "address",
+                    "nodeType": "ElementaryTypeName",
+                    "src": "656:7:62",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_address",
+                      "typeString": "address"
+                    }
+                  },
+                  "value": null,
+                  "visibility": "internal"
+                }
+              ],
+              "src": "607:64:62"
+            },
+            "src": "592:80:62"
+          },
+          {
+            "body": null,
+            "documentation": null,
+            "id": 12014,
+            "implemented": false,
+            "isConstructor": false,
+            "isDeclaredConst": false,
+            "modifiers": [],
+            "name": "createRFI",
+            "nodeType": "FunctionDefinition",
+            "parameters": {
+              "id": 12012,
+              "nodeType": "ParameterList",
+              "parameters": [
+                {
+                  "constant": false,
+                  "id": 12006,
+                  "name": "_organism",
+                  "nodeType": "VariableDeclaration",
+                  "scope": 12014,
+                  "src": "697:19:62",
+                  "stateVariable": false,
+                  "storageLocation": "default",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_contract$_IOrganism_$11949",
+                    "typeString": "contract IOrganism"
+                  },
+                  "typeName": {
+                    "contractScope": null,
+                    "id": 12005,
+                    "name": "IOrganism",
+                    "nodeType": "UserDefinedTypeName",
+                    "referencedDeclaration": 11949,
+                    "src": "697:9:62",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_contract$_IOrganism_$11949",
+                      "typeString": "contract IOrganism"
+                    }
+                  },
+                  "value": null,
+                  "visibility": "internal"
+                },
+                {
+                  "constant": false,
+                  "id": 12008,
+                  "name": "_individuation",
+                  "nodeType": "VariableDeclaration",
+                  "scope": 12014,
+                  "src": "718:35:62",
+                  "stateVariable": false,
+                  "storageLocation": "default",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_struct$_IIndividuation_$11625_memory_ptr",
+                    "typeString": "struct Pando.IIndividuation"
+                  },
+                  "typeName": {
+                    "contractScope": null,
+                    "id": 12007,
+                    "name": "Pando.IIndividuation",
+                    "nodeType": "UserDefinedTypeName",
+                    "referencedDeclaration": 11625,
+                    "src": "718:20:62",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_struct$_IIndividuation_$11625_storage_ptr",
+                      "typeString": "struct Pando.IIndividuation"
+                    }
+                  },
+                  "value": null,
+                  "visibility": "internal"
+                },
+                {
+                  "constant": false,
+                  "id": 12011,
+                  "name": "_lineages",
+                  "nodeType": "VariableDeclaration",
+                  "scope": 12014,
+                  "src": "755:26:62",
+                  "stateVariable": false,
+                  "storageLocation": "default",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_array$_t_struct$_ILineage_$11647_memory_$dyn_memory_ptr",
+                    "typeString": "struct Pando.ILineage[]"
+                  },
+                  "typeName": {
+                    "baseType": {
+                      "contractScope": null,
+                      "id": 12009,
+                      "name": "Pando.ILineage",
+                      "nodeType": "UserDefinedTypeName",
+                      "referencedDeclaration": 11647,
+                      "src": "755:14:62",
+                      "typeDescriptions": {
+                        "typeIdentifier": "t_struct$_ILineage_$11647_storage_ptr",
+                        "typeString": "struct Pando.ILineage"
+                      }
+                    },
+                    "id": 12010,
+                    "length": null,
+                    "nodeType": "ArrayTypeName",
+                    "src": "755:16:62",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_array$_t_struct$_ILineage_$11647_storage_$dyn_storage_ptr",
+                      "typeString": "struct Pando.ILineage[]"
+                    }
+                  },
+                  "value": null,
+                  "visibility": "internal"
+                }
+              ],
+              "src": "696:86:62"
+            },
+            "payable": false,
+            "returnParameters": {
+              "id": 12013,
+              "nodeType": "ParameterList",
+              "parameters": [],
+              "src": "789:0:62"
+            },
+            "scope": 12045,
+            "src": "678:112:62",
+            "stateMutability": "nonpayable",
+            "superFunction": null,
+            "visibility": "public"
+          },
+          {
+            "body": null,
+            "documentation": null,
+            "id": 12021,
+            "implemented": false,
+            "isConstructor": false,
+            "isDeclaredConst": false,
+            "modifiers": [],
+            "name": "mergeRFI",
+            "nodeType": "FunctionDefinition",
+            "parameters": {
+              "id": 12019,
+              "nodeType": "ParameterList",
+              "parameters": [
+                {
+                  "constant": false,
+                  "id": 12016,
+                  "name": "_organism",
+                  "nodeType": "VariableDeclaration",
+                  "scope": 12021,
+                  "src": "813:19:62",
+                  "stateVariable": false,
+                  "storageLocation": "default",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_contract$_IOrganism_$11949",
+                    "typeString": "contract IOrganism"
+                  },
+                  "typeName": {
+                    "contractScope": null,
+                    "id": 12015,
+                    "name": "IOrganism",
+                    "nodeType": "UserDefinedTypeName",
+                    "referencedDeclaration": 11949,
+                    "src": "813:9:62",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_contract$_IOrganism_$11949",
+                      "typeString": "contract IOrganism"
+                    }
+                  },
+                  "value": null,
+                  "visibility": "internal"
+                },
+                {
+                  "constant": false,
+                  "id": 12018,
+                  "name": "_RFIid",
+                  "nodeType": "VariableDeclaration",
+                  "scope": 12021,
+                  "src": "834:14:62",
+                  "stateVariable": false,
+                  "storageLocation": "default",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_uint256",
+                    "typeString": "uint256"
+                  },
+                  "typeName": {
+                    "id": 12017,
+                    "name": "uint256",
+                    "nodeType": "ElementaryTypeName",
+                    "src": "834:7:62",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_uint256",
+                      "typeString": "uint256"
+                    }
+                  },
+                  "value": null,
+                  "visibility": "internal"
+                }
+              ],
+              "src": "812:37:62"
+            },
+            "payable": false,
+            "returnParameters": {
+              "id": 12020,
+              "nodeType": "ParameterList",
+              "parameters": [],
+              "src": "856:0:62"
+            },
+            "scope": 12045,
+            "src": "795:62:62",
+            "stateMutability": "nonpayable",
+            "superFunction": null,
+            "visibility": "public"
+          },
+          {
+            "body": null,
+            "documentation": null,
+            "id": 12028,
+            "implemented": false,
+            "isConstructor": false,
+            "isDeclaredConst": false,
+            "modifiers": [],
+            "name": "rejectRFI",
+            "nodeType": "FunctionDefinition",
+            "parameters": {
+              "id": 12026,
+              "nodeType": "ParameterList",
+              "parameters": [
+                {
+                  "constant": false,
+                  "id": 12023,
+                  "name": "_organism",
+                  "nodeType": "VariableDeclaration",
+                  "scope": 12028,
+                  "src": "881:19:62",
+                  "stateVariable": false,
+                  "storageLocation": "default",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_contract$_IOrganism_$11949",
+                    "typeString": "contract IOrganism"
+                  },
+                  "typeName": {
+                    "contractScope": null,
+                    "id": 12022,
+                    "name": "IOrganism",
+                    "nodeType": "UserDefinedTypeName",
+                    "referencedDeclaration": 11949,
+                    "src": "881:9:62",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_contract$_IOrganism_$11949",
+                      "typeString": "contract IOrganism"
+                    }
+                  },
+                  "value": null,
+                  "visibility": "internal"
+                },
+                {
+                  "constant": false,
+                  "id": 12025,
+                  "name": "_RFIid",
+                  "nodeType": "VariableDeclaration",
+                  "scope": 12028,
+                  "src": "902:14:62",
+                  "stateVariable": false,
+                  "storageLocation": "default",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_uint256",
+                    "typeString": "uint256"
+                  },
+                  "typeName": {
+                    "id": 12024,
+                    "name": "uint256",
+                    "nodeType": "ElementaryTypeName",
+                    "src": "902:7:62",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_uint256",
+                      "typeString": "uint256"
+                    }
+                  },
+                  "value": null,
+                  "visibility": "internal"
+                }
+              ],
+              "src": "880:37:62"
+            },
+            "payable": false,
+            "returnParameters": {
+              "id": 12027,
+              "nodeType": "ParameterList",
+              "parameters": [],
+              "src": "924:0:62"
+            },
+            "scope": 12045,
+            "src": "862:63:62",
+            "stateMutability": "nonpayable",
+            "superFunction": null,
+            "visibility": "public"
+          },
+          {
+            "body": null,
+            "documentation": null,
+            "id": 12037,
+            "implemented": false,
+            "isConstructor": false,
+            "isDeclaredConst": false,
+            "modifiers": [],
+            "name": "acceptRFL",
+            "nodeType": "FunctionDefinition",
+            "parameters": {
+              "id": 12035,
+              "nodeType": "ParameterList",
+              "parameters": [
+                {
+                  "constant": false,
+                  "id": 12030,
+                  "name": "_organism",
+                  "nodeType": "VariableDeclaration",
+                  "scope": 12037,
+                  "src": "949:19:62",
+                  "stateVariable": false,
+                  "storageLocation": "default",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_contract$_IOrganism_$11949",
+                    "typeString": "contract IOrganism"
+                  },
+                  "typeName": {
+                    "contractScope": null,
+                    "id": 12029,
+                    "name": "IOrganism",
+                    "nodeType": "UserDefinedTypeName",
+                    "referencedDeclaration": 11949,
+                    "src": "949:9:62",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_contract$_IOrganism_$11949",
+                      "typeString": "contract IOrganism"
+                    }
+                  },
+                  "value": null,
+                  "visibility": "internal"
+                },
+                {
+                  "constant": false,
+                  "id": 12032,
+                  "name": "_RFLid",
+                  "nodeType": "VariableDeclaration",
+                  "scope": 12037,
+                  "src": "970:14:62",
+                  "stateVariable": false,
+                  "storageLocation": "default",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_uint256",
+                    "typeString": "uint256"
+                  },
+                  "typeName": {
+                    "id": 12031,
+                    "name": "uint256",
+                    "nodeType": "ElementaryTypeName",
+                    "src": "970:7:62",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_uint256",
+                      "typeString": "uint256"
+                    }
+                  },
+                  "value": null,
+                  "visibility": "internal"
+                },
+                {
+                  "constant": false,
+                  "id": 12034,
+                  "name": "_value",
+                  "nodeType": "VariableDeclaration",
+                  "scope": 12037,
+                  "src": "986:14:62",
+                  "stateVariable": false,
+                  "storageLocation": "default",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_uint256",
+                    "typeString": "uint256"
+                  },
+                  "typeName": {
+                    "id": 12033,
+                    "name": "uint256",
+                    "nodeType": "ElementaryTypeName",
+                    "src": "986:7:62",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_uint256",
+                      "typeString": "uint256"
+                    }
+                  },
+                  "value": null,
+                  "visibility": "internal"
+                }
+              ],
+              "src": "948:53:62"
+            },
+            "payable": false,
+            "returnParameters": {
+              "id": 12036,
+              "nodeType": "ParameterList",
+              "parameters": [],
+              "src": "1008:0:62"
+            },
+            "scope": 12045,
+            "src": "930:79:62",
+            "stateMutability": "nonpayable",
+            "superFunction": null,
+            "visibility": "public"
+          },
+          {
+            "body": null,
+            "documentation": null,
+            "id": 12044,
+            "implemented": false,
+            "isConstructor": false,
+            "isDeclaredConst": false,
+            "modifiers": [],
+            "name": "rejectRFL",
+            "nodeType": "FunctionDefinition",
+            "parameters": {
+              "id": 12042,
+              "nodeType": "ParameterList",
+              "parameters": [
+                {
+                  "constant": false,
+                  "id": 12039,
+                  "name": "_organism",
+                  "nodeType": "VariableDeclaration",
+                  "scope": 12044,
+                  "src": "1033:19:62",
+                  "stateVariable": false,
+                  "storageLocation": "default",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_contract$_IOrganism_$11949",
+                    "typeString": "contract IOrganism"
+                  },
+                  "typeName": {
+                    "contractScope": null,
+                    "id": 12038,
+                    "name": "IOrganism",
+                    "nodeType": "UserDefinedTypeName",
+                    "referencedDeclaration": 11949,
+                    "src": "1033:9:62",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_contract$_IOrganism_$11949",
+                      "typeString": "contract IOrganism"
+                    }
+                  },
+                  "value": null,
+                  "visibility": "internal"
+                },
+                {
+                  "constant": false,
+                  "id": 12041,
+                  "name": "_RFLid",
+                  "nodeType": "VariableDeclaration",
+                  "scope": 12044,
+                  "src": "1054:14:62",
+                  "stateVariable": false,
+                  "storageLocation": "default",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_uint256",
+                    "typeString": "uint256"
+                  },
+                  "typeName": {
+                    "id": 12040,
+                    "name": "uint256",
+                    "nodeType": "ElementaryTypeName",
+                    "src": "1054:7:62",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_uint256",
+                      "typeString": "uint256"
+                    }
+                  },
+                  "value": null,
+                  "visibility": "internal"
+                }
+              ],
+              "src": "1032:37:62"
+            },
+            "payable": false,
+            "returnParameters": {
+              "id": 12043,
+              "nodeType": "ParameterList",
+              "parameters": [],
+              "src": "1076:0:62"
+            },
+            "scope": 12045,
+            "src": "1014:63:62",
+            "stateMutability": "nonpayable",
+            "superFunction": null,
+            "visibility": "public"
+          }
+        ],
+        "scope": 12046,
+        "src": "125:954:62"
+      }
+    ],
+    "src": "0:1080:62"
+  },
+  "legacyAST": {
+    "absolutePath": "@pando/core/contracts/scheme/IPandoScheme.sol",
+    "exportedSymbols": {
+      "IPandoScheme": [
+        12045
+      ]
+    },
+    "id": 12046,
+    "nodeType": "SourceUnit",
+    "nodes": [
+      {
+        "id": 11951,
+        "literals": [
+          "solidity",
+          "^",
+          "0.4",
+          ".24"
+        ],
+        "nodeType": "PragmaDirective",
+        "src": "0:24:62"
+      },
+      {
+        "id": 11952,
+        "literals": [
+          "experimental",
+          "ABIEncoderV2"
+        ],
+        "nodeType": "PragmaDirective",
+        "src": "25:33:62"
+      },
+      {
+        "absolutePath": "@pando/core/contracts/lib/Pando.sol",
+        "file": "../lib/Pando.sol",
+        "id": 11953,
+        "nodeType": "ImportDirective",
+        "scope": 12046,
+        "sourceUnit": 11682,
+        "src": "60:26:62",
+        "symbolAliases": [],
+        "unitAlias": ""
+      },
+      {
+        "absolutePath": "@pando/core/contracts/organism/IOrganism.sol",
+        "file": "../organism/IOrganism.sol",
+        "id": 11954,
+        "nodeType": "ImportDirective",
+        "scope": 12046,
+        "sourceUnit": 11950,
+        "src": "87:35:62",
+        "symbolAliases": [],
+        "unitAlias": ""
+      },
+      {
+        "baseContracts": [],
+        "contractDependencies": [],
+        "contractKind": "contract",
+        "documentation": null,
+        "fullyImplemented": false,
+        "id": 12045,
+        "linearizedBaseContracts": [
+          12045
+        ],
+        "name": "IPandoScheme",
+        "nodeType": "ContractDefinition",
+        "nodes": [
+          {
+            "anonymous": false,
+            "documentation": null,
+            "id": 11962,
+            "name": "CreateRFI",
+            "nodeType": "EventDefinition",
+            "parameters": {
+              "id": 11961,
+              "nodeType": "ParameterList",
+              "parameters": [
+                {
+                  "constant": false,
+                  "id": 11956,
+                  "indexed": true,
+                  "name": "organism",
+                  "nodeType": "VariableDeclaration",
+                  "scope": 11962,
+                  "src": "169:26:62",
+                  "stateVariable": false,
+                  "storageLocation": "default",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_contract$_IOrganism_$11949",
+                    "typeString": "contract IOrganism"
+                  },
+                  "typeName": {
+                    "contractScope": null,
+                    "id": 11955,
+                    "name": "IOrganism",
+                    "nodeType": "UserDefinedTypeName",
+                    "referencedDeclaration": 11949,
+                    "src": "169:9:62",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_contract$_IOrganism_$11949",
+                      "typeString": "contract IOrganism"
+                    }
+                  },
+                  "value": null,
+                  "visibility": "internal"
+                },
+                {
+                  "constant": false,
+                  "id": 11958,
+                  "indexed": true,
+                  "name": "id",
+                  "nodeType": "VariableDeclaration",
+                  "scope": 11962,
+                  "src": "197:18:62",
+                  "stateVariable": false,
+                  "storageLocation": "default",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_uint256",
+                    "typeString": "uint256"
+                  },
+                  "typeName": {
+                    "id": 11957,
+                    "name": "uint256",
+                    "nodeType": "ElementaryTypeName",
+                    "src": "197:7:62",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_uint256",
+                      "typeString": "uint256"
+                    }
+                  },
+                  "value": null,
+                  "visibility": "internal"
+                },
+                {
+                  "constant": false,
+                  "id": 11960,
+                  "indexed": false,
+                  "name": "sender",
+                  "nodeType": "VariableDeclaration",
+                  "scope": 11962,
+                  "src": "217:14:62",
+                  "stateVariable": false,
+                  "storageLocation": "default",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_address",
+                    "typeString": "address"
+                  },
+                  "typeName": {
+                    "id": 11959,
+                    "name": "address",
+                    "nodeType": "ElementaryTypeName",
+                    "src": "217:7:62",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_address",
+                      "typeString": "address"
+                    }
+                  },
+                  "value": null,
+                  "visibility": "internal"
+                }
+              ],
+              "src": "168:64:62"
+            },
+            "src": "153:80:62"
+          },
+          {
+            "anonymous": false,
+            "documentation": null,
+            "id": 11970,
+            "name": "MergeRFI",
+            "nodeType": "EventDefinition",
+            "parameters": {
+              "id": 11969,
+              "nodeType": "ParameterList",
+              "parameters": [
+                {
+                  "constant": false,
+                  "id": 11964,
+                  "indexed": true,
+                  "name": "organism",
+                  "nodeType": "VariableDeclaration",
+                  "scope": 11970,
+                  "src": "253:26:62",
+                  "stateVariable": false,
+                  "storageLocation": "default",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_contract$_IOrganism_$11949",
+                    "typeString": "contract IOrganism"
+                  },
+                  "typeName": {
+                    "contractScope": null,
+                    "id": 11963,
+                    "name": "IOrganism",
+                    "nodeType": "UserDefinedTypeName",
+                    "referencedDeclaration": 11949,
+                    "src": "253:9:62",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_contract$_IOrganism_$11949",
+                      "typeString": "contract IOrganism"
+                    }
+                  },
+                  "value": null,
+                  "visibility": "internal"
+                },
+                {
+                  "constant": false,
+                  "id": 11966,
+                  "indexed": true,
+                  "name": "id",
+                  "nodeType": "VariableDeclaration",
+                  "scope": 11970,
+                  "src": "281:18:62",
+                  "stateVariable": false,
+                  "storageLocation": "default",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_uint256",
+                    "typeString": "uint256"
+                  },
+                  "typeName": {
+                    "id": 11965,
+                    "name": "uint256",
+                    "nodeType": "ElementaryTypeName",
+                    "src": "281:7:62",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_uint256",
+                      "typeString": "uint256"
+                    }
+                  },
+                  "value": null,
+                  "visibility": "internal"
+                },
+                {
+                  "constant": false,
+                  "id": 11968,
+                  "indexed": false,
+                  "name": "sender",
+                  "nodeType": "VariableDeclaration",
+                  "scope": 11970,
+                  "src": "301:14:62",
+                  "stateVariable": false,
+                  "storageLocation": "default",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_address",
+                    "typeString": "address"
+                  },
+                  "typeName": {
+                    "id": 11967,
+                    "name": "address",
+                    "nodeType": "ElementaryTypeName",
+                    "src": "301:7:62",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_address",
+                      "typeString": "address"
+                    }
+                  },
+                  "value": null,
+                  "visibility": "internal"
+                }
+              ],
+              "src": "252:64:62"
+            },
+            "src": "238:79:62"
+          },
+          {
+            "anonymous": false,
+            "documentation": null,
+            "id": 11978,
+            "name": "RejectRFI",
+            "nodeType": "EventDefinition",
+            "parameters": {
+              "id": 11977,
+              "nodeType": "ParameterList",
+              "parameters": [
+                {
+                  "constant": false,
+                  "id": 11972,
+                  "indexed": true,
+                  "name": "organism",
+                  "nodeType": "VariableDeclaration",
+                  "scope": 11978,
+                  "src": "338:26:62",
+                  "stateVariable": false,
+                  "storageLocation": "default",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_contract$_IOrganism_$11949",
+                    "typeString": "contract IOrganism"
+                  },
+                  "typeName": {
+                    "contractScope": null,
+                    "id": 11971,
+                    "name": "IOrganism",
+                    "nodeType": "UserDefinedTypeName",
+                    "referencedDeclaration": 11949,
+                    "src": "338:9:62",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_contract$_IOrganism_$11949",
+                      "typeString": "contract IOrganism"
+                    }
+                  },
+                  "value": null,
+                  "visibility": "internal"
+                },
+                {
+                  "constant": false,
+                  "id": 11974,
+                  "indexed": true,
+                  "name": "id",
+                  "nodeType": "VariableDeclaration",
+                  "scope": 11978,
+                  "src": "366:18:62",
+                  "stateVariable": false,
+                  "storageLocation": "default",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_uint256",
+                    "typeString": "uint256"
+                  },
+                  "typeName": {
+                    "id": 11973,
+                    "name": "uint256",
+                    "nodeType": "ElementaryTypeName",
+                    "src": "366:7:62",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_uint256",
+                      "typeString": "uint256"
+                    }
+                  },
+                  "value": null,
+                  "visibility": "internal"
+                },
+                {
+                  "constant": false,
+                  "id": 11976,
+                  "indexed": false,
+                  "name": "sender",
+                  "nodeType": "VariableDeclaration",
+                  "scope": 11978,
+                  "src": "386:14:62",
+                  "stateVariable": false,
+                  "storageLocation": "default",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_address",
+                    "typeString": "address"
+                  },
+                  "typeName": {
+                    "id": 11975,
+                    "name": "address",
+                    "nodeType": "ElementaryTypeName",
+                    "src": "386:7:62",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_address",
+                      "typeString": "address"
+                    }
+                  },
+                  "value": null,
+                  "visibility": "internal"
+                }
+              ],
+              "src": "337:64:62"
+            },
+            "src": "322:80:62"
+          },
+          {
+            "anonymous": false,
+            "documentation": null,
+            "id": 11986,
+            "name": "CreateRFL",
+            "nodeType": "EventDefinition",
+            "parameters": {
+              "id": 11985,
+              "nodeType": "ParameterList",
+              "parameters": [
+                {
+                  "constant": false,
+                  "id": 11980,
+                  "indexed": true,
+                  "name": "organism",
+                  "nodeType": "VariableDeclaration",
+                  "scope": 11986,
+                  "src": "423:26:62",
+                  "stateVariable": false,
+                  "storageLocation": "default",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_contract$_IOrganism_$11949",
+                    "typeString": "contract IOrganism"
+                  },
+                  "typeName": {
+                    "contractScope": null,
+                    "id": 11979,
+                    "name": "IOrganism",
+                    "nodeType": "UserDefinedTypeName",
+                    "referencedDeclaration": 11949,
+                    "src": "423:9:62",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_contract$_IOrganism_$11949",
+                      "typeString": "contract IOrganism"
+                    }
+                  },
+                  "value": null,
+                  "visibility": "internal"
+                },
+                {
+                  "constant": false,
+                  "id": 11982,
+                  "indexed": true,
+                  "name": "id",
+                  "nodeType": "VariableDeclaration",
+                  "scope": 11986,
+                  "src": "451:18:62",
+                  "stateVariable": false,
+                  "storageLocation": "default",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_uint256",
+                    "typeString": "uint256"
+                  },
+                  "typeName": {
+                    "id": 11981,
+                    "name": "uint256",
+                    "nodeType": "ElementaryTypeName",
+                    "src": "451:7:62",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_uint256",
+                      "typeString": "uint256"
+                    }
+                  },
+                  "value": null,
+                  "visibility": "internal"
+                },
+                {
+                  "constant": false,
+                  "id": 11984,
+                  "indexed": false,
+                  "name": "sender",
+                  "nodeType": "VariableDeclaration",
+                  "scope": 11986,
+                  "src": "471:14:62",
+                  "stateVariable": false,
+                  "storageLocation": "default",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_address",
+                    "typeString": "address"
+                  },
+                  "typeName": {
+                    "id": 11983,
+                    "name": "address",
+                    "nodeType": "ElementaryTypeName",
+                    "src": "471:7:62",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_address",
+                      "typeString": "address"
+                    }
+                  },
+                  "value": null,
+                  "visibility": "internal"
+                }
+              ],
+              "src": "422:64:62"
+            },
+            "src": "407:80:62"
+          },
+          {
+            "anonymous": false,
+            "documentation": null,
+            "id": 11996,
+            "name": "AcceptRFL",
+            "nodeType": "EventDefinition",
+            "parameters": {
+              "id": 11995,
+              "nodeType": "ParameterList",
+              "parameters": [
+                {
+                  "constant": false,
+                  "id": 11988,
+                  "indexed": true,
+                  "name": "organism",
+                  "nodeType": "VariableDeclaration",
+                  "scope": 11996,
+                  "src": "508:26:62",
+                  "stateVariable": false,
+                  "storageLocation": "default",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_contract$_IOrganism_$11949",
+                    "typeString": "contract IOrganism"
+                  },
+                  "typeName": {
+                    "contractScope": null,
+                    "id": 11987,
+                    "name": "IOrganism",
+                    "nodeType": "UserDefinedTypeName",
+                    "referencedDeclaration": 11949,
+                    "src": "508:9:62",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_contract$_IOrganism_$11949",
+                      "typeString": "contract IOrganism"
+                    }
+                  },
+                  "value": null,
+                  "visibility": "internal"
+                },
+                {
+                  "constant": false,
+                  "id": 11990,
+                  "indexed": true,
+                  "name": "id",
+                  "nodeType": "VariableDeclaration",
+                  "scope": 11996,
+                  "src": "536:18:62",
+                  "stateVariable": false,
+                  "storageLocation": "default",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_uint256",
+                    "typeString": "uint256"
+                  },
+                  "typeName": {
+                    "id": 11989,
+                    "name": "uint256",
+                    "nodeType": "ElementaryTypeName",
+                    "src": "536:7:62",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_uint256",
+                      "typeString": "uint256"
+                    }
+                  },
+                  "value": null,
+                  "visibility": "internal"
+                },
+                {
+                  "constant": false,
+                  "id": 11992,
+                  "indexed": false,
+                  "name": "value",
+                  "nodeType": "VariableDeclaration",
+                  "scope": 11996,
+                  "src": "556:13:62",
+                  "stateVariable": false,
+                  "storageLocation": "default",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_uint256",
+                    "typeString": "uint256"
+                  },
+                  "typeName": {
+                    "id": 11991,
+                    "name": "uint256",
+                    "nodeType": "ElementaryTypeName",
+                    "src": "556:7:62",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_uint256",
+                      "typeString": "uint256"
+                    }
+                  },
+                  "value": null,
+                  "visibility": "internal"
+                },
+                {
+                  "constant": false,
+                  "id": 11994,
+                  "indexed": false,
+                  "name": "sender",
+                  "nodeType": "VariableDeclaration",
+                  "scope": 11996,
+                  "src": "571:14:62",
+                  "stateVariable": false,
+                  "storageLocation": "default",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_address",
+                    "typeString": "address"
+                  },
+                  "typeName": {
+                    "id": 11993,
+                    "name": "address",
+                    "nodeType": "ElementaryTypeName",
+                    "src": "571:7:62",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_address",
+                      "typeString": "address"
+                    }
+                  },
+                  "value": null,
+                  "visibility": "internal"
+                }
+              ],
+              "src": "507:79:62"
+            },
+            "src": "492:95:62"
+          },
+          {
+            "anonymous": false,
+            "documentation": null,
+            "id": 12004,
+            "name": "RejectRFL",
+            "nodeType": "EventDefinition",
+            "parameters": {
+              "id": 12003,
+              "nodeType": "ParameterList",
+              "parameters": [
+                {
+                  "constant": false,
+                  "id": 11998,
+                  "indexed": true,
+                  "name": "organism",
+                  "nodeType": "VariableDeclaration",
+                  "scope": 12004,
+                  "src": "608:26:62",
+                  "stateVariable": false,
+                  "storageLocation": "default",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_contract$_IOrganism_$11949",
+                    "typeString": "contract IOrganism"
+                  },
+                  "typeName": {
+                    "contractScope": null,
+                    "id": 11997,
+                    "name": "IOrganism",
+                    "nodeType": "UserDefinedTypeName",
+                    "referencedDeclaration": 11949,
+                    "src": "608:9:62",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_contract$_IOrganism_$11949",
+                      "typeString": "contract IOrganism"
+                    }
+                  },
+                  "value": null,
+                  "visibility": "internal"
+                },
+                {
+                  "constant": false,
+                  "id": 12000,
+                  "indexed": true,
+                  "name": "id",
+                  "nodeType": "VariableDeclaration",
+                  "scope": 12004,
+                  "src": "636:18:62",
+                  "stateVariable": false,
+                  "storageLocation": "default",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_uint256",
+                    "typeString": "uint256"
+                  },
+                  "typeName": {
+                    "id": 11999,
+                    "name": "uint256",
+                    "nodeType": "ElementaryTypeName",
+                    "src": "636:7:62",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_uint256",
+                      "typeString": "uint256"
+                    }
+                  },
+                  "value": null,
+                  "visibility": "internal"
+                },
+                {
+                  "constant": false,
+                  "id": 12002,
+                  "indexed": false,
+                  "name": "sender",
+                  "nodeType": "VariableDeclaration",
+                  "scope": 12004,
+                  "src": "656:14:62",
+                  "stateVariable": false,
+                  "storageLocation": "default",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_address",
+                    "typeString": "address"
+                  },
+                  "typeName": {
+                    "id": 12001,
+                    "name": "address",
+                    "nodeType": "ElementaryTypeName",
+                    "src": "656:7:62",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_address",
+                      "typeString": "address"
+                    }
+                  },
+                  "value": null,
+                  "visibility": "internal"
+                }
+              ],
+              "src": "607:64:62"
+            },
+            "src": "592:80:62"
+          },
+          {
+            "body": null,
+            "documentation": null,
+            "id": 12014,
+            "implemented": false,
+            "isConstructor": false,
+            "isDeclaredConst": false,
+            "modifiers": [],
+            "name": "createRFI",
+            "nodeType": "FunctionDefinition",
+            "parameters": {
+              "id": 12012,
+              "nodeType": "ParameterList",
+              "parameters": [
+                {
+                  "constant": false,
+                  "id": 12006,
+                  "name": "_organism",
+                  "nodeType": "VariableDeclaration",
+                  "scope": 12014,
+                  "src": "697:19:62",
+                  "stateVariable": false,
+                  "storageLocation": "default",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_contract$_IOrganism_$11949",
+                    "typeString": "contract IOrganism"
+                  },
+                  "typeName": {
+                    "contractScope": null,
+                    "id": 12005,
+                    "name": "IOrganism",
+                    "nodeType": "UserDefinedTypeName",
+                    "referencedDeclaration": 11949,
+                    "src": "697:9:62",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_contract$_IOrganism_$11949",
+                      "typeString": "contract IOrganism"
+                    }
+                  },
+                  "value": null,
+                  "visibility": "internal"
+                },
+                {
+                  "constant": false,
+                  "id": 12008,
+                  "name": "_individuation",
+                  "nodeType": "VariableDeclaration",
+                  "scope": 12014,
+                  "src": "718:35:62",
+                  "stateVariable": false,
+                  "storageLocation": "default",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_struct$_IIndividuation_$11625_memory_ptr",
+                    "typeString": "struct Pando.IIndividuation"
+                  },
+                  "typeName": {
+                    "contractScope": null,
+                    "id": 12007,
+                    "name": "Pando.IIndividuation",
+                    "nodeType": "UserDefinedTypeName",
+                    "referencedDeclaration": 11625,
+                    "src": "718:20:62",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_struct$_IIndividuation_$11625_storage_ptr",
+                      "typeString": "struct Pando.IIndividuation"
+                    }
+                  },
+                  "value": null,
+                  "visibility": "internal"
+                },
+                {
+                  "constant": false,
+                  "id": 12011,
+                  "name": "_lineages",
+                  "nodeType": "VariableDeclaration",
+                  "scope": 12014,
+                  "src": "755:26:62",
+                  "stateVariable": false,
+                  "storageLocation": "default",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_array$_t_struct$_ILineage_$11647_memory_$dyn_memory_ptr",
+                    "typeString": "struct Pando.ILineage[]"
+                  },
+                  "typeName": {
+                    "baseType": {
+                      "contractScope": null,
+                      "id": 12009,
+                      "name": "Pando.ILineage",
+                      "nodeType": "UserDefinedTypeName",
+                      "referencedDeclaration": 11647,
+                      "src": "755:14:62",
+                      "typeDescriptions": {
+                        "typeIdentifier": "t_struct$_ILineage_$11647_storage_ptr",
+                        "typeString": "struct Pando.ILineage"
+                      }
+                    },
+                    "id": 12010,
+                    "length": null,
+                    "nodeType": "ArrayTypeName",
+                    "src": "755:16:62",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_array$_t_struct$_ILineage_$11647_storage_$dyn_storage_ptr",
+                      "typeString": "struct Pando.ILineage[]"
+                    }
+                  },
+                  "value": null,
+                  "visibility": "internal"
+                }
+              ],
+              "src": "696:86:62"
+            },
+            "payable": false,
+            "returnParameters": {
+              "id": 12013,
+              "nodeType": "ParameterList",
+              "parameters": [],
+              "src": "789:0:62"
+            },
+            "scope": 12045,
+            "src": "678:112:62",
+            "stateMutability": "nonpayable",
+            "superFunction": null,
+            "visibility": "public"
+          },
+          {
+            "body": null,
+            "documentation": null,
+            "id": 12021,
+            "implemented": false,
+            "isConstructor": false,
+            "isDeclaredConst": false,
+            "modifiers": [],
+            "name": "mergeRFI",
+            "nodeType": "FunctionDefinition",
+            "parameters": {
+              "id": 12019,
+              "nodeType": "ParameterList",
+              "parameters": [
+                {
+                  "constant": false,
+                  "id": 12016,
+                  "name": "_organism",
+                  "nodeType": "VariableDeclaration",
+                  "scope": 12021,
+                  "src": "813:19:62",
+                  "stateVariable": false,
+                  "storageLocation": "default",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_contract$_IOrganism_$11949",
+                    "typeString": "contract IOrganism"
+                  },
+                  "typeName": {
+                    "contractScope": null,
+                    "id": 12015,
+                    "name": "IOrganism",
+                    "nodeType": "UserDefinedTypeName",
+                    "referencedDeclaration": 11949,
+                    "src": "813:9:62",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_contract$_IOrganism_$11949",
+                      "typeString": "contract IOrganism"
+                    }
+                  },
+                  "value": null,
+                  "visibility": "internal"
+                },
+                {
+                  "constant": false,
+                  "id": 12018,
+                  "name": "_RFIid",
+                  "nodeType": "VariableDeclaration",
+                  "scope": 12021,
+                  "src": "834:14:62",
+                  "stateVariable": false,
+                  "storageLocation": "default",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_uint256",
+                    "typeString": "uint256"
+                  },
+                  "typeName": {
+                    "id": 12017,
+                    "name": "uint256",
+                    "nodeType": "ElementaryTypeName",
+                    "src": "834:7:62",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_uint256",
+                      "typeString": "uint256"
+                    }
+                  },
+                  "value": null,
+                  "visibility": "internal"
+                }
+              ],
+              "src": "812:37:62"
+            },
+            "payable": false,
+            "returnParameters": {
+              "id": 12020,
+              "nodeType": "ParameterList",
+              "parameters": [],
+              "src": "856:0:62"
+            },
+            "scope": 12045,
+            "src": "795:62:62",
+            "stateMutability": "nonpayable",
+            "superFunction": null,
+            "visibility": "public"
+          },
+          {
+            "body": null,
+            "documentation": null,
+            "id": 12028,
+            "implemented": false,
+            "isConstructor": false,
+            "isDeclaredConst": false,
+            "modifiers": [],
+            "name": "rejectRFI",
+            "nodeType": "FunctionDefinition",
+            "parameters": {
+              "id": 12026,
+              "nodeType": "ParameterList",
+              "parameters": [
+                {
+                  "constant": false,
+                  "id": 12023,
+                  "name": "_organism",
+                  "nodeType": "VariableDeclaration",
+                  "scope": 12028,
+                  "src": "881:19:62",
+                  "stateVariable": false,
+                  "storageLocation": "default",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_contract$_IOrganism_$11949",
+                    "typeString": "contract IOrganism"
+                  },
+                  "typeName": {
+                    "contractScope": null,
+                    "id": 12022,
+                    "name": "IOrganism",
+                    "nodeType": "UserDefinedTypeName",
+                    "referencedDeclaration": 11949,
+                    "src": "881:9:62",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_contract$_IOrganism_$11949",
+                      "typeString": "contract IOrganism"
+                    }
+                  },
+                  "value": null,
+                  "visibility": "internal"
+                },
+                {
+                  "constant": false,
+                  "id": 12025,
+                  "name": "_RFIid",
+                  "nodeType": "VariableDeclaration",
+                  "scope": 12028,
+                  "src": "902:14:62",
+                  "stateVariable": false,
+                  "storageLocation": "default",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_uint256",
+                    "typeString": "uint256"
+                  },
+                  "typeName": {
+                    "id": 12024,
+                    "name": "uint256",
+                    "nodeType": "ElementaryTypeName",
+                    "src": "902:7:62",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_uint256",
+                      "typeString": "uint256"
+                    }
+                  },
+                  "value": null,
+                  "visibility": "internal"
+                }
+              ],
+              "src": "880:37:62"
+            },
+            "payable": false,
+            "returnParameters": {
+              "id": 12027,
+              "nodeType": "ParameterList",
+              "parameters": [],
+              "src": "924:0:62"
+            },
+            "scope": 12045,
+            "src": "862:63:62",
+            "stateMutability": "nonpayable",
+            "superFunction": null,
+            "visibility": "public"
+          },
+          {
+            "body": null,
+            "documentation": null,
+            "id": 12037,
+            "implemented": false,
+            "isConstructor": false,
+            "isDeclaredConst": false,
+            "modifiers": [],
+            "name": "acceptRFL",
+            "nodeType": "FunctionDefinition",
+            "parameters": {
+              "id": 12035,
+              "nodeType": "ParameterList",
+              "parameters": [
+                {
+                  "constant": false,
+                  "id": 12030,
+                  "name": "_organism",
+                  "nodeType": "VariableDeclaration",
+                  "scope": 12037,
+                  "src": "949:19:62",
+                  "stateVariable": false,
+                  "storageLocation": "default",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_contract$_IOrganism_$11949",
+                    "typeString": "contract IOrganism"
+                  },
+                  "typeName": {
+                    "contractScope": null,
+                    "id": 12029,
+                    "name": "IOrganism",
+                    "nodeType": "UserDefinedTypeName",
+                    "referencedDeclaration": 11949,
+                    "src": "949:9:62",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_contract$_IOrganism_$11949",
+                      "typeString": "contract IOrganism"
+                    }
+                  },
+                  "value": null,
+                  "visibility": "internal"
+                },
+                {
+                  "constant": false,
+                  "id": 12032,
+                  "name": "_RFLid",
+                  "nodeType": "VariableDeclaration",
+                  "scope": 12037,
+                  "src": "970:14:62",
+                  "stateVariable": false,
+                  "storageLocation": "default",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_uint256",
+                    "typeString": "uint256"
+                  },
+                  "typeName": {
+                    "id": 12031,
+                    "name": "uint256",
+                    "nodeType": "ElementaryTypeName",
+                    "src": "970:7:62",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_uint256",
+                      "typeString": "uint256"
+                    }
+                  },
+                  "value": null,
+                  "visibility": "internal"
+                },
+                {
+                  "constant": false,
+                  "id": 12034,
+                  "name": "_value",
+                  "nodeType": "VariableDeclaration",
+                  "scope": 12037,
+                  "src": "986:14:62",
+                  "stateVariable": false,
+                  "storageLocation": "default",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_uint256",
+                    "typeString": "uint256"
+                  },
+                  "typeName": {
+                    "id": 12033,
+                    "name": "uint256",
+                    "nodeType": "ElementaryTypeName",
+                    "src": "986:7:62",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_uint256",
+                      "typeString": "uint256"
+                    }
+                  },
+                  "value": null,
+                  "visibility": "internal"
+                }
+              ],
+              "src": "948:53:62"
+            },
+            "payable": false,
+            "returnParameters": {
+              "id": 12036,
+              "nodeType": "ParameterList",
+              "parameters": [],
+              "src": "1008:0:62"
+            },
+            "scope": 12045,
+            "src": "930:79:62",
+            "stateMutability": "nonpayable",
+            "superFunction": null,
+            "visibility": "public"
+          },
+          {
+            "body": null,
+            "documentation": null,
+            "id": 12044,
+            "implemented": false,
+            "isConstructor": false,
+            "isDeclaredConst": false,
+            "modifiers": [],
+            "name": "rejectRFL",
+            "nodeType": "FunctionDefinition",
+            "parameters": {
+              "id": 12042,
+              "nodeType": "ParameterList",
+              "parameters": [
+                {
+                  "constant": false,
+                  "id": 12039,
+                  "name": "_organism",
+                  "nodeType": "VariableDeclaration",
+                  "scope": 12044,
+                  "src": "1033:19:62",
+                  "stateVariable": false,
+                  "storageLocation": "default",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_contract$_IOrganism_$11949",
+                    "typeString": "contract IOrganism"
+                  },
+                  "typeName": {
+                    "contractScope": null,
+                    "id": 12038,
+                    "name": "IOrganism",
+                    "nodeType": "UserDefinedTypeName",
+                    "referencedDeclaration": 11949,
+                    "src": "1033:9:62",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_contract$_IOrganism_$11949",
+                      "typeString": "contract IOrganism"
+                    }
+                  },
+                  "value": null,
+                  "visibility": "internal"
+                },
+                {
+                  "constant": false,
+                  "id": 12041,
+                  "name": "_RFLid",
+                  "nodeType": "VariableDeclaration",
+                  "scope": 12044,
+                  "src": "1054:14:62",
+                  "stateVariable": false,
+                  "storageLocation": "default",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_uint256",
+                    "typeString": "uint256"
+                  },
+                  "typeName": {
+                    "id": 12040,
+                    "name": "uint256",
+                    "nodeType": "ElementaryTypeName",
+                    "src": "1054:7:62",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_uint256",
+                      "typeString": "uint256"
+                    }
+                  },
+                  "value": null,
+                  "visibility": "internal"
+                }
+              ],
+              "src": "1032:37:62"
+            },
+            "payable": false,
+            "returnParameters": {
+              "id": 12043,
+              "nodeType": "ParameterList",
+              "parameters": [],
+              "src": "1076:0:62"
+            },
+            "scope": 12045,
+            "src": "1014:63:62",
+            "stateMutability": "nonpayable",
+            "superFunction": null,
+            "visibility": "public"
+          }
+        ],
+        "scope": 12046,
+        "src": "125:954:62"
+      }
+    ],
+    "src": "0:1080:62"
+  },
+  "compiler": {
+    "name": "solc",
+    "version": "0.4.24+commit.e67f0147.Emscripten.clang"
+  },
+  "networks": {},
+  "schemaVersion": "3.0.0-beta.2",
+  "updatedAt": "2019-01-16T11:41:26.545Z",
+  "devdoc": {
+    "methods": {}
+  },
+  "userdoc": {
+    "methods": {}
+  }
+}
