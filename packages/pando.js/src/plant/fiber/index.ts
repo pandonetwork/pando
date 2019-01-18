@@ -85,9 +85,19 @@ export default class Fiber {
   }
 
   public async revert(id: number, paths: string[] = ['']): Promise<any> {
-    const snapshot = await this.snapshots.get(id)
+    let snapshot: any
     const promises: any[] = []
     let files: any[] = []
+
+    try {
+      snapshot = await this.snapshots.get(id)
+    } catch (err) {
+      if (err.notFound) {
+        throw new PandoError('E_SNAPSHOT_NOT_FOUND')
+      } else {
+        throw err
+      }
+    }
 
     for (let path of paths) {
       path = npath.relative(this.plant.paths.root, path)

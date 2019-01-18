@@ -186,6 +186,7 @@ var Index = /** @class */ (function () {
                     case 1:
                         _a = _b.sent(), index = _a.index, untracked = _a.untracked, modified = _a.modified, deleted = _a.deleted;
                         paths = this.extract(paths, index);
+                        if (!(paths.length > 0)) return [3 /*break*/, 7];
                         _i = 0, paths_2 = paths;
                         _b.label = 2;
                     case 2:
@@ -202,7 +203,9 @@ var Index = /** @class */ (function () {
                     case 5:
                         _i++;
                         return [3 /*break*/, 2];
-                    case 6: return [2 /*return*/];
+                    case 6: return [3 /*break*/, 8];
+                    case 7: throw new error_1.default('E_NO_INDEX_ENTRY_FOUND', origin);
+                    case 8: return [2 /*return*/, paths];
                 }
             });
         });

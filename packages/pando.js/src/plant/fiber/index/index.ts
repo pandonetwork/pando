@@ -109,13 +109,19 @@ export default class Index {
 
     paths = this.extract(paths, index)
 
-    for (const path of paths) {
-      const value = await this.db.get(path)
+    if (paths.length > 0) {
+      for (const path of paths) {
+        const value = await this.db.get(path)
 
-      value.tracked = false
+        value.tracked = false
 
-      await this.db.put(path, value)
+        await this.db.put(path, value)
+      }
+    } else {
+      throw new PandoError('E_NO_INDEX_ENTRY_FOUND', origin)
     }
+
+    return paths
   }
 
   public async status(): Promise<any> {

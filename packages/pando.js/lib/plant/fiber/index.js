@@ -141,23 +141,38 @@ var Fiber = /** @class */ (function () {
     Fiber.prototype.revert = function (id, paths) {
         if (paths === void 0) { paths = ['']; }
         return __awaiter(this, void 0, void 0, function () {
-            var snapshot, promises, files, _i, paths_1, path, tree, _a, tree_1, file, _loop_1, this_1, _b, files_1, file;
+            var snapshot, promises, files, err_1, _i, paths_1, path, tree, _a, tree_1, file, _loop_1, this_1, _b, files_1, file;
             var _this = this;
             return __generator(this, function (_c) {
                 switch (_c.label) {
-                    case 0: return [4 /*yield*/, this.snapshots.get(id)];
-                    case 1:
-                        snapshot = _c.sent();
+                    case 0:
                         promises = [];
                         files = [];
-                        _i = 0, paths_1 = paths;
-                        _c.label = 2;
+                        _c.label = 1;
+                    case 1:
+                        _c.trys.push([1, 3, , 4]);
+                        return [4 /*yield*/, this.snapshots.get(id)];
                     case 2:
-                        if (!(_i < paths_1.length)) return [3 /*break*/, 5];
+                        snapshot = _c.sent();
+                        return [3 /*break*/, 4];
+                    case 3:
+                        err_1 = _c.sent();
+                        if (err_1.notFound) {
+                            throw new error_1.default('E_SNAPSHOT_NOT_FOUND');
+                        }
+                        else {
+                            throw err_1;
+                        }
+                        return [3 /*break*/, 4];
+                    case 4:
+                        _i = 0, paths_1 = paths;
+                        _c.label = 5;
+                    case 5:
+                        if (!(_i < paths_1.length)) return [3 /*break*/, 8];
                         path = paths_1[_i];
                         path = path_1.default.relative(this.plant.paths.root, path);
                         return [4 /*yield*/, this.plant.node.files.get(snapshot.tree + '/' + path)];
-                    case 3:
+                    case 6:
                         tree = _c.sent();
                         if (tree.length <= 0) {
                             throw new error_1.default('E_ENTRY_NOT_FOUND_IN_SNAPSHOT', path, id);
@@ -178,14 +193,14 @@ var Fiber = /** @class */ (function () {
                                 }
                             }
                         }
-                        _c.label = 4;
-                    case 4:
+                        _c.label = 7;
+                    case 7:
                         _i++;
-                        return [3 /*break*/, 2];
-                    case 5:
+                        return [3 /*break*/, 5];
+                    case 8:
                         files = _.uniqBy(files, 'destination');
                         return [4 /*yield*/, this.snapshot('Automatic snapshot before reverting to snapshot #' + id)];
-                    case 6:
+                    case 9:
                         _c.sent();
                         _loop_1 = function (file) {
                             promises.push(fs_extra_1.default
@@ -198,7 +213,7 @@ var Fiber = /** @class */ (function () {
                             _loop_1(file);
                         }
                         return [4 /*yield*/, Promise.all(promises)];
-                    case 7:
+                    case 10:
                         _c.sent();
                         return [2 /*return*/];
                 }
