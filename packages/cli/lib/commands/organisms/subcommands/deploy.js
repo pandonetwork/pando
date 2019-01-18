@@ -40,61 +40,47 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 var _this = this;
 Object.defineProperty(exports, "__esModule", { value: true });
 var pando_js_1 = __importDefault(require("@pando/pando.js"));
-var listr_1 = __importDefault(require("listr"));
+var chalk_1 = __importDefault(require("chalk"));
+var ora_1 = __importDefault(require("ora"));
 var yargs_1 = __importDefault(require("yargs"));
 var builder = function () {
     return yargs_1.default
         .option('organization', {
         alias: 'o',
         description: 'The organization to deploy the organism in',
-        required: true
+        required: true,
     })
         .help()
         .strict(false)
         .version(false);
 };
 var handler = function (argv) { return __awaiter(_this, void 0, void 0, function () {
-    var pando, plant, organization_1, tasks, err_1;
-    var _this = this;
+    var pando, spinner, plant, organization, organism, err_1;
     return __generator(this, function (_a) {
         switch (_a.label) {
-            case 0: return [4 /*yield*/, pando_js_1.default.create(argv.configuration)];
+            case 0:
+                _a.trys.push([0, 5, , 6]);
+                spinner = ora_1.default(chalk_1.default.dim("Deploying organism '" + argv.name + "'")).start();
+                return [4 /*yield*/, pando_js_1.default.create(argv.configuration)];
             case 1:
                 pando = _a.sent();
-                _a.label = 2;
-            case 2:
-                _a.trys.push([2, 6, , 7]);
                 return [4 /*yield*/, pando.plants.load()];
-            case 3:
+            case 2:
                 plant = _a.sent();
                 return [4 /*yield*/, plant.organizations.load({ name: argv.organization })];
+            case 3:
+                organization = _a.sent();
+                return [4 /*yield*/, organization.organisms.deploy(argv.name)];
             case 4:
-                organization_1 = _a.sent();
-                tasks = new listr_1.default([{
-                        title: "Deploying '" + argv.name + "'",
-                        task: function (ctx, task) { return __awaiter(_this, void 0, void 0, function () {
-                            var organism;
-                            return __generator(this, function (_a) {
-                                switch (_a.label) {
-                                    case 0: return [4 /*yield*/, organization_1.organisms.deploy(argv.name)];
-                                    case 1:
-                                        organism = _a.sent();
-                                        task.title = "'" + argv.name + "' deployed at address " + organism.address;
-                                        return [2 /*return*/];
-                                }
-                            });
-                        }); }
-                    }]);
-                return [4 /*yield*/, tasks.run()];
+                organism = _a.sent();
+                spinner.succeed(chalk_1.default.dim("Organism '" + argv.name + "' deployed at address " + organism.address));
+                return [3 /*break*/, 6];
             case 5:
-                _a.sent();
-                return [3 /*break*/, 7];
-            case 6:
                 err_1 = _a.sent();
-                console.log(err_1);
-                return [3 /*break*/, 7];
-            case 7: return [4 /*yield*/, pando.close()];
-            case 8:
+                spinner.fail(chalk_1.default.dim(err_1.message));
+                return [3 /*break*/, 6];
+            case 6: return [4 /*yield*/, pando.close()];
+            case 7:
                 _a.sent();
                 return [2 /*return*/];
         }
@@ -105,7 +91,7 @@ exports.deploy = {
     command: 'deploy <name>',
     desc: 'Deploy a new organism',
     builder: builder,
-    handler: handler
+    handler: handler,
 };
 /* tslint:enable:object-literal-sort-keys */
 //# sourceMappingURL=deploy.js.map

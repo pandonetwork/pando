@@ -17,7 +17,6 @@ var builder = function () {
         .usage('pando fibers <subcommand>')
         .command(subcommands.list)
         .command(subcommands.create)
-        .command(subcommands.delete_)
         .updateStrings({ 'Commands:': 'Subcommands:' })
         .demandCommand(1, 'No subcommand provided')
         .strict()
@@ -28,7 +27,7 @@ var builder = function () {
 exports.fibers = {
     command: 'fibers <subcommand>',
     desc: 'Handle fibers',
-    builder: builder
+    builder: builder,
 };
 /* tslint:enable:object-literal-sort-keys */
 //# sourceMappingURL=index.js.map

@@ -1,7 +1,7 @@
 import Pando from '@pando/pando.js'
-import Listr from 'listr'
+import chalk from 'chalk'
+import ora from 'ora'
 import yargs from 'yargs'
-
 
 const builder = () => {
   return yargs
@@ -10,22 +10,19 @@ const builder = () => {
     .version(false)
 }
 
-const handler = async (argv) => {
-  const pando = await Pando.create(argv.configuration)
-  const tasks = new Listr([
-  	{
-  		title: 'Initializing pando plant',
-  		task: async () => {
-        const options = { ethereum: { account: '0xb4124cEB3451635DAcedd11767f004d8a28c6eE7' } }
-        const plant = await pando.plants.create()
-
-      }
-    }
-  ])
+const handler = async argv => {
+  let pando
+  let spinner
 
   try {
-    await tasks.run()
-  } catch (err) {}
+    spinner = ora(chalk.dim('Initializing plant')).start()
+    pando = await Pando.create(argv.configuration)
+    await pando.plants.create()
+
+    spinner.succeed(chalk.dim('Plant initialized'))
+  } catch (err) {
+    spinner.fail(chalk.dim(err.message))
+  }
 
   await pando.close()
 }
@@ -36,6 +33,6 @@ export const init = {
   aliases: ['init'],
   desc: 'Initialize plant',
   builder,
-  handler
+  handler,
 }
 /* tslint:enable:object-literal-sort-keys */

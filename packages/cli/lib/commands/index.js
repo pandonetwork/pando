@@ -16,10 +16,4 @@ __export(require("./fibers"));
 __export(require("./organizations"));
 __export(require("./organisms"));
 __export(require("./individuate"));
-// export * from './clone'
-// export * from './fetch'
-// export * from './push'
-// export * from './pull'
-// export * from './log'
-// export * from './remote'
 //# sourceMappingURL=index.js.map

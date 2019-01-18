@@ -1,5 +1,6 @@
 import Pando from '@pando/pando.js'
-import Listr from 'listr'
+import chalk from 'chalk'
+import ora from 'ora'
 import yargs from 'yargs'
 
 const builder = () => {
@@ -9,45 +10,29 @@ const builder = () => {
     .version(false)
 }
 
-const handler = async (argv) => {
-  const pando = await Pando.create(argv.configuration)
+const handler = async argv => {
+  let pando
+  let spinner
 
   try {
+    spinner = ora(chalk.dim(`Creating fiber '${argv.name}'`)).start()
+    pando = await Pando.create(argv.configuration)
     const plant = await pando.plants.load()
+    await plant.fibers.create(argv.name)
 
-    const tasks = new Listr([{
-      title: 'Creating fiber ' + argv.name,
-      task: async () => {
-        await await plant.fibers.create(argv.name)
-      }
-    }])
-
-    await tasks.run()
-  } catch (err) {}
+    spinner.succeed(chalk.dim(`Fiber '${argv.name}' created`))
+  } catch (err) {
+    spinner.fail(chalk.dim(err.message))
+  }
 
   await pando.close()
 }
-
-
-
-// const handler = async argv => {
-//   try {
-//       const repository = await Repository.load()
-//
-//       await repository.fibers.create(argv.name)
-//
-//
-//       display.success('Fiber ' + argv.name + ' created')
-//   } catch (err) {
-//     display.error(err.message)
-//   }
-// }
 
 /* tslint:disable:object-literal-sort-keys */
 export const create = {
   command: 'create <name>',
   desc: 'Create a new fiber',
   builder,
-  handler
+  handler,
 }
 /* tslint:enable:object-literal-sort-keys */

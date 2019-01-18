@@ -2,6 +2,7 @@ import Pando from '@pando/pando.js'
 import chalk from 'chalk'
 import figures from 'figures'
 import yargs from 'yargs'
+import * as display from '../../../ui/display'
 
 const builder = () => {
   return yargs
@@ -10,20 +11,14 @@ const builder = () => {
     .version(false)
 }
 
-const handler = async (argv) => {
-  const pando = await Pando.create(argv.configuration)
+const handler = async argv => {
+  let pando
 
   try {
+    pando = await Pando.create(argv.configuration)
     const plant = await pando.plants.load()
     const fibers = await plant.fibers.list()
-
-    for (const fiber of fibers) {
-        if (fiber.current) {
-            console.log(figures('❯ ') + chalk.green(fiber.name))
-        } else {
-            console.log(figures('  ') + fiber.name)
-        }
-    }
+    display.list(fibers)
   } catch (err) {}
 
   await pando.close()
@@ -35,6 +30,6 @@ export const list = {
   aliases: ['ls'],
   desc: 'List fibers',
   builder,
-  handler
+  handler,
 }
 /* tslint:enable:object-literal-sort-keys */

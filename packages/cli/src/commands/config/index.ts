@@ -10,7 +10,7 @@ const builder = () => {
     .option('global', {
       alias: 'g',
       describe: 'Configure pando globally',
-      type: 'boolean'
+      type: 'boolean',
     })
     .strict(false)
     .help()
@@ -27,7 +27,7 @@ const handler = async argv => {
       await json.writeFile(path.join(process.cwd(), '.pando', '.pandorc'), configuration)
     }
   } catch (err) {
-    display.error(err.message)
+    console.log(err)
   }
 }
 
@@ -37,6 +37,6 @@ export const config = {
   aliases: ['config'],
   desc: 'Configure pando',
   builder,
-  handler
+  handler,
 }
 /* tslint:enable:object-literal-sort-keys */

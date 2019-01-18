@@ -17,7 +17,6 @@ var builder = function () {
         .usage('pando organisms <subcommand>')
         .command(subcommands.list)
         .command(subcommands.deploy)
-        // .command(subcommands.delete_)
         .updateStrings({ 'Commands:': 'Subcommands:' })
         .demandCommand(1, 'No subcommand provided')
         .strict()
@@ -28,7 +27,7 @@ var builder = function () {
 exports.organisms = {
     command: 'organisms <subcommand>',
     desc: 'Handle organisms',
-    builder: builder
+    builder: builder,
 };
 /* tslint:enable:object-literal-sort-keys */
 //# sourceMappingURL=index.js.map

@@ -40,7 +40,8 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 var _this = this;
 Object.defineProperty(exports, "__esModule", { value: true });
 var pando_js_1 = __importDefault(require("@pando/pando.js"));
-var listr_1 = __importDefault(require("listr"));
+var chalk_1 = __importDefault(require("chalk"));
+var ora_1 = __importDefault(require("ora"));
 var yargs_1 = __importDefault(require("yargs"));
 var builder = function () {
     return yargs_1.default
@@ -49,43 +50,26 @@ var builder = function () {
         .version(false);
 };
 var handler = function (argv) { return __awaiter(_this, void 0, void 0, function () {
-    var pando, tasks, err_1;
-    var _this = this;
+    var pando, spinner, err_1;
     return __generator(this, function (_a) {
         switch (_a.label) {
-            case 0: return [4 /*yield*/, pando_js_1.default.create(argv.configuration)];
+            case 0:
+                _a.trys.push([0, 3, , 4]);
+                spinner = ora_1.default(chalk_1.default.dim('Initializing plant')).start();
+                return [4 /*yield*/, pando_js_1.default.create(argv.configuration)];
             case 1:
                 pando = _a.sent();
-                tasks = new listr_1.default([
-                    {
-                        title: 'Initializing pando plant',
-                        task: function () { return __awaiter(_this, void 0, void 0, function () {
-                            var options, plant;
-                            return __generator(this, function (_a) {
-                                switch (_a.label) {
-                                    case 0:
-                                        options = { ethereum: { account: '0xb4124cEB3451635DAcedd11767f004d8a28c6eE7' } };
-                                        return [4 /*yield*/, pando.plants.create()];
-                                    case 1:
-                                        plant = _a.sent();
-                                        return [2 /*return*/];
-                                }
-                            });
-                        }); }
-                    }
-                ]);
-                _a.label = 2;
+                return [4 /*yield*/, pando.plants.create()];
             case 2:
-                _a.trys.push([2, 4, , 5]);
-                return [4 /*yield*/, tasks.run()];
-            case 3:
                 _a.sent();
-                return [3 /*break*/, 5];
-            case 4:
+                spinner.succeed(chalk_1.default.dim('Plant initialized'));
+                return [3 /*break*/, 4];
+            case 3:
                 err_1 = _a.sent();
-                return [3 /*break*/, 5];
-            case 5: return [4 /*yield*/, pando.close()];
-            case 6:
+                spinner.fail(chalk_1.default.dim(err_1.message));
+                return [3 /*break*/, 4];
+            case 4: return [4 /*yield*/, pando.close()];
+            case 5:
                 _a.sent();
                 return [2 /*return*/];
         }
@@ -97,7 +81,7 @@ exports.init = {
     aliases: ['init'],
     desc: 'Initialize plant',
     builder: builder,
-    handler: handler
+    handler: handler,
 };
 /* tslint:enable:object-literal-sort-keys */
 //# sourceMappingURL=index.js.map

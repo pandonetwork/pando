@@ -37,27 +37,19 @@ var __generator = (this && this.__generator) || function (thisArg, body) {
 var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
-var __importStar = (this && this.__importStar) || function (mod) {
-    if (mod && mod.__esModule) return mod;
-    var result = {};
-    if (mod != null) for (var k in mod) if (Object.hasOwnProperty.call(mod, k)) result[k] = mod[k];
-    result["default"] = mod;
-    return result;
-};
 var _this = this;
 Object.defineProperty(exports, "__esModule", { value: true });
 var jsonfile_1 = __importDefault(require("jsonfile"));
 var os_1 = __importDefault(require("os"));
 var path_1 = __importDefault(require("path"));
 var yargs_1 = __importDefault(require("yargs"));
-var display = __importStar(require("../../ui/display"));
 var inquirer_1 = __importDefault(require("../../ui/inquirer"));
 var builder = function () {
     return yargs_1.default
         .option('global', {
         alias: 'g',
         describe: 'Configure pando globally',
-        type: 'boolean'
+        type: 'boolean',
     })
         .strict(false)
         .help()
@@ -84,7 +76,7 @@ var handler = function (argv) { return __awaiter(_this, void 0, void 0, function
             case 5: return [3 /*break*/, 7];
             case 6:
                 err_1 = _a.sent();
-                display.error(err_1.message);
+                console.log(err_1);
                 return [3 /*break*/, 7];
             case 7: return [2 /*return*/];
         }
@@ -96,7 +88,7 @@ exports.config = {
     aliases: ['config'],
     desc: 'Configure pando',
     builder: builder,
-    handler: handler
+    handler: handler,
 };
 /* tslint:enable:object-literal-sort-keys */
 //# sourceMappingURL=index.js.map

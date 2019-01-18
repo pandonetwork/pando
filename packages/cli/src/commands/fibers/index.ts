@@ -6,7 +6,6 @@ const builder = () => {
     .usage('pando fibers <subcommand>')
     .command(subcommands.list)
     .command(subcommands.create)
-    .command(subcommands.delete_)
     .updateStrings({ 'Commands:': 'Subcommands:' })
     .demandCommand(1, 'No subcommand provided')
     .strict()
@@ -17,6 +16,6 @@ const builder = () => {
 export const fibers = {
   command: 'fibers <subcommand>',
   desc: 'Handle fibers',
-  builder
+  builder,
 }
 /* tslint:enable:object-literal-sort-keys */

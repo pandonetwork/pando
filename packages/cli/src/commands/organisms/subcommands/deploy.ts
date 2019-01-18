@@ -1,5 +1,6 @@
 import Pando from '@pando/pando.js'
-import Listr from 'listr'
+import chalk from 'chalk'
+import ora from 'ora'
 import yargs from 'yargs'
 
 const builder = () => {
@@ -7,35 +8,29 @@ const builder = () => {
     .option('organization', {
       alias: 'o',
       description: 'The organization to deploy the organism in',
-      required: true
+      required: true,
     })
     .help()
     .strict(false)
     .version(false)
 }
 
-const handler = async (argv) => {
-  const pando = await Pando.create(argv.configuration)
+const handler = async argv => {
+  let pando
+  let spinner
 
   try {
+    spinner = ora(chalk.dim(`Deploying organism '${argv.name}'`)).start()
+    pando = await Pando.create(argv.configuration)
     const plant = await pando.plants.load()
     const organization = await plant.organizations.load({ name: argv.organization })
-    
-    const tasks = new Listr([{
-      title: `Deploying '${argv.name}'`,
-      task: async (ctx, task) => {
-        const organism = await organization.organisms.deploy(argv.name)
-        task.title = `'${argv.name}' deployed at address ${organism.address}`
-      }
-    }])
-
-    await tasks.run()
+    const organism = await organization.organisms.deploy(argv.name)
+    spinner.succeed(chalk.dim(`Organism '${argv.name}' deployed at address ${organism.address}`))
   } catch (err) {
-    console.log(err)
+    spinner.fail(chalk.dim(err.message))
   }
 
   await pando.close()
-
 }
 
 /* tslint:disable:object-literal-sort-keys */
@@ -43,6 +38,6 @@ export const deploy = {
   command: 'deploy <name>',
   desc: 'Deploy a new organism',
   builder,
-  handler
+  handler,
 }
 /* tslint:enable:object-literal-sort-keys */
