@@ -1,6 +1,6 @@
-import path from 'path'
 import find from 'find-up'
 import fs from 'fs'
+import path from 'path'
 
 const defaults = {
   "ethereum":

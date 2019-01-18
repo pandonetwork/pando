@@ -1,8 +1,8 @@
-import * as display from './display'
+import { PWebsocketProvider } from '@pando/types'
 import * as inquirer from 'inquirer'
 import HDWalletProvider from 'truffle-hdwallet-provider'
 import Web3 from 'web3'
-import { PWebsocketProvider } from '@pando/types'
+import * as display from './display'
 
 const _provider = (configuration): PWebsocketProvider => {
   const url =

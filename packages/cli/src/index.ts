@@ -1,17 +1,14 @@
 #!/usr/bin/env node
 
-import path from 'path'
 import find from 'find-up'
 import fs from 'fs'
+import path from 'path'
 import yargs from 'yargs'
 import * as commands from './commands'
 import configuration from './configuration'
 
-
-const config = configuration()
-
 const argv = yargs
-  .config(config)
+  .config(configuration())
   .usage('pando <command>')
   .command(commands.config)
   .command(commands.init)
@@ -29,5 +26,4 @@ const argv = yargs
   .demandCommand(1, 'No command provided')
   .strict()
   .help()
-  .alias('h', 'help')
-  .argv
+  .alias('h', 'help').argv

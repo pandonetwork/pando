@@ -1,6 +1,6 @@
+import Pando from '@pando/pando.js'
 import chalk from 'chalk'
 import Listr from 'listr'
-import Pando from '@pando/pando.js'
 import yargs from 'yargs'
 
 

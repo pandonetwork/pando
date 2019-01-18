@@ -1,6 +1,6 @@
+import Pando from '@pando/pando.js'
 import chalk from 'chalk'
 import figures from 'figures'
-import Pando from '@pando/pando.js'
 import yargs from 'yargs'
 
 const builder = () => {
@@ -17,7 +17,7 @@ const handler = async (argv) => {
     const plant = await pando.plants.load()
     const fibers = await plant.fibers.list()
 
-    for (let fiber of fibers) {
+    for (const fiber of fibers) {
         if (fiber.current) {
             console.log(figures('❯ ') + chalk.green(fiber.name))
         } else {

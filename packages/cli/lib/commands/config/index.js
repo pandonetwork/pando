@@ -34,6 +34,9 @@ var __generator = (this && this.__generator) || function (thisArg, body) {
         if (op[0] & 5) throw op[1]; return { value: op[0] ? op[1] : void 0, done: true };
     }
 };
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
 var __importStar = (this && this.__importStar) || function (mod) {
     if (mod && mod.__esModule) return mod;
     var result = {};
@@ -41,17 +44,14 @@ var __importStar = (this && this.__importStar) || function (mod) {
     result["default"] = mod;
     return result;
 };
-var __importDefault = (this && this.__importDefault) || function (mod) {
-    return (mod && mod.__esModule) ? mod : { "default": mod };
-};
 var _this = this;
 Object.defineProperty(exports, "__esModule", { value: true });
-var display = __importStar(require("../../ui/display"));
-var path_1 = __importDefault(require("path"));
-var os_1 = __importDefault(require("os"));
-var inquirer_1 = __importDefault(require("../../ui/inquirer"));
-var yargs_1 = __importDefault(require("yargs"));
 var jsonfile_1 = __importDefault(require("jsonfile"));
+var os_1 = __importDefault(require("os"));
+var path_1 = __importDefault(require("path"));
+var yargs_1 = __importDefault(require("yargs"));
+var display = __importStar(require("../../ui/display"));
+var inquirer_1 = __importDefault(require("../../ui/inquirer"));
 var builder = function () {
     return yargs_1.default
         .option('global', {

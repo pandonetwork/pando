@@ -14,9 +14,8 @@ Object.defineProperty(exports, "__esModule", { value: true });
 var yargs_1 = __importDefault(require("yargs"));
 var commands = __importStar(require("./commands"));
 var configuration_1 = __importDefault(require("./configuration"));
-var config = configuration_1.default();
 var argv = yargs_1.default
-    .config(config)
+    .config(configuration_1.default())
     .usage('pando <command>')
     .command(commands.config)
     .command(commands.init)
@@ -34,6 +33,5 @@ var argv = yargs_1.default
     .demandCommand(1, 'No command provided')
     .strict()
     .help()
-    .alias('h', 'help')
-    .argv;
+    .alias('h', 'help').argv;
 //# sourceMappingURL=index.js.map

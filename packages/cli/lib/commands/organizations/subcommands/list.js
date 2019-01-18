@@ -39,8 +39,8 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 };
 var _this = this;
 Object.defineProperty(exports, "__esModule", { value: true });
-var chalk_1 = __importDefault(require("chalk"));
 var pando_js_1 = __importDefault(require("@pando/pando.js"));
+var chalk_1 = __importDefault(require("chalk"));
 var yargs_1 = __importDefault(require("yargs"));
 var builder = function () {
     return yargs_1.default

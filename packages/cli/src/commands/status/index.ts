@@ -1,6 +1,6 @@
+import Pando from '@pando/pando.js'
 import chalk from 'chalk'
 import Listr from 'listr'
-import Pando from '@pando/pando.js'
 import yargs from 'yargs'
 
 
@@ -26,7 +26,7 @@ const handler = async (argv) => {
         console.log('➜ these files will be automatically considered for snapshot')
         console.log("➜ use pando untrack <f> if you don't want to track modifications to file f")
         console.log('')
-        for (let file of status.modified) {
+        for (const file of status.modified) {
             console.log('+ ' + file)
         }
         console.log('')
@@ -37,7 +37,7 @@ const handler = async (argv) => {
         console.log("➜ these files won't be considered for snapshot")
         console.log("➜ use pando track <f> if you want to track modifications to file f")
         console.log('')
-        for (let file of status.untracked) {
+        for (const file of status.untracked) {
             console.log('+ ' + file)
         }
         console.log('')

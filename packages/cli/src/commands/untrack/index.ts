@@ -1,5 +1,5 @@
-import Listr from 'listr'
 import Pando from '@pando/pando.js'
+import Listr from 'listr'
 import yargs from 'yargs'
 
 
@@ -20,8 +20,8 @@ const handler = async (argv) => {
     const list: any[] = []
 
 
-    for (let path of argv.files) {
-      let task = {
+    for (const path of argv.files) {
+      const task = {
         title: 'untracking ' + path,
     		task: async () => {
           await fiber.index.untrack([path])

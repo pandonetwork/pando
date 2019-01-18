@@ -1,9 +1,9 @@
-import * as display from '../../ui/display'
-import path from 'path'
-import os from 'os'
-import prompt from '../../ui/inquirer'
-import yargs from 'yargs'
 import json from 'jsonfile'
+import os from 'os'
+import path from 'path'
+import yargs from 'yargs'
+import * as display from '../../ui/display'
+import prompt from '../../ui/inquirer'
 
 const builder = () => {
   return yargs

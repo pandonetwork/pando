@@ -1,6 +1,6 @@
+import Pando from '@pando/pando.js'
 import chalk from 'chalk'
 import figures from 'figures'
-import Pando from '@pando/pando.js'
 import yargs from 'yargs'
 
 const builder = () => {
@@ -17,7 +17,7 @@ const handler = async (argv) => {
     const plant = await pando.plants.load()
     const organizations = await plant.organizations.list()
 
-    for (let organization of organizations) {
+    for (const organization of organizations) {
       console.log(chalk.cyan.bold.underline(organization.name) + ' ' + chalk.magenta.bold(organization.address))
       console.log(chalk.white('ACL   ') + ' ' + chalk.dim(organization.acl))
       console.log(chalk.white('Colony') + ' ' + chalk.dim(organization.colony))

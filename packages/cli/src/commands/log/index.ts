@@ -1,6 +1,6 @@
+import Pando from '@pando/pando.js'
 import chalk from 'chalk'
 import Listr from 'listr'
-import Pando from '@pando/pando.js'
 import yargs from 'yargs'
 
 const builder = () => {
@@ -23,7 +23,7 @@ const handler = async (argv) => {
     const fiber = await plant.fibers.current()
     const logs  = await fiber.log()
 
-    for (let log_ of logs) {
+    for (const log_ of logs) {
       console.log(chalk.cyan.bold.underline('SNAPSHOT #' + log_.id) + ' ' + chalk.magenta.bold(log_.message))
       console.log(chalk.white(new Date(log_.timestamp).toString()))
       console.log(chalk.dim(log_.tree))
