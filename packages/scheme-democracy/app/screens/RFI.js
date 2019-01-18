@@ -8,6 +8,8 @@ import {
   TableCell,
   IconCheck,
   IconCross,
+  ProgressBar,
+  theme,
 } from '@aragon/ui'
 
 import Box from '../components/Box'
@@ -38,15 +40,24 @@ const Field = styled.input.attrs({
   box-sizing: border-box;
   box-shadow: 0px 4px 4px rgba(0, 0, 0, 0.03);
   border-radius: 3px;
+  margin-right: 2rem;
 `
 
 const StyledTableCell = styled(TableCell)`
   & > div {
-    justify-content: flex-start;
+    flex-direction: column;
+    align-items: flex-start;
   }
 `
 
+const StyledBox = styled(Box)`
+  align-items: center;
+`
+
 export default class App extends React.Component {
+  state = {
+    amount: '',
+  }
   render() {
     const { rfiVotes, rfiIndex, rflVotes } = this.props
     const currentRFI = rfiVotes[rfiIndex]
@@ -66,16 +77,81 @@ export default class App extends React.Component {
             }
           >
             <TableRow>
-              <TableCell>Update README.md</TableCell>
+              <TableCell>{currentRFI.metadata.message}</TableCell>
               <TableCell>{currentRFI.organism}</TableCell>
-              <StyledTableCell>
-                <Button>
-                  <IconCheck /> Accept
-                </Button>
-                <Button>
-                  <IconCross /> Reject
-                </Button>
-              </StyledTableCell>
+              <TableCell>
+                {currentRFI.state === '0' && (
+                  <Box
+                    width="100%"
+                    flexDirection="column"
+                    alignItems="flex-start"
+                  >
+                    <Box
+                      width="100%"
+                      display="flex"
+                      flexDirection="column"
+                      mb="1rem"
+                    >
+                      <StyledBox width="100%" display="flex" mb="1rem">
+                        <Box mr="1rem">
+                          <IconCheck />
+                        </Box>
+                        <ProgressBar
+                          color={theme.positive}
+                          progress={currentRFI.yea / currentRFI.participation}
+                        />
+                      </StyledBox>
+                      <StyledBox width="100%" display="flex">
+                        <Box mr="1rem">
+                          <IconCross />
+                        </Box>
+                        <ProgressBar
+                          color={theme.negative}
+                          progress={currentRFI.nay / currentRFI.participation}
+                        />
+                      </StyledBox>
+                    </Box>
+                    <Box display="flex">
+                      <Button
+                        onClick={() =>
+                          this.props.app.mergeRFI(
+                            currentRFI.organism,
+                            currentRFI.RFIid
+                          )
+                        }
+                      >
+                        <IconCheck /> Accept
+                      </Button>
+                      <Button
+                        onClick={() =>
+                          this.props.app.rejectRFI(
+                            currentRFI.organism,
+                            currentRFI.RFIid
+                          )
+                        }
+                      >
+                        <IconCross /> Reject
+                      </Button>
+                    </Box>
+                  </Box>
+                )}
+                {currentRFI.state === '1' && (
+                  <StyledBox width="100%" display="flex">
+                    <Box mr="1rem">
+                      <IconCheck />
+                    </Box>
+                    <Text color={theme.positive}>Executed</Text>
+                  </StyledBox>
+                )}
+                {currentRFI.state === '2' && (
+                  <StyledBox width="100%" display="flex">
+                    <Box mr="1rem">
+                      <IconCross />
+                    </Box>
+                    <Text color={theme.negative}>Cancelled</Text>
+                  </StyledBox>
+                )}
+              </TableCell>
             </TableRow>
           </Table>
         </Box>
@@ -86,6 +162,7 @@ export default class App extends React.Component {
           <Table
             header={
               <TableRow>
+                <TableHeader title="ID" />
                 <TableHeader title="Receiver" />
                 <TableHeader title="For" />
                 <TableHeader title="Minimum" />
@@ -95,20 +172,58 @@ export default class App extends React.Component {
           >
             {rflVotes
               .filter(({ organism }) => organism === currentRFI.organism)
-              .map(({ organism, required }) => (
+              .map(({ organism, RFLid, metadata, state }) => (
                 <TableRow>
-                  <TableCell>0xadf...</TableCell>
+                  <TableCell>RFL #{RFLid}</TableCell>
+                  <TableCell>{metadata.destination}</TableCell>
                   <TableCell>Developer</TableCell>
-                  <TableCell>{required} NLT</TableCell>
-                  <StyledTableCell>
-                    <Button>
-                      <IconCheck /> Accept
-                    </Button>
-                    <Button>
-                      <IconCross /> Reject
-                    </Button>
-                    <Field placeholder="Enter amount..." />
-                  </StyledTableCell>
+                  <TableCell>{metadata.minimum} NLT</TableCell>
+                  <TableCell>
+                    {state === '0' && (
+                      <Box display="flex" alignItems="center">
+                        <Button
+                          onClick={() =>
+                            this.props.app.acceptRFL(
+                              organism,
+                              RFLid,
+                              this.state.amount
+                            )
+                          }
+                        >
+                          <IconCheck /> Accept
+                        </Button>
+                        <Field
+                          placeholder="Enter amount..."
+                          onChange={e =>
+                            this.setState({ amount: e.target.value })
+                          }
+                        />
+                        <Button
+                          onClick={() =>
+                            this.props.app.rejectRFL(organism, RFLid)
+                          }
+                        >
+                          <IconCross /> Reject
+                        </Button>
+                      </Box>
+                    )}
+                    {state === '1' && (
+                      <StyledBox width="100%" display="flex">
+                        <Box mr="1rem">
+                          <IconCheck />
+                        </Box>
+                        <Text color={theme.positive}>Executed</Text>
+                      </StyledBox>
+                    )}
+                    {state === '2' && (
+                      <StyledBox width="100%" display="flex">
+                        <Box mr="1rem">
+                          <IconCross />
+                        </Box>
+                        <Text color={theme.negative}>Cancelled</Text>
+                      </StyledBox>
+                    )}
+                  </TableCell>
                 </TableRow>
               ))}
           </Table>
