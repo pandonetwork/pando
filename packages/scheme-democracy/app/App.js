@@ -73,6 +73,7 @@ export default class App extends React.Component {
               rfiVotes={this.props.rfiVotes}
               rflVotes={this.props.rflVotes}
               rfiIndex={selectedRFIIndex}
+              app={this.props.app}
             />
           )}
         </AppView>

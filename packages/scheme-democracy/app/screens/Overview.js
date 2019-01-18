@@ -73,13 +73,19 @@ export default props => (
         >
           {props.rfiVotes
             .filter(({ state }) => state === '0')
-            .map(({ RFIid, participation, yea, nay }, idx) => (
+            .map(({ RFIid, participation, yea, nay, metadata }) => (
               <StyledTableRow
-                onClick={() => props.forward(`RFI #${RFIid}`, idx)}
+                onClick={() =>
+                  props.forward(`RFI #${RFIid}`, Number(RFIid) - 1)
+                }
               >
                 <TableCell>RFI #{RFIid}</TableCell>
-                <TableCell>Message...</TableCell>
-                <TableCell>{participation} participants</TableCell>
+                <TableCell>{metadata.message}</TableCell>
+                <TableCell>
+                  {participation > 1
+                    ? participation + ' participants'
+                    : participation + ' participant'}
+                </TableCell>
                 <StyledTableCell>
                   <StyledBox width="100%" display="flex" mb="1rem">
                     <Box mr="1rem">
@@ -123,14 +129,37 @@ export default props => (
         >
           {props.rfiVotes
             .filter(({ state }) => state !== '0')
-            .map(({ RFIid, participants }, idx) => (
+            .map(({ RFIid, participation, state }) => (
               <StyledTableRow
-                onClick={() => props.forward(`RFI #${RFIid}`, idx)}
+                onClick={() =>
+                  props.forward(`RFI #${RFIid}`, Number(RFIid) - 1)
+                }
               >
                 <TableCell>RFI #{RFIid}</TableCell>
                 <TableCell>Message...</TableCell>
-                <TableCell>{participants} participants</TableCell>
-                <StyledTableCell>Pending - Show progress</StyledTableCell>
+                <TableCell>
+                  {participation > 1
+                    ? participation + ' participants'
+                    : participation + ' participant'}
+                </TableCell>
+                <StyledTableCell>
+                  {state === '1' && (
+                    <StyledBox width="100%" display="flex">
+                      <Box mr="1rem">
+                        <IconCheck />
+                      </Box>
+                      <Text color={theme.positive}>Executed</Text>
+                    </StyledBox>
+                  )}
+                  {state === '2' && (
+                    <StyledBox width="100%" display="flex">
+                      <Box mr="1rem">
+                        <IconCross />
+                      </Box>
+                      <Text color={theme.negative}>Cancelled</Text>
+                    </StyledBox>
+                  )}
+                </StyledTableCell>
               </StyledTableRow>
             ))}
         </Table>
