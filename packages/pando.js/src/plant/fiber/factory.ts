@@ -104,11 +104,12 @@ export default class FiberFactory {
         objectMode: true,
         write: async (fiber, encoding, next) => {
           if (fiber.value.current) {
-            if (uuid) {
-              current = fiber.key
-            } else {
-              current = await this.load(fiber.key, { uuid: true })
-            }
+            current = uuid ? fiber.key : await this.load(fiber.key, { uuid: true })
+            // if (uuid) {
+            //   current = fiber.key
+            // } else {
+            //   current = await this.load(fiber.key, { uuid: true })
+            // }
           }
           next()
         },

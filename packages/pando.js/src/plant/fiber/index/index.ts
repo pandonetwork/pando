@@ -1,7 +1,6 @@
 import fs from 'fs-extra'
 import IPFS from 'ipfs'
 import Level from 'level'
-import levelup from 'levelup'
 import npath from 'path'
 import Fiber from '../'
 import Repository from '../../'

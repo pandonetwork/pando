@@ -40,7 +40,10 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 Object.defineProperty(exports, "__esModule", { value: true });
 var fs_extra_1 = __importDefault(require("fs-extra"));
 var ipfs_http_client_1 = __importDefault(require("ipfs-http-client"));
+var klaw_1 = __importDefault(require("klaw"));
 var path_1 = __importDefault(require("path"));
+var stream_1 = __importDefault(require("stream"));
+var through2_1 = __importDefault(require("through2"));
 var factory_1 = __importDefault(require("./fiber/factory"));
 var factory_2 = __importDefault(require("./organization/factory"));
 var Plant = /** @class */ (function () {
@@ -58,6 +61,44 @@ var Plant = /** @class */ (function () {
         this.organizations = new factory_2.default(this);
         this.fibers = new factory_1.default(this);
     }
+    Plant.prototype.extract = function (_organization, _organism) {
+        return __awaiter(this, void 0, void 0, function () {
+            var ipfs, organization, organism, head, fiber, metadata;
+            return __generator(this, function (_a) {
+                switch (_a.label) {
+                    case 0:
+                        ipfs = new ipfs_http_client_1.default({ host: 'localhost', port: '5001', protocol: 'http' });
+                        return [4 /*yield*/, this.organizations.load({ name: _organization })];
+                    case 1:
+                        organization = _a.sent();
+                        return [4 /*yield*/, organization.organisms.load({ name: _organism })];
+                    case 2:
+                        organism = _a.sent();
+                        return [4 /*yield*/, organism.head()];
+                    case 3:
+                        head = _a.sent();
+                        if (!(head.blockstamp !== 0)) return [3 /*break*/, 9];
+                        return [4 /*yield*/, this.fibers.current()];
+                    case 4:
+                        fiber = (_a.sent());
+                        return [4 /*yield*/, fiber.snapshot("Automatic snapshot before extraction of " + _organization + ":" + _organism)];
+                    case 5:
+                        _a.sent();
+                        return [4 /*yield*/, this._clear()];
+                    case 6:
+                        _a.sent();
+                        return [4 /*yield*/, ipfs.dag.get(head.metadata)];
+                    case 7:
+                        metadata = _a.sent();
+                        return [4 /*yield*/, this._download(metadata.value.tree)];
+                    case 8:
+                        _a.sent();
+                        _a.label = 9;
+                    case 9: return [2 /*return*/];
+                }
+            });
+        });
+    };
     Plant.prototype.publish = function (organizationName, organismName, message) {
         if (message === void 0) { message = 'n/a'; }
         return __awaiter(this, void 0, void 0, function () {
@@ -140,6 +181,114 @@ var Plant = /** @class */ (function () {
                 }
             });
         });
+    };
+    Plant.prototype._download = function (cid, relativePath) {
+        if (relativePath === void 0) { relativePath = ''; }
+        return __awaiter(this, void 0, void 0, function () {
+            var ipfs, entries, _i, entries_1, entry, buffer;
+            return __generator(this, function (_a) {
+                switch (_a.label) {
+                    case 0:
+                        ipfs = new ipfs_http_client_1.default({ host: 'localhost', port: '5001', protocol: 'http' });
+                        return [4 /*yield*/, ipfs.ls(cid)];
+                    case 1:
+                        entries = _a.sent();
+                        _i = 0, entries_1 = entries;
+                        _a.label = 2;
+                    case 2:
+                        if (!(_i < entries_1.length)) return [3 /*break*/, 10];
+                        entry = entries_1[_i];
+                        if (!(entry.type === 'dir')) return [3 /*break*/, 5];
+                        return [4 /*yield*/, this._download(entry.hash, path_1.default.join(relativePath, entry.name))];
+                    case 3:
+                        _a.sent();
+                        return [4 /*yield*/, fs_extra_1.default.ensureDir(path_1.default.join(this.paths.root, this.paths.root, relativePath, entry.name))];
+                    case 4:
+                        _a.sent();
+                        return [3 /*break*/, 9];
+                    case 5: return [4 /*yield*/, ipfs.cat(entry.hash)];
+                    case 6:
+                        buffer = _a.sent();
+                        return [4 /*yield*/, fs_extra_1.default.ensureFile(path_1.default.join(this.paths.root, relativePath, entry.name))];
+                    case 7:
+                        _a.sent();
+                        return [4 /*yield*/, fs_extra_1.default.writeFile(path_1.default.join(this.paths.root, relativePath, entry.name), buffer)];
+                    case 8:
+                        _a.sent();
+                        _a.label = 9;
+                    case 9:
+                        _i++;
+                        return [3 /*break*/, 2];
+                    case 10: return [2 /*return*/];
+                }
+            });
+        });
+    };
+    Plant.prototype._clear = function () {
+        return __awaiter(this, void 0, void 0, function () {
+            var files, ops;
+            var _this = this;
+            return __generator(this, function (_a) {
+                files = [];
+                ops = [];
+                return [2 /*return*/, new Promise(function (resolve, reject) {
+                        var write = new stream_1.default.Writable({
+                            objectMode: true,
+                            write: function (file, encoding, next) { return __awaiter(_this, void 0, void 0, function () {
+                                return __generator(this, function (_a) {
+                                    files.push(file.path);
+                                    next();
+                                    return [2 /*return*/];
+                                });
+                            }); },
+                        });
+                        write
+                            .on('error', function (err) {
+                            reject(err);
+                        })
+                            .on('finish', function () { return __awaiter(_this, void 0, void 0, function () {
+                            var _i, files_1, file;
+                            return __generator(this, function (_a) {
+                                switch (_a.label) {
+                                    case 0:
+                                        for (_i = 0, files_1 = files; _i < files_1.length; _i++) {
+                                            file = files_1[_i];
+                                            ops.push(fs_extra_1.default.remove(file));
+                                        }
+                                        return [4 /*yield*/, Promise.all(ops)];
+                                    case 1:
+                                        _a.sent();
+                                        resolve();
+                                        return [2 /*return*/];
+                                }
+                            });
+                        }); });
+                        _this._ls(_this.paths.root, { dir: true }).pipe(write);
+                    })];
+            });
+        });
+    };
+    Plant.prototype._ls = function (path, _a) {
+        var _b = _a === void 0 ? {} : _a, _c = _b.all, all = _c === void 0 ? false : _c, _d = _b.dir, dir = _d === void 0 ? false : _d;
+        var root = path_1.default.resolve(this.paths.root);
+        return klaw_1.default(path).pipe(through2_1.default.obj(function (item, enc, next) {
+            if (item.path === root) {
+                // ignore .
+                next();
+            }
+            else if (!all && item.path.indexOf('.pando') >= 0) {
+                // ignore .pando directory
+                next();
+            }
+            else if (!dir && item.stats.isDirectory()) {
+                // ignore empty directories
+                next();
+            }
+            else {
+                this.push(item);
+                next();
+            }
+        }));
     };
     return Plant;
 }());

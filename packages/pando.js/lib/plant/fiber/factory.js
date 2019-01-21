@@ -204,18 +204,28 @@ var FiberFactory = /** @class */ (function () {
                         var write = new stream_1.default.Writable({
                             objectMode: true,
                             write: function (fiber, encoding, next) { return __awaiter(_this, void 0, void 0, function () {
-                                return __generator(this, function (_a) {
-                                    switch (_a.label) {
+                                var _a;
+                                return __generator(this, function (_b) {
+                                    switch (_b.label) {
                                         case 0:
-                                            if (!fiber.value.current) return [3 /*break*/, 3];
+                                            if (!fiber.value.current) return [3 /*break*/, 4];
                                             if (!uuid) return [3 /*break*/, 1];
-                                            current = fiber.key;
+                                            _a = fiber.key;
                                             return [3 /*break*/, 3];
-                                        case 1: return [4 /*yield*/, this.load(fiber.key, { uuid: true })];
+                                        case 1: return [4 /*yield*/, this.load(fiber.key, { uuid: true })
+                                            // if (uuid) {
+                                            //   current = fiber.key
+                                            // } else {
+                                            //   current = await this.load(fiber.key, { uuid: true })
+                                            // }
+                                        ];
                                         case 2:
-                                            current = _a.sent();
-                                            _a.label = 3;
+                                            _a = _b.sent();
+                                            _b.label = 3;
                                         case 3:
+                                            current = _a;
+                                            _b.label = 4;
+                                        case 4:
                                             next();
                                             return [2 /*return*/];
                                     }
