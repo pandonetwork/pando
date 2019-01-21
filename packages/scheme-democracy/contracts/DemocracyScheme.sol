@@ -107,14 +107,29 @@ contract DemocracyScheme is IPandoScheme, AragonApp {
         _createRFI(_organism, _individuation, _lineages);
     }
 
+    /**
+    * @notice Vote to merge RFI `_RFIid` in organism `_organism`
+    * @param _organism The organism to merge the RFI into
+    * @param _RFIid The RFI identifier
+    */
     function mergeRFI(IOrganism _organism, uint256 _RFIid) public isInitialized senderCanVoteOnRFI(_organism, _RFIid) {
         _mergeRFI(_organism, _RFIid);
     }
 
+    /**
+    * @notice Vote to reject RFI `_RFIid` from organism `_organism`
+    * @param _organism The organism to reject the RFI from
+    * @param _RFIid The RFI identifier
+    */
     function rejectRFI(IOrganism _organism, uint256 _RFIid) public isInitialized senderCanVoteOnRFI(_organism, _RFIid) {
         _rejectRFI(_organism, _RFIid);
     }
 
+    /**
+    * @notice Vote to accept RFL `_RFLid` with a value of `_value` NLT in organism `_organism`
+    * @param _organism The organism to accept the RFL in
+    * @param _RFLid The RFL identifier
+    */
     function acceptRFL(IOrganism _organism, uint256 _RFLid, uint256 _value)
         public
         isInitialized
@@ -124,6 +139,11 @@ contract DemocracyScheme is IPandoScheme, AragonApp {
         _acceptRFL(_organism, _RFLid, _value);
     }
 
+    /**
+    * @notice Vote to reject RFL `_RFLid` from organism `_organism`
+    * @param _organism The organism to reject the RFI from
+    * @param _RFLid The RFL identifier
+    */
     function rejectRFL(IOrganism _organism, uint256 _RFLid) public isInitialized senderCanVoteOnRFL(_organism, _RFLid) {
         _rejectRFL(_organism, _RFLid);
     }
