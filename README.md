@@ -1,5 +1,5 @@
 <div align="center">
-  <img align="center" src=".githun/visuals/logo.png" height="300px" />
+  <img align="center" src=".github/visuals/logo.png" height="300px" />
   <h1></h1>
 </div>
 
@@ -33,11 +33,39 @@ Pando [Latin for "spread out"] is a clonal colony of a single male quaking aspen
 
 ## Usage
 
-Dedicated documentation pages:
+### Clone the monorepo
 
-- [CLI](/packages/cli)
-- [Library](/packages/pando.js)
-- [Smart contracts](/packages/core)
+```
+git clone https://github.com/pandonetwork/pando.git
+```
+
+### Bootstrap the monorepo
+
+```
+cd pando
+lerna bootstrap
+```
+
+### Launch devtools
+
+In two different terminal windows:
+
+```
+aragon devchain
+aragon ipfs
+```
+
+### Compile contracts and build libraries
+
+```
+lerna run compile
+lerna run build
+```
+
+### Run tests
+```
+lerna run test
+```
 
 ## Contribute
 
