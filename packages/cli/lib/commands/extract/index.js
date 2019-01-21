@@ -40,76 +40,49 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 var _this = this;
 Object.defineProperty(exports, "__esModule", { value: true });
 var pando_js_1 = __importDefault(require("@pando/pando.js"));
-var listr_1 = __importDefault(require("listr"));
+var chalk_1 = __importDefault(require("chalk"));
+var ora_1 = __importDefault(require("ora"));
 var yargs_1 = __importDefault(require("yargs"));
 var builder = function () {
     return yargs_1.default
-        .option('organization', {
-        description: 'The organization the organism lives in',
-        required: true,
-    })
-        .option('organism', {
-        description: 'The organism to push the individuation to',
-        required: true,
-    })
-        .option('message', {
-        alias: 'm',
-        description: 'A message describing the individuation',
-        required: false,
-    })
-        .strict(false)
         .help()
+        .strict(false)
         .version(false);
 };
 var handler = function (argv) { return __awaiter(_this, void 0, void 0, function () {
-    var pando, plant_1, tasks, err_1;
-    var _this = this;
-    return __generator(this, function (_a) {
-        switch (_a.label) {
-            case 0: return [4 /*yield*/, pando_js_1.default.create(argv.configuration)];
+    var pando, spinner, plant, _a, organizationName, organismName, err_1;
+    return __generator(this, function (_b) {
+        switch (_b.label) {
+            case 0:
+                _b.trys.push([0, 4, , 5]);
+                spinner = ora_1.default(chalk_1.default.dim("Extracting fiber from " + argv.organism)).start();
+                return [4 /*yield*/, pando_js_1.default.create(argv.configuration)];
             case 1:
-                pando = _a.sent();
-                _a.label = 2;
-            case 2:
-                _a.trys.push([2, 5, , 6]);
+                pando = _b.sent();
                 return [4 /*yield*/, pando.plants.load()];
+            case 2:
+                plant = _b.sent();
+                _a = argv.organism.split(':'), organizationName = _a[0], organismName = _a[1];
+                return [4 /*yield*/, plant.extract(organizationName, organismName)];
             case 3:
-                plant_1 = _a.sent();
-                tasks = new listr_1.default([
-                    {
-                        title: "Pushing individuation to '" + argv.organization + ":" + argv.organism + "'",
-                        task: function (ctx, task) { return __awaiter(_this, void 0, void 0, function () {
-                            return __generator(this, function (_a) {
-                                switch (_a.label) {
-                                    case 0: return [4 /*yield*/, plant_1.publish(argv.organization, argv.organism, argv.message)];
-                                    case 1:
-                                        _a.sent();
-                                        task.title = "Individuation pushed to '" + argv.organization + ":" + argv.organism + "'";
-                                        return [2 /*return*/];
-                                }
-                            });
-                        }); },
-                    },
-                ]);
-                return [4 /*yield*/, tasks.run()];
+                _b.sent();
+                spinner.succeed(chalk_1.default.dim(argv.organism + " extracted locally"));
+                return [3 /*break*/, 5];
             case 4:
-                _a.sent();
-                return [3 /*break*/, 6];
-            case 5:
-                err_1 = _a.sent();
-                return [3 /*break*/, 6];
-            case 6: return [4 /*yield*/, pando.close()];
-            case 7:
-                _a.sent();
+                err_1 = _b.sent();
+                spinner.fail(chalk_1.default.dim(err_1.message));
+                return [3 /*break*/, 5];
+            case 5: return [4 /*yield*/, pando.close()];
+            case 6:
+                _b.sent();
                 return [2 /*return*/];
         }
     });
 }); };
 /* tslint:disable:object-literal-sort-keys */
-exports.individuate = {
-    command: 'individuate',
-    alias: 'indiv',
-    desc: 'Individuate organism',
+exports.extract = {
+    command: 'extract <organism>',
+    desc: 'Extract organism codebase into biome',
     builder: builder,
     handler: handler,
 };

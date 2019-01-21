@@ -44,21 +44,8 @@ var listr_1 = __importDefault(require("listr"));
 var yargs_1 = __importDefault(require("yargs"));
 var builder = function () {
     return yargs_1.default
-        .option('organization', {
-        description: 'The organization the organism lives in',
-        required: true,
-    })
-        .option('organism', {
-        description: 'The organism to push the individuation to',
-        required: true,
-    })
-        .option('message', {
-        alias: 'm',
-        description: 'A message describing the individuation',
-        required: false,
-    })
-        .strict(false)
         .help()
+        .strict(false)
         .version(false);
 };
 var handler = function (argv) { return __awaiter(_this, void 0, void 0, function () {
@@ -72,25 +59,26 @@ var handler = function (argv) { return __awaiter(_this, void 0, void 0, function
                 _a.label = 2;
             case 2:
                 _a.trys.push([2, 5, , 6]);
-                return [4 /*yield*/, pando.plants.load()];
+                return [4 /*yield*/, pando.plants.load()
+                    // const organization = await plant.organizations.deploy(argv.name)
+                ];
             case 3:
                 plant_1 = _a.sent();
-                tasks = new listr_1.default([
-                    {
-                        title: "Pushing individuation to '" + argv.organization + ":" + argv.organism + "'",
+                tasks = new listr_1.default([{
+                        title: "Deploying '" + argv.name + "'",
                         task: function (ctx, task) { return __awaiter(_this, void 0, void 0, function () {
+                            var organization;
                             return __generator(this, function (_a) {
                                 switch (_a.label) {
-                                    case 0: return [4 /*yield*/, plant_1.publish(argv.organization, argv.organism, argv.message)];
+                                    case 0: return [4 /*yield*/, plant_1.organizations.deploy(argv.name)];
                                     case 1:
-                                        _a.sent();
-                                        task.title = "Individuation pushed to '" + argv.organization + ":" + argv.organism + "'";
+                                        organization = _a.sent();
+                                        task.title = "'" + argv.name + "' deployed at address " + organization.address;
                                         return [2 /*return*/];
                                 }
                             });
-                        }); },
-                    },
-                ]);
+                        }); }
+                    }]);
                 return [4 /*yield*/, tasks.run()];
             case 4:
                 _a.sent();
@@ -106,12 +94,11 @@ var handler = function (argv) { return __awaiter(_this, void 0, void 0, function
     });
 }); };
 /* tslint:disable:object-literal-sort-keys */
-exports.individuate = {
-    command: 'individuate',
-    alias: 'indiv',
-    desc: 'Individuate organism',
+exports.deploy = {
+    command: 'deploy <name>',
+    desc: 'Deploy a new Aragon organization',
     builder: builder,
-    handler: handler,
+    handler: handler
 };
 /* tslint:enable:object-literal-sort-keys */
-//# sourceMappingURL=index.js.map
+//# sourceMappingURL=deploy0.js.map

@@ -17,7 +17,7 @@ var builder = function () {
         .usage('pando organizations <subcommand>')
         .command(subcommands.list)
         .command(subcommands.deploy)
-        // .command(subcommands.delete_)
+        .command(subcommands.add)
         .updateStrings({ 'Commands:': 'Subcommands:' })
         .demandCommand(1, 'No subcommand provided')
         .strict()
@@ -28,7 +28,7 @@ var builder = function () {
 exports.organizations = {
     command: 'organizations <subcommand>',
     desc: 'Handle Aragon organizations',
-    builder: builder
+    builder: builder,
 };
 /* tslint:enable:object-literal-sort-keys */
 //# sourceMappingURL=index.js.map

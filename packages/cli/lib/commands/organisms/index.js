@@ -17,6 +17,7 @@ var builder = function () {
         .usage('pando organisms <subcommand>')
         .command(subcommands.list)
         .command(subcommands.deploy)
+        .command(subcommands.add)
         .updateStrings({ 'Commands:': 'Subcommands:' })
         .demandCommand(1, 'No subcommand provided')
         .strict()

@@ -30,6 +30,7 @@ var argv = yargs_1.default
     .command(commands.organizations)
     .command(commands.organisms)
     .command(commands.individuate)
+    .command(commands.extract)
     .demandCommand(1, 'No command provided')
     .strict()
     .help()

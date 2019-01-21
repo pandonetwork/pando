@@ -16,4 +16,5 @@ __export(require("./fibers"));
 __export(require("./organizations"));
 __export(require("./organisms"));
 __export(require("./individuate"));
+__export(require("./extract"));
 //# sourceMappingURL=index.js.map

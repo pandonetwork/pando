@@ -15,11 +15,14 @@ const handler = async argv => {
   let spinner
 
   try {
-    spinner = ora(chalk.dim(`Creating fiber '${argv.name}'`)).start()
+    spinner = ora(chalk.dim(`Extracting fiber from ${argv.organism}`)).start()
     pando = await Pando.create(argv.configuration)
     const plant = await pando.plants.load()
-    await plant.fibers.create(argv.name)
-    spinner.succeed(chalk.dim(`Fiber '${argv.name}' created`))
+
+    let [organizationName, organismName] = argv.organism.split(':')
+    await plant.extract(organizationName, organismName)
+
+    spinner.succeed(chalk.dim(`${argv.organism} extracted locally`))
   } catch (err) {
     spinner.fail(chalk.dim(err.message))
   }
@@ -28,9 +31,9 @@ const handler = async argv => {
 }
 
 /* tslint:disable:object-literal-sort-keys */
-export const create = {
-  command: 'create <name>',
-  desc: 'Create a new fiber',
+export const extract = {
+  command: 'extract <organism>',
+  desc: 'Extract organism codebase into biome',
   builder,
   handler,
 }
