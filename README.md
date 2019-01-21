@@ -62,6 +62,13 @@ lerna run compile
 lerna run build
 ```
 
+### Publish aragonPM packages locally
+
+```
+lerna run publish
+```
+
+
 ### Run tests
 ```
 lerna run test
