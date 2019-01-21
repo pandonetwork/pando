@@ -63,8 +63,6 @@ contract('DemocracyScheme', accounts => {
         await acl.createPermission(root, dao.address, await dao.APP_MANAGER_ROLE(), root, { from: root })
 
         // Organism_1
-        // Lineage token
-        const lineage_token_1 = await MiniMeToken.new(ADDR_NULL, ADDR_NULL, 0, 'Native Lineage Token', 0, 'NLT', true)
         // Lineage
         const receipt_2 = await dao.methods['newAppInstance(bytes32,address)']('0x0011', (await Lineage.new()).address, { from: root })
         const lineage_1 = await Lineage.at(receipt_2.logs.filter(l => l.event == 'NewAppProxy')[0].args.proxy)
@@ -76,8 +74,6 @@ contract('DemocracyScheme', accounts => {
         const organism_1 = await Organism.at(receipt_4.logs.filter(l => l.event == 'NewAppProxy')[0].args.proxy)
 
         // Organism_2
-        // Lineage token
-        const lineage_token_2 = await MiniMeToken.new(ADDR_NULL, ADDR_NULL, 0, 'Native Lineage Token', 0, 'NLT', true)
         // Lineage
         const receipt_5 = await dao.methods['newAppInstance(bytes32,address)']('0x0021', (await Lineage.new()).address, { from: root })
         const lineage_2 = await Lineage.at(receipt_5.logs.filter(l => l.event == 'NewAppProxy')[0].args.proxy)
@@ -95,14 +91,11 @@ contract('DemocracyScheme', accounts => {
         // ACL
         await acl.createPermission(organism_1.address, genesis_1.address, await genesis_1.INDIVIDUATE_ROLE(), root, { from: root })
         await acl.createPermission(organism_1.address, lineage_1.address, await lineage_1.MINT_ROLE(), root, { from: root })
-        await acl.createPermission(organism_1.address, lineage_1.address, await lineage_1.BURN_ROLE(), root, { from: root })
 
         await acl.createPermission(organism_2.address, genesis_2.address, await genesis_2.INDIVIDUATE_ROLE(), root, { from: root })
         await acl.createPermission(organism_2.address, lineage_2.address, await lineage_2.MINT_ROLE(), root, { from: root })
-        await acl.createPermission(organism_2.address, lineage_2.address, await lineage_2.BURN_ROLE(), root, { from: root })
 
-        // Grant Permission !
-
+        // Grant Permission
         await acl.createPermission(scheme.address, organism_1.address, await organism_1.CREATE_RFI_ROLE(), root, { from: root })
         await acl.createPermission(scheme.address, organism_1.address, await organism_1.MERGE_RFI_ROLE(), root, { from: root })
         await acl.createPermission(scheme.address, organism_1.address, await organism_1.REJECT_RFI_ROLE(), root, { from: root })
@@ -116,11 +109,9 @@ contract('DemocracyScheme', accounts => {
         // await acl.createPermission(scheme.address, organism_2.address, await organism_2.REJECT_RFL_ROLE(), root, { from: root })
 
         // Initialization
-        await lineage_token_1.changeController(lineage_1.address)
-        await lineage_1.initialize(lineage_token_1.address)
+        await lineage_1.initialize()
 
-        await lineage_token_2.changeController(lineage_2.address)
-        await lineage_2.initialize(lineage_token_2.address)
+        await lineage_2.initialize()
 
         await genesis_1.initialize(pando.address)
         await genesis_2.initialize(pando.address)
