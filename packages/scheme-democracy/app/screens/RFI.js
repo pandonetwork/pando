@@ -181,17 +181,15 @@ export default class App extends React.Component {
               }
             >
               {rflVotes
-                .filter(({ organism }) => organism === currentRFI.organism)
+                .filter(
+                  ({ organism, RFLid }) =>
+                    organism === currentRFI.organism &&
+                    RFLid === currentRFI.RFIid
+                )
                 .sort((prev, next) => {
                   return prev.state === '0' && next.state !== '0'
                     ? -1
                     : prev.state !== '0' && next.state === '0'
-                    ? 1
-                    : prev.RFLid === currentRFI.RFIid &&
-                      next.RFLid !== currentRFI.RFIid
-                    ? -1
-                    : prev.RFLid !== currentRFI.RFIid &&
-                      next.RFLid === currentRFI.RFIid
                     ? 1
                     : 0
                 })
