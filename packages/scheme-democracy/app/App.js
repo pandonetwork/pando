@@ -10,14 +10,10 @@ const tabData = [
   {
     title: 'Conversation',
     screen: OverviewScreen,
-    button: { label: 'Add Project', actions: ['sidePanelOpen'] },
-    sidePanelContent: 'NewProject',
-    sidePanelTitle: 'New Project',
   },
   {
     title: 'Lineage',
     screen: OverviewScreen,
-    button: { label: 'New Issue', actions: ['createIssue'] },
   },
   { title: 'Code', screen: OverviewScreen },
 ]
@@ -70,6 +66,7 @@ export default class App extends React.Component {
           )}
           {navItems.length > 1 && (
             <RFIView
+              currentTab={tabData[selectedTabIndex]}
               rfiVotes={this.props.rfiVotes}
               rflVotes={this.props.rflVotes}
               rfiIndex={selectedRFIIndex}

@@ -129,14 +129,14 @@ export default props => (
         >
           {props.rfiVotes
             .filter(({ state }) => state !== '0')
-            .map(({ RFIid, participation, state }) => (
+            .map(({ RFIid, participation, state, metadata }) => (
               <StyledTableRow
                 onClick={() =>
                   props.forward(`RFI #${RFIid}`, Number(RFIid) - 1)
                 }
               >
                 <TableCell>RFI #{RFIid}</TableCell>
-                <TableCell>Message...</TableCell>
+                <TableCell>{metadata.message}</TableCell>
                 <TableCell>
                   {participation > 1
                     ? participation + ' participants'

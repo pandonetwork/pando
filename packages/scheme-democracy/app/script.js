@@ -10,13 +10,30 @@ const ipfs = IPFS({ host: 'localhost', port: '5001', protocol: 'http' })
 
 app.store(async (state, event) => {
   if (!state) {
-    state = { rfiVotes: [], rflVotes: [] }
+    state = { rfiVotes: [], rflVotes: [], organisms: [], transactionHashes: [] }
   }
 
   console.log('event', event)
 
   switch (event.event) {
     case 'NewRFIVote':
+      if (
+        !state.organisms.length ||
+        !state.organisms.filter(
+          organism => organism === event.returnValues.organism
+        ).length
+      ) {
+        state.organisms.push(event.returnValues.organism)
+
+        const organism = app.external(
+          event.returnValues.organism,
+          IOrganism.abi
+        )
+        organism.events().subscribe(test => {
+          console.log('organism', test)
+        })
+      }
+
       const rfiCondition = state.rfiVotes.filter(
         ({ organism, RFIid }) =>
           organism === event.returnValues.organism &&
@@ -59,88 +76,113 @@ app.store(async (state, event) => {
 
       return state
     case 'CastRFIVote':
-      state.rfiVotes.map(vote => {
-        if (
-          vote.organism === event.returnValues.organism &&
-          vote.RFIid === event.returnValues.id
-        ) {
-          if (!vote.participants) {
-            vote.participants = [
-              {
+      if (
+        !state.organisms.length ||
+        !state.transactionHashes.filter(hash => hash === event.transactionHash)
+          .length
+      ) {
+        state.transactionHashes.push(event.transactionHash)
+
+        state.rfiVotes.map(vote => {
+          if (
+            vote.organism === event.returnValues.organism &&
+            vote.RFIid === event.returnValues.id
+          ) {
+            if (!vote.participants) {
+              vote.participants = [
+                {
+                  address: event.returnValues.voter,
+                  supports: event.returnValues.supports,
+                },
+              ]
+              return
+            }
+            if (
+              vote.participants.filter(
+                person => person.address === event.returnValues.voter
+              ).length
+            ) {
+              vote.participants = vote.participants.map(person => {
+                if (person.address === event.returnValues.voter) {
+                  person.supports = event.returnValues.supports
+                  return person
+                }
+              })
+            } else {
+              vote.participants.push({
                 address: event.returnValues.voter,
                 supports: event.returnValues.supports,
-              },
-            ]
-          }
-          if (
-            vote.participants.filter(
-              person => person.address === event.returnValues.voter
+              })
+            }
+
+            vote.participation = vote.participants.length
+            vote.yea = vote.participants.filter(
+              person => person.supports
             ).length
-          ) {
-            vote.participants = vote.participants.map(person => {
-              if (person.address === event.returnValues.voter) {
-                person.supports = event.returnValues.supports
-                return person
-              }
-            })
-          } else {
-            vote.participants.push({
-              address: event.returnValues.voter,
-              supports: event.returnValues.supports,
-            })
+            vote.nay = vote.participants.filter(
+              person => !person.supports
+            ).length
+
+            return vote
           }
-
-          vote.participation = vote.participants.length
-          vote.yea = vote.participants.filter(person => person.supports).length
-          vote.nay = vote.participants.filter(person => !person.supports).length
-
-          return vote
-        }
-      })
+        })
+      }
 
       return state
     case 'CastRFLVote':
-      state.rflVotes.map(vote => {
-        if (
-          vote.organism === event.returnValues.organism &&
-          vote.RFLid === event.returnValues.id
-        ) {
-          if (!vote.participants) {
-            vote.participants = [
-              {
+      if (
+        !state.transactionHashes.filter(hash => hash === event.transactionHash)
+          .length
+      ) {
+        state.transactionHashes.push(event.transactionHash)
+
+        state.rflVotes.map(vote => {
+          if (
+            vote.organism === event.returnValues.organism &&
+            vote.RFLid === event.returnValues.id
+          ) {
+            if (!vote.participants) {
+              vote.participants = [
+                {
+                  address: event.returnValues.voter,
+                  supports: event.returnValues.supports,
+                  stake: event.returnValues.stake,
+                },
+              ]
+              return
+            }
+            if (
+              vote.participants.filter(
+                person => person.address === event.returnValues.voter
+              ).length
+            ) {
+              vote.participants = vote.participants.map(person => {
+                if (person.address === event.returnValues.voter) {
+                  person.supports = event.returnValues.supports
+                  person.stake = event.returnValues.stake
+                  return person
+                }
+              })
+            } else {
+              vote.participants.push({
                 address: event.returnValues.voter,
                 supports: event.returnValues.supports,
                 stake: event.returnValues.stake,
-              },
-            ]
-          }
-          if (
-            vote.participants.filter(
-              person => person.address === event.returnValues.voter
+              })
+            }
+
+            vote.participation = vote.participants.length
+            vote.yea = vote.participants.filter(
+              person => person.supports
             ).length
-          ) {
-            vote.participants = vote.participants.map(person => {
-              if (person.address === event.returnValues.voter) {
-                person.supports = event.returnValues.supports
-                person.stake = event.returnValues.stake
-                return person
-              }
-            })
-          } else {
-            vote.participants.push({
-              address: event.returnValues.voter,
-              supports: event.returnValues.supports,
-              stake: event.returnValues.stake,
-            })
+            vote.nay = vote.participants.filter(
+              person => !person.supports
+            ).length
+
+            return vote
           }
-
-          vote.participation = vote.participants.length
-          vote.yea = vote.participants.filter(person => person.supports).length
-          vote.nay = vote.participants.filter(person => !person.supports).length
-
-          return vote
-        }
-      })
+        })
+      }
 
       return state
     case 'ExecuteRFIVote':
@@ -211,10 +253,8 @@ function getRFLVotes(organism, id) {
 function getRFIMetadata(organism, id) {
   return new Promise(resolve => {
     app.call('getRFIMetadata', organism, id).subscribe(async hash => {
-      console.log('hash', hash)
       const metadata = (await ipfs.dag.get(hash)).value
-      const files = await ipfs.ls(metadata.tree)
-      resolve({ message: metadata.message, files: files })
+      resolve({ message: metadata.message, tree: metadata.tree })
     })
   })
 }
