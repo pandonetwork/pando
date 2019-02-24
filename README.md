@@ -30,14 +30,19 @@ Pando [Latin for "spread out"] is a clonal colony of a single male quaking aspen
 ### Clone
 
 ```
-git clone https://github.com/pandonetwork/pando.git
+git clone https://github.com/pandonetwork/pando.git && cd pando
 ```
 
 ### Install
 
 ```
-cd pando
 npm run install:all
+```
+
+### Compile contracts
+
+```
+npm run compile:all
 ```
 
 ### Build CLIs
@@ -46,9 +51,15 @@ npm run install:all
 npm run build:all
 ```
 
+### Link binaries
+
+```
+npm run link:all
+```
+
 ### Spawn IPFS & devchain
 
-In two different terminal windows:
+In two different terminal windows, run:
 
 ```
 aragon devchain
