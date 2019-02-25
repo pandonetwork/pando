@@ -25,36 +25,12 @@ const _artifacts = [
   }
 });
 
-// const _providerFromGateway = (gateway: Gateway): any => {
-//   switch (gateway.protocol) {
-//     case "ws":
-//       return new Web3.providers.WebsocketProvider(
-//         "ws://" + gateway.host + ":" + gateway.port
-//       );
-//     case "http":
-//       throw new PandoError("E_DEPRECATED_PROVIDER_PROTOCOL", gateway.protocol);
-//     default:
-//       throw new PandoError("E_UNKNOWN_PROVIDER_PROTOCOL", gateway.protocol);
-//   }
-// };
-
-const _url = (options: any) => {
-  return options.protocol + "://" + options.host + ":" + options.port;
-};
-
 const _defaults = (options: IPandoOptions): PandoOptions => {
   const apm = _.defaultsDeep(options.apm, {
     ens: "0x5f6f7e8cc7346a11ca2def8f827b7a0b612c56a1"
   });
-  const gateway = _.defaultsDeep(options.ethereum.gateway, {
-    protocol: "ws",
-    host: "localhost",
-    port: "8545"
-  });
-  const provider =
-    options.ethereum.connection === "frame"
-      ? ETHProvider("frame")
-      : ETHProvider(_url(options.ethereum.gateway));
+
+  const provider = ETHProvider(options.ethereum.gateway);
 
   return { ethereum: { account: options.ethereum.account, provider }, apm };
 };
