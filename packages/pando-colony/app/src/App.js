@@ -1,15 +1,10 @@
+import { Main } from '@aragon/ui'
 import React from 'react'
-import PropTypes from 'prop-types'
-import styled from 'styled-components'
-import { EmptyStateCard, Main, SidePanel, observe, theme } from '@aragon/ui'
 import AppLayout from './components/AppLayout'
 import NewRepositoryIcon from './components/NewRepositoryIcon'
 import NewRepositorySidePanel from './components/NewRepositorySidePanel'
 import EmptyState from './screens/EmptyState'
 import Repositories from './screens/Repositories'
-import repositories from './data'
-
-
 export default class App extends React.Component {
   constructor(props) {
     super(props)
@@ -31,15 +26,13 @@ export default class App extends React.Component {
     this.setState({ sidePanelOpen: false })
   }
 
-  handleCreateRepository= (name, description) => {
+  handleCreateRepository = (name, description) => {
     this.props.app.createRepository(name, description)
   }
 
   render() {
-    // const { repositories } = this.props
+    const { repos } = this.props
     const { sidePanelOpen } = this.state
-
-      console.log(repositories)
 
     return (
       <div css="min-width: 320px">
@@ -53,8 +46,8 @@ export default class App extends React.Component {
               onClick: this.handleSidePanelOpen,
             }}
           >
-            {repositories.length > 0 ? (
-              <Repositories repositories={repositories} />
+            {repos.length > 0 ? (
+              <Repositories repositories={repos} />
             ) : (
               <EmptyState onActivate={this.handleSidePanelOpen} />
             )}
