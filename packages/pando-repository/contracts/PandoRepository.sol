@@ -5,11 +5,12 @@ import "@aragon/os/contracts/apps/AragonApp.sol";
 
 
 contract PandoRepository is AragonApp {
-    bytes32 constant public PUSH_ROLE    = keccak256("PUSH_ROLE");
+    bytes32 constant public PUSH_ROLE = keccak256("PUSH_ROLE");
     bytes32 constant public OPEN_MR_ROLE = keccak256("OPEN_MR_ROLE");
     bytes32 constant public SORT_MR_ROLE = keccak256("SORT_MR_ROLE");
     bytes32 constant public OPEN_LR_ROLE = keccak256("OPEN_LR_ROLE");
     bytes32 constant public SORT_LR_ROLE = keccak256("SORT_LR_ROLE");
+    bytes32 constant public UPDATE_INFORMATIONS_ROLE = keccak256("UPDATE_INFORMATIONS_ROLE");
 
     enum MRState { Pending, Merged, Rejected, Cancelled }
     enum LRState { Pending, Issued, Rejected, Cancelled }
@@ -32,6 +33,7 @@ contract PandoRepository is AragonApp {
     mapping (string => string) refs;
 
     event UpdateRef(string ref, string hash);
+    event UpdateNameAndDescription(string name, string description);
 
     function initialize(string _name, string _description) external onlyInit {
         initialized();
@@ -46,7 +48,14 @@ contract PandoRepository is AragonApp {
         emit UpdateRef(_ref, _cid);
     }
 
+    function updateInformations(string _name, string _description) external auth(UPDATE_INFORMATIONS_ROLE) {
+        name = _name;
+        description = _description;
+    }
+
     function ref(string _ref) external view returns (string cid) {
         cid = refs[_ref];
     }
+
+
 }
