@@ -33,7 +33,7 @@ contract PandoRepository is AragonApp {
     mapping (string => string) refs;
 
     event UpdateRef(string ref, string hash);
-    event UpdateNameAndDescription(string name, string description);
+    event UpdateInformations(string name, string description);
 
     function initialize(string _name, string _description) external onlyInit {
         initialized();
@@ -51,6 +51,8 @@ contract PandoRepository is AragonApp {
     function updateInformations(string _name, string _description) external auth(UPDATE_INFORMATIONS_ROLE) {
         name = _name;
         description = _description;
+
+        emit UpdateInformations(_name, _description);
     }
 
     function ref(string _ref) external view returns (string cid) {
