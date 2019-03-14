@@ -12,6 +12,7 @@ import LineHelper from "./util/line-helper";
 import GitHelper from "./util/git-helper";
 import IPLDHelper from "./util/ipld-helper";
 import ETHProvider from "eth-provider";
+import shell from "shelljs";
 
 const _timeout = async (duration: any): Promise<void> => {
   return new Promise<any>((resolve, reject) => {
@@ -117,6 +118,8 @@ export default class Helper {
     for (let ref in refs) {
       this._send(this.ipld.cidToSha(refs[ref]) + " " + ref);
     }
+    // force HEAD to master and update once pando handle symbolic refs
+    this._send("@refs/heads/master" + " " + "HEAD");
     this._send("");
   }
 
@@ -236,40 +239,58 @@ export default class Helper {
     let mapping: any = {};
     let ops: any = [];
 
-    const refs = await this._getRefs();
-    const remote: any = refs[dst];
-    const oid = await git.Reference.nameToId(this._repo, src);
-    const revwalk = git.Revwalk.create(this._repo);
-    revwalk.pushRef(src);
+    try {
+      const refs = await this._getRefs();
+      const remote: any = refs[dst];
+      const oid = await git.Reference.nameToId(this._repo, src);
+      const revwalk = git.Revwalk.create(this._repo);
+      revwalk.pushRef(src);
 
-    // retrieving commits
-    let commits = await revwalk.getCommitsUntil(commit => {
-      if (typeof remote === "undefined") return true;
-      return commit.id().tostrS() !== this.ipld.cidToSha(remote);
-    });
+      const srcBranch = src.split("/").pop();
+      const dstBranch = dst.split("/").pop();
 
-    // collecting git objects
-    spinner = ora("collecting git objects").start();
-    for (let id in commits) {
-      const [_cid, _node, _mapping] = await this.git.collect(commits[id].sha());
-      mapping = { ...mapping, ..._mapping };
-      if (id === "0") head = _cid;
+      const revListCmd = remote
+        ? `git rev-list --left-only ${srcBranch}...${this.name}/${dstBranch}`
+        : "git rev-list --all";
+
+      let commits = shell
+        .exec(revListCmd, { silent: true })
+        .stdout.split("\n")
+        .slice(0, -1);
+
+      console.error(commits);
+
+      // collecting git objects
+      spinner = ora("collecting git objects").start();
+      for (let commit of commits) {
+        if (commit !== "") {
+          console.error("PUSH LOOP: " + commit);
+          const [_cid, _node, _mapping] = await this.git.collect(commit);
+          mapping = { ...mapping, ..._mapping };
+        }
+      }
+
+      head = this.ipld.shaToCid(commits[0]);
+      console.error("HEAD");
+      console.error(head);
+      for (let entry in mapping) {
+        ops.push[await this.ipld.put(mapping[entry])];
+      }
+      spinner.succeed("git objects collected");
+
+      // pushing git objects to IPFS
+      spinner = ora("pushing git objects to IPFS").start();
+      await Promise.all(ops);
+      spinner.succeed("git objects pushed to IPFS");
+
+      spinner = ora(`pushing ref ${dst} on-chain`).start();
+      await this._contract.push(dst, head);
+      spinner.succeed(`ref ${dst} pushed on-chain`);
+
+      this._send(`ok ${dst}`);
+    } catch (err) {
+      this._die(err);
     }
-    for (let entry in mapping) {
-      ops.push[await this.ipld.put(mapping[entry])];
-    }
-    spinner.succeed("git objects collected");
-
-    // pushing git objects to IPFS
-    spinner = ora("pushing git objects to IPFS").start();
-    await Promise.all(ops);
-    spinner.succeed("git objects pushed to IPFS");
-
-    spinner = ora(`pushing ref ${dst} on-chain`).start();
-    await this._contract.push(dst, head);
-    spinner.succeed(`ref ${dst} pushed on-chain`);
-
-    this._send(`ok ${dst}`);
   }
 
   private async _delete(dst: string): Promise<void> {
