@@ -261,7 +261,7 @@ export default class Helper {
       for (const commit of commits) {
         if (commit !== '') {
           console.error('PUSH LOOP: ' + commit)
-          const [_cid, _node, _mapping] = await this.git.collect(commit)
+          const _mapping = await this.git.collect(commit, mapping)
           mapping = { ...mapping, ..._mapping }
         }
       }
