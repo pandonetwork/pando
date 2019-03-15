@@ -34,9 +34,9 @@ const handler = async argv => {
       }
       const configuration = await prompt.configure();
 
-      await fs.ensureFile(path.join(GIT_DIR, "pando", "pandorc"));
+      await fs.ensureFile(path.join(GIT_DIR, "pando", ".pandorc"));
       await json.writeFile(
-        path.join(GIT_DIR, "pando", "pandorc"),
+        path.join(GIT_DIR, "pando", ".pandorc"),
         configuration
       );
     }

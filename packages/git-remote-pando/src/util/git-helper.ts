@@ -1,6 +1,12 @@
 import fs from 'fs-extra'
 import path from 'path'
+import shell from 'shelljs'
+import gitP from 'simple-git/promise'
+import { SmartBuffer } from 'smart-buffer'
 import zlib from 'zlib'
+
+const git = gitP()
+
 import Helper from '../helper'
 
 export default class GitHelper {
@@ -10,7 +16,7 @@ export default class GitHelper {
     this.helper = helper
   }
 
-  public debug(message: string): void {
+  public debug(...message): void {
     this.helper.debug(message)
   }
 
@@ -22,42 +28,110 @@ export default class GitHelper {
   }
 
   public async exists(oid: string): Promise<boolean> {
-    return await fs.pathExists(await this.path(oid))
+    // modify the exists function with  git cat-file -e $sha^{commit}
+    // see https://stackoverflow.com/questions/18515488/how-to-check-if-the-commit-exists-in-a-git-repository-by-its-sha-1
+
+    return fs.pathExists(await this.path(oid))
   }
 
   public async load(oid: string): Promise<any> {
-    const path = await this.path(oid)
-    const buffer = zlib.inflateSync(fs.readFileSync(path))
-    const node = await this.helper.ipld.deserialize(buffer)
+    const type = shell.exec(`git cat-file -t ${oid}`, { silent: true }).stdout.trim()
+    const size = shell.exec(`git cat-file -s ${oid}`, { silent: true }).stdout.trim()
+    const data = await git.binaryCatFile([type, oid])
+
+    const raw = new SmartBuffer()
+    raw.writeString(`${type} `)
+    raw.writeString(size)
+    raw.writeUInt8(0)
+    raw.writeBuffer(data)
+
+    const node = await this.helper.ipld.deserialize(raw.toBuffer())
 
     return node
   }
 
-  public async collect(oid: string): Promise<any> {
-    let mapping: any = {}
+  // public async collect(oid: string, mapping: any): Promise<any> {
+  //   this.debug('collecting', oid)
+  //   // console.error("Collecting: " + oid);
+  //   const cid = this.helper.ipld.shaToCid(oid)
+  //
+  //   if (mapping[cid]) {
+  //     this.debug(oid, 'already in mapping')
+  //     return [cid, node, mapping]
+  //   }
+  //
+  //   const node: any = await this.load(oid)
+  //
+  //   // console.error("NODE IS");
+  //   // console.error(node);
+  //
+  //   if (node.gitType === 'commit') {
+  //     // node is a commit
+  //     // console.error('Checking if tree is in mapping')
+  //     // if (mapping[node.tree['/']]) {
+  //     //   console.error('tree is already there')
+  //     // } else {
+  //     //   console.error('tree is not there')
+  //     // }
+  //     const [_cid, _node, _mapping] = await this.collect(this.helper.ipld.cidToSha(node.tree['/']), mapping)
+  //     const cid = await this.helper.ipld.cid(node)
+  //     mapping = { ...mapping, ..._mapping }
+  //
+  //     return [cid, node, { ...mapping, ...{ [cid]: node } }]
+  //   } else if (Buffer.isBuffer(node)) {
+  //     // node is a blob
+  //     const nodeCid = this.helper.ipld.shaToCid(oid)
+  //     // console.error('Checking if blob is in mapping')
+  //     // if (mapping[nodeCid]) {
+  //     //   console.error('blob is already there')
+  //     // } else {
+  //     //   console.error('blob is not there')
+  //     // }
+  //
+  //     const cid = await this.helper.ipld.cid(node)
+  //
+  //     return [cid, node, { [cid]: node }]
+  //   } else {
+  //     // node is a tree
+  //     for (const entry in node) {
+  //       const [_cid, _node, _mapping] = await this.collect(this.helper.ipld.cidToSha(node[entry].hash['/']), mapping)
+  //       mapping = { ...mapping, ...{ [_cid]: _node }, ..._mapping }
+  //     }
+  //     const cid = await this.helper.ipld.cid(node)
+  //
+  //     return [cid, node, { ...mapping, ...{ [cid]: node } }]
+  //   }
+  // }
+
+  public async collect(oid: string, mapping: any): Promise<any> {
+    this.debug('collecting', oid)
+    // console.error("Collecting: " + oid);
+    const cid = this.helper.ipld.shaToCid(oid)
+
+    if (mapping[cid]) {
+      this.debug(oid, 'already in mapping')
+      return mapping
+    }
+
     const node: any = await this.load(oid)
 
-    if (node.gitType === 'commit') {
-      // node is a commit
-      const [_cid, _node, _mapping] = await this.collect(this.helper.ipld.cidToSha(node['tree']['/']))
-      const cid = await this.helper.ipld.cid(node)
-      mapping = { ...mapping, ..._mapping }
+    // console.error("NODE IS");
+    // console.error(node);
 
-      return [cid, node, { ...mapping, ...{ [cid]: node } }]
+    if (node.gitType === 'commit') {
+      const _mapping = await this.collect(this.helper.ipld.cidToSha(node.tree['/']), mapping)
+      return { ...mapping, ..._mapping, ...{ [cid]: node } }
     } else if (Buffer.isBuffer(node)) {
       // node is a blob
-      const cid = await this.helper.ipld.cid(node)
-
-      return  [cid, node, { [cid]: node }]
+      return { ...mapping, ...{ [cid]: node } }
     } else {
       // node is a tree
-      for (let entry in node) {
-          const [_cid, _node, _mapping] = await this.collect(this.helper.ipld.cidToSha(node[entry]['hash']['/']))
-          mapping = { ...mapping, ...{ [_cid]: _node }, ..._mapping }
+      for (const entry in node) {
+        const _mapping = await this.collect(this.helper.ipld.cidToSha(node[entry].hash['/']), mapping)
+        mapping = { ...mapping, ..._mapping }
       }
-      const cid = await this.helper.ipld.cid(node)
 
-      return [cid, node, { ...mapping, ...{ [cid]: node } }]
+      return { ...mapping, ...{ [cid]: node } }
     }
   }
 
@@ -69,34 +143,33 @@ export default class GitHelper {
   }
 
   public async download(oid: any): Promise<void> {
-    // this._debug('downloading', oid)
+    this.debug('downloading', oid)
 
-    if (await this.exists(oid)) return
+    if (await this.exists(oid)) {
+      return
+    }
 
     const cid = this.helper.ipld.shaToCid(oid)
     const node = await this.helper.ipld.get(cid)
 
     if (node.gitType === 'commit') {
-      await this.download(this.helper.ipld.cidToSha(node['tree']['/']))
+      await this.download(this.helper.ipld.cidToSha(node.tree['/']))
 
-      for (let parent of node.parents) {
+      for (const parent of node.parents) {
         await this.download(this.helper.ipld.cidToSha(parent['/']))
       }
 
       await this.dump(oid, node)
-
     } else if (Buffer.isBuffer(node)) {
       // node is a blob
       await this.dump(oid, node)
-
     } else {
       // node is a tree
-      for (let entry in node) {
-        await this.download(await this.helper.ipld.cidToSha(node[entry]['hash']['/']))
+      for (const entry in node) {
+        await this.download(await this.helper.ipld.cidToSha(node[entry].hash['/']))
       }
 
       await this.dump(oid, node)
-
     }
   }
 }
