@@ -43,7 +43,7 @@ aragon devchain& && ipfs daemon&
 git pando config
 ```
 
-2. Deploy an pando-ready Aragon DAO
+2. Deploy a pando-ready Aragon DAO
 
 ```bash
 git pando dao deploy
