@@ -35,7 +35,7 @@ Options:
 
 ## Examples
 
-### Configure pando.
+### Configure pando
 
 ```bash
 git pando config
@@ -59,5 +59,5 @@ git pando repository deploy <name> --dao <address>
 git remote add origin pando://<address>
 ```
 
-### You can then use git as you're used to!
+### You can now use git as you're used to!
 
