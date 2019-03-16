@@ -10,7 +10,7 @@ npm install -g @pando/git-remote-pando @pando/git-pando
 
 ## Deploy a test environment
 
-See the pando [README](../..) to see how to deploy a test environment. 
+See the pando [README](../../README.md) to see how to deploy a test environment. 
 
 
 ## Usage
