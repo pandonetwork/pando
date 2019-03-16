@@ -72,6 +72,10 @@ aragon ipfs
 lerna run publish:devnet
 ```
 
+## Usage
+
+See the `git-pando` [README](packages/git-pando).
+
 ## Contribute
 
 Feel free to fork, open issues and send pull requests.
