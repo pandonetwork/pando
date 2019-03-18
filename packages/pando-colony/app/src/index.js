@@ -30,6 +30,7 @@ class ConnectedApp extends React.Component {
         this.setState({ network })
       })
       app.state().subscribe(state => {
+        console.log('FINAL STATE..', state)
         this.setState({ repos: state.repos })
       })
     }
@@ -38,6 +39,7 @@ class ConnectedApp extends React.Component {
     window.parent.postMessage({ from: 'app', name, value }, '*')
   }
   render() {
+    console.log('asdasd', this.state.app)
     return (
       <App {...this.state} sendMessageToWrapper={this.sendMessageToWrapper} />
     )

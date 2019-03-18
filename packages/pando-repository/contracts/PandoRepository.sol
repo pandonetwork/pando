@@ -30,7 +30,7 @@ contract PandoRepository is AragonApp {
 
     string public name;
     string public description;
-    mapping (string => string) public refs;
+    mapping (string => string) refs;
 
     event UpdateRef(string ref, string hash);
     event UpdateInformations(string name, string description);

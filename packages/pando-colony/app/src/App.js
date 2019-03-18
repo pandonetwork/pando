@@ -5,6 +5,8 @@ import NewRepositoryIcon from './components/NewRepositoryIcon'
 import NewRepositorySidePanel from './components/NewRepositorySidePanel'
 import EmptyState from './screens/EmptyState'
 import Repositories from './screens/Repositories'
+import { repoCache, repoState } from './script'
+
 export default class App extends React.Component {
   constructor(props) {
     super(props)
@@ -33,6 +35,9 @@ export default class App extends React.Component {
   render() {
     const { repos } = this.props
     const { sidePanelOpen } = this.state
+
+    console.log('repo cache...', repoCache)
+    console.log('repo state...', repoState)
 
     return (
       <div css="min-width: 320px">
