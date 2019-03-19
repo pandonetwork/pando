@@ -12,9 +12,13 @@ class Parent extends React.Component {
     const { onClick } = this.props
 
     return (
-      <Row onClick={() => { onClick() }}>
+      <Row
+        onClick={() => {
+          onClick()
+        }}
+      >
         <Column>
-          <Link title='..'>..</Link>
+          <Link title="..">..</Link>
         </Column>
       </Row>
     )
@@ -30,7 +34,11 @@ class File extends React.Component {
     const { name, hash, onClick } = this.props
 
     return (
-      <Row onClick={() => { onClick(name, hash) }}>
+      <Row
+        onClick={() => {
+          onClick(name, hash)
+        }}
+      >
         <Column>
           <IconFile mr=".5rem" />
           <Link title={name}>{name}</Link>
@@ -49,7 +57,11 @@ class Folder extends React.Component {
     const { name, hash, onClick } = this.props
 
     return (
-      <Row onClick={() => { onClick(name, hash) }}>
+      <Row
+        onClick={() => {
+          onClick(name, hash)
+        }}
+      >
         <Column>
           <IconFolder mr=".5rem" />
           <Link title={name}>{name}</Link>
@@ -70,7 +82,7 @@ const Column = styled.td`
   display: flex;
   align-items: center;
   padding: 0.5rem;
-  border-bottom: 1px solid #d1d1d1;
+  border-bottom: 1px solid #e6e6e6;
   font-size: 14px;
 `
 
@@ -94,7 +106,7 @@ const LinkColor = styled.a`
 const Entry = {
   Parent: Parent,
   File: File,
-  Folder: Folder
+  Folder: Folder,
 }
 
 export default Entry

@@ -28,9 +28,11 @@ class App extends React.Component {
   }
 
   render() {
-    const { branches } = this.props
+    let { branches } = this.props
     const { tabIndex } = this.state
     const currentTab = tabs[tabIndex]
+
+    //branches = [['master', 'z8mWaG3rh3fyrnWuRAKLN3YwmESb2GoyZ']]
 
     return (
       <div css="min-width: 320px">
