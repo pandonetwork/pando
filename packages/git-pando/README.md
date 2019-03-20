@@ -8,6 +8,10 @@ git extension for pando
 npm install -g @pando/git-remote-pando @pando/git-pando
 ```
 
+## Deploy a test environment
+
+See the pando [README](../../README.md) to see how to deploy a test environment. 
+
 
 ## Usage
 
@@ -28,3 +32,32 @@ Options:
   -h, --help  Show help                                                [boolean]
 
 ```
+
+## Examples
+
+### Configure pando
+
+```bash
+git pando config
+```
+
+### Deploy a pando-ready Aragon DAO
+
+```bash
+git pando dao deploy
+```
+
+### Copy the address of this DAO and deploy a repository
+
+```bash
+git pando repository deploy <name> --dao <address>
+```
+
+### Copy the address of this repository and add it as a remote in your git repo
+
+```bash
+git remote add origin pando://<address>
+```
+
+### You can now use git as you're used to!
+
