@@ -236,6 +236,7 @@ export default class Helper {
     let head
     let mapping: any = {}
     const ops: any = []
+    const ops2: any = []
 
     try {
       const refs = await this._getRefs()
@@ -270,7 +271,14 @@ export default class Helper {
       console.error('HEAD')
       console.error(head)
       for (const entry in mapping) {
-        ops.push[await this.ipld.put(mapping[entry])]
+        console.error(this.ipld.cidToSha(entry) + ' ' + entry)
+        ops.push(this.ipld.put(mapping[entry]))
+        // try {
+        //   const testcid = await this.ipld.put(mapping[entry])
+        //   console.error(testcid.toBaseEncodedString())
+        // } catch (err) {
+        //   console.error('ERROR; ' + err)
+        // }
       }
       spinner.succeed('git objects collected')
 

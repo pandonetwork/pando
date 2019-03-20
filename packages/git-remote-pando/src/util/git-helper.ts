@@ -126,6 +126,8 @@ export default class GitHelper {
       return { ...mapping, ...{ [cid]: node } }
     } else {
       // node is a tree
+      console.error('TREE ' + oid + ' ' + cid)
+      console.error(node)
       for (const entry in node) {
         const _mapping = await this.collect(this.helper.ipld.cidToSha(node[entry].hash['/']), mapping)
         mapping = { ...mapping, ..._mapping }
