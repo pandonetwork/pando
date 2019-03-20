@@ -19,9 +19,9 @@ app.store(async (state, event) => {
     switch (event.event) {
       case 'CreateRepository':
         const address = event.returnValues.repository
-        let result = await getRepo(address)
-        result.address = address
-        state.repos.push(result)
+        // let result = await getRepo(address)
+        // result.address = address
+        state.repos.push(address)
         console.log('state..', state)
         return state
       default:

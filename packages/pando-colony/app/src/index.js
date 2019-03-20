@@ -6,9 +6,9 @@ import App from './App'
 class ConnectedApp extends React.Component {
   state = {
     app: new Aragon(new providers.WindowMessage(window.parent)),
+    observable: null,
+    account: '',
     network: {},
-    userAccount: '',
-    repos: [],
   }
   componentDidMount() {
     window.addEventListener('message', this.handleWrapperMessage)
@@ -23,23 +23,23 @@ class ConnectedApp extends React.Component {
     if (data.name === 'ready') {
       const { app } = this.state
       this.sendMessageToWrapper('ready', true)
+      this.setState({ observable: app.state() })
       app.accounts().subscribe(accounts => {
-        this.setState({ userAccount: accounts[0] || '' })
+        this.setState({ account: accounts[0] || '' })
       })
       app.network().subscribe(network => {
         this.setState({ network })
       })
-      app.state().subscribe(state => {
-        console.log('FINAL STATE..', state)
-        this.setState({ repos: state.repos })
-      })
+      // app.state().subscribe(state => {
+      //   console.log('FINAL STATE..', state)
+      //   this.setState({ repos: state.repos })
+      // })
     }
   }
   sendMessageToWrapper = (name, value) => {
     window.parent.postMessage({ from: 'app', name, value }, '*')
   }
   render() {
-    console.log('asdasd', this.state.app)
     return (
       <App {...this.state} sendMessageToWrapper={this.sendMessageToWrapper} />
     )
