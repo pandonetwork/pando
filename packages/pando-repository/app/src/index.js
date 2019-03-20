@@ -1,6 +1,6 @@
-import Aragon, { providers } from '@aragon/client'
 import React from 'react'
 import ReactDOM from 'react-dom'
+import Aragon, { providers } from '@aragon/client'
 import App from './App'
 
 class ConnectedApp extends React.Component {
@@ -36,8 +36,6 @@ class ConnectedApp extends React.Component {
     window.parent.postMessage({ from: 'app', name, value }, '*')
   }
   render() {
-    console.log('test much..', this.state.app)
-    this.state.app.updateInformations('test-name', 'test-description')
     return (
       <App {...this.state} sendMessageToWrapper={this.sendMessageToWrapper} />
     )
