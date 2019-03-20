@@ -1,7 +1,7 @@
 import Highlight, { defaultProps } from 'prism-react-renderer'
 import React from 'react'
 import styled, { createGlobalStyle } from 'styled-components'
-import { prismMapping } from '../contants'
+import { prismMapping } from '../constants'
 import Theme from '../Theme'
 
 
