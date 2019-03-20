@@ -1,8 +1,13 @@
 import Highlight, { defaultProps } from 'prism-react-renderer'
 import React from 'react'
-import styled from 'styled-components'
+import styled, { createGlobalStyle } from 'styled-components'
 import { prismMapping } from '../contants'
 import Theme from '../Theme'
+
+
+const MonoStyle = createGlobalStyle`
+  @import url('https://fonts.googleapis.com/css?family=Overpass+Mono:300');
+`
 
 export default class Display extends React.Component {
   constructor(props) {
@@ -16,6 +21,7 @@ export default class Display extends React.Component {
 
     return (
       <Wrapper>
+        <MonoStyle />
         <Highlight
           {...defaultProps}
           code={normalizedFile}
@@ -46,4 +52,9 @@ const Wrapper = styled.div`
   border-radius: 3px;
   background-color: white;
   overflow-x: scroll;
+
+  pre {
+    font-family: 'Overpass Mono';
+    font-size: 0.9em;
+  }
 `
