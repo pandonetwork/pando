@@ -1,22 +1,25 @@
-import Aragon from "@aragon/client";
+import Aragon from '@aragon/client'
 
-const app = new Aragon();
+export const app = new Aragon()
 
 app.store(async (state, event) => {
   if (state === null) {
-    state = { branches: {} };
+    state = { branches: {} }
   }
+
+  console.log('hello world', app)
+  console.log('some event..', event)
 
   switch (event.event) {
-    case "UpdateRef":
+    case 'UpdateRef':
       state.branches[branchFromRef(event.returnValues.ref)] =
-        event.returnValues.hash;
-      return state;
+        event.returnValues.hash
+      return state
     default:
-      return state;
+      return state
   }
-});
+})
 
 const branchFromRef = ref => {
-  return ref.split("/")[2];
-};
+  return ref.split('/')[2]
+}

@@ -1,23 +1,92 @@
+import { Main, observe } from '@aragon/ui'
 import React from 'react'
-import PropTypes from 'prop-types'
-import styled from 'styled-components'
-import { EmptyStateCard, Main, SidePanel, observe, theme } from '@aragon/ui'
+import Aragon from '@aragon/client'
 import AppLayout from './components/AppLayout'
 import NewRepositoryIcon from './components/NewRepositoryIcon'
 import NewRepositorySidePanel from './components/NewRepositorySidePanel'
 import EmptyState from './screens/EmptyState'
 import Repositories from './screens/Repositories'
-import repositories from './data'
+import PandoRepository from '../../build/contracts/PandoRepository.json'
 
+// import { repoCache, repoState } from './script'
 
-export default class App extends React.Component {
+const app = new Aragon()
+
+function loadRepoInformations(repoContract) {
+  return new Promise((resolve, reject) => {
+    repoContract
+      .name()
+      .first()
+      .subscribe(resolve, reject)
+  })
+}
+
+class App extends React.Component {
+  static defaultProps = {
+    repos: []
+  }
+
   constructor(props) {
     super(props)
 
     this.state = {
-      sidePanelOpen: false,
+      repos: [],
+      sidePanelOpen: false
     }
   }
+
+  componentWillReceiveProps(props) {
+    const repos = []
+
+    console.log('RECEIVE PROPS')
+
+    for (const repo of props.repos) {
+      console.log('From will receive props')
+      console.log(repo)
+      const contract = props.app.external(repo.address, PandoRepository.abi)
+
+      this
+        .loadRepoInformations(contract)
+        .then(results => {
+          const [name, description] = results
+          console.log('NAME ' + name)
+          console.log('Description ' + description)
+
+          repos.push({ address: repo.address, name, description })
+          this.setState({ repos })
+
+        })
+        .catch(err => {
+          console.log('ERR: ' + err)
+        })
+
+    }
+ }
+
+ loadRepoName = repoContract => {
+   return new Promise((resolve, reject) => {
+     repoContract
+       .name()
+       .first()
+       .subscribe(resolve, reject)
+   })
+ }
+
+ loadRepoDescription = repoContract => {
+   return new Promise((resolve, reject) => {
+     repoContract
+       .description()
+       .first()
+       .subscribe(resolve, reject)
+   })
+ }
+
+ loadRepoInformations = repoContract => {
+   return Promise.all([
+     this.loadRepoName(repoContract),
+     this.loadRepoDescription(repoContract)
+   ])
+ }
 
   handleMenuPanelOpen = () => {
     this.props.sendMessageToWrapper('menuPanel', true)
@@ -31,15 +100,23 @@ export default class App extends React.Component {
     this.setState({ sidePanelOpen: false })
   }
 
-  handleCreateRepository= (name, description) => {
+  handleCreateRepository = (name, description) => {
     this.props.app.createRepository(name, description)
   }
 
   render() {
-    // const { repositories } = this.props
-    const { sidePanelOpen } = this.state
+    const { repos, sidePanelOpen } = this.state
+    // const { sidePanelOpen } = this.state
 
-      console.log(repositories)
+    console.log('repo from props')
+    console.log(repos)
+    console.log('props')
+    console.log(this.props)
+    console.log('app')
+    console.log(this.props.app.external)
+
+    // console.log('repo cache...', repoCache)
+    // console.log('repo state...', repoState)
 
     return (
       <div css="min-width: 320px">
@@ -53,8 +130,8 @@ export default class App extends React.Component {
               onClick: this.handleSidePanelOpen,
             }}
           >
-            {repositories.length > 0 ? (
-              <Repositories repositories={repositories} />
+            {repos.length > 0 ? (
+              <Repositories repositories={repos} />
             ) : (
               <EmptyState onActivate={this.handleSidePanelOpen} />
             )}
@@ -70,3 +147,25 @@ export default class App extends React.Component {
     )
   }
 }
+
+export default observe(
+  observable =>
+    observable.map(state => {
+      const { repos } = state
+      console.log("repos from observable: ")
+      console.log(repos)
+      console.log('state from observable')
+      console.log(observable)
+
+      return {
+        ...state,
+        repos:
+          repos && repos.length > 0
+            ? repos.map(key => {
+                return { address: key, name: '', description: '' }
+              })
+            : []
+      }
+    }),
+  {}
+)(App)

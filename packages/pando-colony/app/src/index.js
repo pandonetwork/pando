@@ -1,14 +1,14 @@
+import Aragon, { providers } from '@aragon/client'
 import React from 'react'
 import ReactDOM from 'react-dom'
-import Aragon, { providers } from '@aragon/client'
 import App from './App'
 
 class ConnectedApp extends React.Component {
   state = {
     app: new Aragon(new providers.WindowMessage(window.parent)),
-    network: {},
     observable: null,
-    userAccount: '',
+    account: '',
+    network: {},
   }
   componentDidMount() {
     window.addEventListener('message', this.handleWrapperMessage)
@@ -25,11 +25,15 @@ class ConnectedApp extends React.Component {
       this.sendMessageToWrapper('ready', true)
       this.setState({ observable: app.state() })
       app.accounts().subscribe(accounts => {
-        this.setState({ userAccount: accounts[0] || '' })
+        this.setState({ account: accounts[0] || '' })
       })
       app.network().subscribe(network => {
         this.setState({ network })
       })
+      // app.state().subscribe(state => {
+      //   console.log('FINAL STATE..', state)
+      //   this.setState({ repos: state.repos })
+      // })
     }
   }
   sendMessageToWrapper = (name, value) => {
