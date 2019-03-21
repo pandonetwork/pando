@@ -19,18 +19,7 @@ export default (props) => {
       >
         <TableRow>
           <TableCell>
-            <Text weight="bold">Name</Text>
-          </TableCell>
-          <TableCell>
-            <Text>{props.name}</Text>
-          </TableCell>
-          <TableCellLeft>
-            <Button mode="secondary" onClick={() => props.handleUpdateInformationsSidePanelOpen()}>Update</Button>
-          </TableCellLeft>
-        </TableRow>
-        <TableRow>
-          <TableCell>
-            <Text weight="bold">Description</Text>
+            <Text weight="bold">{props.name}</Text>
           </TableCell>
           <TableCell>
             <Text>{props.description}</Text>

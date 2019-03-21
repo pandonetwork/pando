@@ -67,7 +67,7 @@ class App extends React.Component {
       <div css="min-width: 320px">
         <Main>
           <AppView
-            title={repository.name}
+            title={name}
             tabs={
               <TabBar
                 items={tabs}
@@ -80,7 +80,7 @@ class App extends React.Component {
               <Overview repo={repository} branches={branches} />
             )}
             {currentTab === 'Code' && (
-              <Code repo={repository} branches={branches} />
+              <Code name={name} branches={branches} />
             )}
             {(currentTab === 'Pull requests' ||
               currentTab === 'Lineage requests') && <Requests />}

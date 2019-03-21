@@ -1,11 +1,20 @@
 import Aragon from "@aragon/client";
 
-const app = new Aragon();
+const app = new Aragon()
+
+app
+  .call('name')
+  .toPromise()
+  .then(name => {
+    app.identify(name)
+  })
+  .catch(err => {
+    console.error('Failed to load information to identify repository app due to:', err)
+  })
+
 
 app.store(async (state, event) => {
-  if (state === null) {
-    state = { branches: {}, name: '', description: '' }
-  }
+  state = state ? state : { branches: {}, name: '', description: '' }
 
   switch (event.event) {
     case "UpdateRef":
@@ -19,8 +28,8 @@ app.store(async (state, event) => {
     default:
       return state
   }
-});
+})
 
 const branchFromRef = ref => {
   return ref.split("/")[2]
-};
+}
