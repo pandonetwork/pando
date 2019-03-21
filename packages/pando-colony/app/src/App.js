@@ -63,30 +63,30 @@ class App extends React.Component {
     }
  }
 
- loadRepoName = repoContract => {
+  loadRepoName = repoContract => {
    return new Promise((resolve, reject) => {
      repoContract
        .name()
        .first()
        .subscribe(resolve, reject)
    })
- }
+  }
 
- loadRepoDescription = repoContract => {
+  loadRepoDescription = repoContract => {
    return new Promise((resolve, reject) => {
      repoContract
        .description()
        .first()
        .subscribe(resolve, reject)
    })
- }
+  }
 
- loadRepoInformations = repoContract => {
+  loadRepoInformations = repoContract => {
    return Promise.all([
      this.loadRepoName(repoContract),
      this.loadRepoDescription(repoContract)
    ])
- }
+  }
 
   handleMenuPanelOpen = () => {
     this.props.sendMessageToWrapper('menuPanel', true)
