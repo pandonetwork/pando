@@ -1,8 +1,11 @@
 import { AppView, Main, observe, TabBar } from '@aragon/ui'
 import React from 'react'
+import UpdateInformationsSidePanel from './components/UpdateInformationsSidePanel'
 import Code from './screens/Code'
 import Overview from './screens/Overview'
 import Requests from './screens/Requests'
+import Settings from './screens/Settings'
+
 
 const repository = {
   name: 'aragonAPI',
@@ -14,22 +17,48 @@ const repository = {
   ],
 }
 
-const tabs = ['Overview', 'Code', 'Pull requests', 'Lineage requests']
+const tabs = ['Overview', 'Code', 'Pull requests', 'Lineage requests', 'Settings']
 
 class App extends React.Component {
   static defaultProps = {
     branches: [],
+    name: 'Loading ...',
+    description: ''
   }
 
   constructor(props) {
     super(props)
 
-    this.state = { tabIndex: 0 }
+    this.handleUpdateInformationsSidePanelOpen = this.handleUpdateInformationsSidePanelOpen.bind(this);
+
+    this.state = {
+      tabIndex: 0,
+      updateInformationsSidePanelOpen: false
+    }
+  }
+
+  handleUpdateInformationsSidePanelOpen = () => {
+    this.setState({ updateInformationsSidePanelOpen: true })
+  }
+
+  handleUpdateInformationsSidePanelClose = () => {
+    this.setState({ updateInformationsSidePanelOpen: false })
+  }
+
+  handleUpdateInformations = (name, description) => {
+    // console.log(name)
+    // console.log(description)
+    this.props.app.updateInformations(name, description)
   }
 
   render() {
-    let { branches } = this.props
-    const { tabIndex } = this.state
+    let { branches, name, description } = this.props
+    console.log(this.props)
+    // const { name, description } = { name: 'aragonOS', description: 'A solidity framework to develop DAOs' }
+    const { tabIndex, updateInformationsSidePanelOpen } = this.state
+
+    console.log(updateInformationsSidePanelOpen)
+
     const currentTab = tabs[tabIndex]
 
     //branches = [['master', 'z8mWaG3rh3fyrnWuRAKLN3YwmESb2GoyZ']]
@@ -38,10 +67,10 @@ class App extends React.Component {
       <div css="min-width: 320px">
         <Main>
           <AppView
-            title={repository.name}
+            title={name}
             tabs={
               <TabBar
-                items={branches.length > 0 ? tabs : [tabs[0]]}
+                items={tabs}
                 selected={tabIndex}
                 onChange={tabIndex => this.setState({ tabIndex })}
               />
@@ -51,11 +80,20 @@ class App extends React.Component {
               <Overview repo={repository} branches={branches} />
             )}
             {currentTab === 'Code' && (
-              <Code repo={repository} branches={branches} />
+              <Code name={name} branches={branches} />
             )}
             {(currentTab === 'Pull requests' ||
               currentTab === 'Lineage requests') && <Requests />}
+            {currentTab === 'Settings' && <Settings name={name} description={description} handleUpdateInformationsSidePanelOpen={this.handleUpdateInformationsSidePanelOpen}/>}
           </AppView>
+
+          <UpdateInformationsSidePanel
+            name={name}
+            description={description}
+            opened={updateInformationsSidePanelOpen}
+            onClose={this.handleUpdateInformationsSidePanelClose}
+            onSubmit={this.handleUpdateInformations}
+          />
         </Main>
       </div>
     )
