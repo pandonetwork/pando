@@ -22,8 +22,8 @@ const tabs = ['Overview', 'Code', 'Pull requests', 'Lineage requests', 'Settings
 class App extends React.Component {
   static defaultProps = {
     branches: [],
-    name: 'Loading ...',
-    description: ''
+    name: 'Loading...',
+    description: 'Loading...'
   }
 
   constructor(props) {
@@ -77,7 +77,7 @@ class App extends React.Component {
             }
           >
             {currentTab === 'Overview' && (
-              <Overview repo={repository} branches={branches} />
+              <Overview name={name} description={description} branches={branches} />
             )}
             {currentTab === 'Code' && (
               <Code name={name} branches={branches} />

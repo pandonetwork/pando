@@ -12,6 +12,8 @@ const MonoStyle = createGlobalStyle`
 const MarkdownWrapper = styled.div`
   padding: 2rem;
   h1 {
+    font-size: 2em;
+    font-weight: 600;
     border-bottom: 1px solid #eaecef;
     margin: 2rem 0;
   }

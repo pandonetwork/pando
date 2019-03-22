@@ -1,11 +1,20 @@
+import { EmptyStateCard, Table, TableHeader, TableRow, TableCell, Text, theme } from '@aragon/ui'
 import CID from 'cids'
 import IPFS from 'ipfs-http-client'
 import IPLD from 'ipld'
 import IPLDGit from 'ipld-git'
 import React from 'react'
+import styled from 'styled-components'
+import Box from '../components/Box'
 import Display from '../components/Browser/Display'
 
 export default class Overview extends React.Component {
+  static defaultProps = {
+    branches: [],
+    name: 'Loading...',
+    description: 'Loading...'
+  }
+
   constructor(props) {
     super(props)
     this.ipfs = IPFS({ host: 'localhost', port: '5001', protocol: 'http' })
@@ -46,7 +55,7 @@ export default class Overview extends React.Component {
   }
 
   render() {
-    const { branches } = this.props
+    const { name, description, branches } = this.props
     const { readme } = this.state
 
     if (branches.length === 0) {
@@ -67,9 +76,40 @@ export default class Overview extends React.Component {
 
     return (
       <div>
-        <h1>Overview here...</h1>
+        <InsideWrapper>
+          <Text size="xlarge" weight="bold">{name}</Text><br/>
+          <Text>{description}</Text>
+        </InsideWrapper>
+
+        <InsideWrapper>
+
+          <Table>
+            <TableRow>
+              <TableCellCentered>
+                <Text><Text weight="bold">3</Text> branches</Text>
+              </TableCellCentered>
+              <TableCellCentered>
+                <Text><Text weight="bold">34</Text> commits</Text>
+              </TableCellCentered>
+              <TableCellCentered>
+                <Text><Text weight="bold">X</Text> contributors <Text color={theme.textTertiary}> [coming soon]</Text></Text>
+              </TableCellCentered>
+            </TableRow>
+          </Table>
+        </InsideWrapper>
+
         {readme && <Display file={readme} filename="README.md" />}
       </div>
     )
   }
 }
+
+const InsideWrapper = styled.div`
+  margin-bottom: 30px;
+`
+
+const TableCellCentered = styled(TableCell)`
+  * {
+    justify-content: center;
+  }
+`
