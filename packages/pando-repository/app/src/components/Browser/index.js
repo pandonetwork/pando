@@ -41,7 +41,7 @@ export default class Browser extends React.Component {
 
     console.log('RECEVING PROPS FROM CONSTRUCTOR')
     console.log(props)
-    this.deriveCommitAndTreeFromBranch(props.branches, 0, 0)
+    // this.deriveCommitAndTreeFromBranch(props.branches, 0, 0)
 
     // if (Object.keys(props.branches).length && props.branches[Object.keys(props.branches)[this.state.activeBranch]][0]) {
     //   const commit = props.branches[Object.keys(props.branches)[this.state.activeBranch]][0]
@@ -54,6 +54,11 @@ export default class Browser extends React.Component {
     //   })
     // }
   }
+
+  componentDidMount() {
+   this.deriveCommitAndTreeFromBranch(this.props.branches, 0, 0)
+  }
+
 
   componentWillReceiveProps(props) {
     console.log('RECEVING PROPS')
