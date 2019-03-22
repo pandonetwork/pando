@@ -103,10 +103,6 @@ class App extends React.Component {
 export default observe(
   observable =>
     observable.map(state => {
-      const { branches } = state
-      console.log('Branches from observable: ')
-      console.log(branches)
-
       return state
 
       // return {

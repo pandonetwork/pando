@@ -31,7 +31,9 @@ app.store(async (state, event) => {
       try {
         // state.branches[branchFromRef(event.returnValues.ref)] =
         //   event.returnValues.hash
+        console.log('Fetching history')
         state.branches[branchFromRef(event.returnValues.ref)] = await fetchHistory(event.returnValues.hash, [])
+        console.log('History fetched')
       } catch (err) {
         console.error('Failed to load commit history due to:', err)
       }
@@ -52,12 +54,13 @@ const branchFromRef = ref => {
 const fetchHistory = async (hash, history) => {
   return new Promise((resolve, reject) => {
     try {
-      ipld.get(new CID(hash), async (err, result) => {
+      const cid = new CID(hash)
+      ipld.get(cid, async (err, result) => {
         if (err) {
           reject(err)
         } else {
           const commit = result.value
-          commit.cid = hash
+          commit.cid = cid.toBaseEncodedString()
           commit.sha = cidToSha(hash).toString('hex')
 
           history.push(commit)
