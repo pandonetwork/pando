@@ -61,7 +61,7 @@ class App extends React.Component {
 
     const currentTab = tabs[tabIndex]
 
-    //branches = [['master', 'z8mWaG3rh3fyrnWuRAKLN3YwmESb2GoyZ']]
+    //branches = [['master', 'z8mWaGFSwuNWgUq3VFQxPuVDiFj9NdAJG']]
 
     return (
       <div css="min-width: 320px">
