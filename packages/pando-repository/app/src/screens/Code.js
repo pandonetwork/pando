@@ -14,7 +14,7 @@ export default ({ name, branches }) => {
       >
         <EmptyStateCard
           title="Repository is empty"
-          text="Push an initial commit to the repository to get started."
+          text="Create a commit into this repository to get started."
         />
       </Box>
     )

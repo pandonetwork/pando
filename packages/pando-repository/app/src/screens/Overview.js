@@ -28,15 +28,64 @@ export default class Overview extends React.Component {
   }
 
   componentDidMount() {
-    const { branches } = this.props
+    this.deriveReadmeFromBranches(this.props.branches, 0, 0)
 
-    if (branches.length) {
-      this.get(branches[0][1], 'tree').then(tree => {
+
+    // if (branches.length) {
+    //   this.get(branches[Object.keys(branches)[0]][0], 'tree').then(tree => {
+    //     if (tree['README.md']) {
+    //       this.get(tree['README.md'].hash['/']).then(buffer => {
+    //         const content = buffer.toString()
+    //         this.setState({ readme: content })
+    //       })
+    //     }
+    //   })
+    // }
+  }
+
+  componentWillReceiveProps(props) {
+    console.log('RECEVING PROPS')
+    console.log(props)
+
+    this.deriveReadmeFromBranches(props.branches, 0, 0)
+    // if (Object.keys(props.branches).length && props.branches[Object.keys(props.branches)[this.state.activeBranch]][0]) {
+    //   const commit = props.branches[Object.keys(props.branches)[this.state.activeBranch]][0]
+    //   console.log('commit')
+    //   console.log(commit)
+    //   this.get(commit.cid, 'tree').then(tree => {
+    //     this.setState({ commit, tree, nav: [props.name] })
+    //     console.log('STATE FROM PROPS FROM CONSTRUCTOR')
+    //     console.log(state)
+    //   })
+    // }
+  }
+
+  deriveCommitFromBranch(branches, branchId, commitId) {
+    if (Object.keys(branches).length && branches[Object.keys(branches)[branchId]] && branches[Object.keys(branches)[branchId]][commitId]) {
+      return branches[Object.keys(branches)[branchId]][commitId]
+    } else {
+      return undefined
+    }
+  }
+
+  deriveReadmeFromBranches(branches) {
+    console.log('DERIVE README FROM BRANCHES')
+    const commit = this.deriveCommitFromBranch(branches, 0, 0)
+
+    console.log('COMMIT')
+    console.log(commit)
+    if (commit) {
+      this.get(commit.cid, 'tree').then(tree => {
         if (tree['README.md']) {
-          this.get(tree['README.md'].hash['/']).then(buffer => {
+          console.log('DO HAVE A README')
+          this.get(commit.cid, 'tree/README.md/hash').then(buffer => {
             const content = buffer.toString()
+            console.log('GOT README')
+            console.log(content)
             this.setState({ readme: content })
           })
+        } else {
+          console.log('WE DONT HAVE A README')
         }
       })
     }
@@ -44,7 +93,8 @@ export default class Overview extends React.Component {
 
   async get(hash, path) {
     return new Promise((resolve, reject) => {
-      this.ipld.get(new CID(hash), path, (err, result) => {
+      const cid = CID.isCID(hash) ? hash : new CID(hash)
+      this.ipld.get(cid, path, (err, result) => {
         if (err) {
           reject(err)
         } else {
@@ -57,6 +107,9 @@ export default class Overview extends React.Component {
   render() {
     const { name, description, branches } = this.props
     const { readme } = this.state
+
+    const nbOfBranches = Object.keys(branches).length
+    const nbOfCommits = branches[Object.keys(branches)[0]] ? branches[Object.keys(branches)[0]].length : 0
 
     if (branches.length === 0) {
       return (
@@ -86,10 +139,10 @@ export default class Overview extends React.Component {
           <Table>
             <TableRow>
               <TableCellCentered>
-                <Text><Text weight="bold">3</Text> branches</Text>
+                <Text><Text weight="bold">{nbOfBranches}</Text> branches</Text>
               </TableCellCentered>
               <TableCellCentered>
-                <Text><Text weight="bold">34</Text> commits</Text>
+                <Text><Text weight="bold">{nbOfCommits}</Text> commits</Text>
               </TableCellCentered>
               <TableCellCentered>
                 <Text><Text weight="bold">X</Text> contributors <Text color={theme.textTertiary}> [coming soon]</Text></Text>

@@ -83,7 +83,6 @@ export default class Browser extends React.Component {
       this.setState({ commit })
       return commit
     } else {
-      console.error('Failed to extract commit from branch')
       return undefined
     }
   }
