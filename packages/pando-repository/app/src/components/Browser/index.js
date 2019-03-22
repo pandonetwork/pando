@@ -12,18 +12,22 @@ import Tree from './Tree'
 export default class Browser extends React.Component {
   constructor(props) {
     super(props)
+
     this.ipfs = IPFS({ host: 'localhost', port: '5001', protocol: 'http' })
     this.ipld = new IPLD({
       blockService: this.ipfs.block,
       formats: [IPLDGit],
     })
+
     this.forward = this.forward.bind(this)
     this.backward = this.backward.bind(this)
     this.goto = this.goto.bind(this)
     this.display = this.display.bind(this)
     this.handleChangeActiveBranch = this.handleChangeActiveBranch.bind(this)
+
     this.state = {
       activeBranch: 0,
+      commit: null,
       file: null,
       filename: null,
       tree: undefined,
@@ -32,10 +36,17 @@ export default class Browser extends React.Component {
     }
   }
 
-  componentDidMount() {
-    if (this.props.branches.length) {
-      this.get(this.props.branches[0][1], 'tree').then(tree => {
-        this.setState({ tree, nav: [this.props.name] })
+  componentWillReceiveProps(props) {
+    console.log('RECEVING PROPS')
+    console.log(props)
+    if (Object.keys(props.branches).length && props.branches[Object.keys(props.branches)[this.state.activeBranch]][0]) {
+      const commit = props.branches[Object.keys(props.branches)[this.state.activeBranch]][0]
+      console.log('commit')
+      console.log(commit)
+      this.get(commit.tree['/'].toString()).then(tree => {
+        this.setState({ commit, tree, nav: [props.name] })
+        console.log('STATE FROM PROPS')
+        console.log(state)
       })
     }
   }
@@ -92,6 +103,11 @@ export default class Browser extends React.Component {
   }
 
   async get(hash, path) {
+    console.log('GETTING')
+    console.log(hash)
+    const cid = new CID(hash)
+
+    console.log(cid.toBaseEncodedString())
     return new Promise((resolve, reject) => {
       this.ipld.get(new CID(hash), path, (err, result) => {
         if (err) {
@@ -105,11 +121,15 @@ export default class Browser extends React.Component {
 
   render() {
     const { branches } = this.props
-    const { activeBranch, nav, parents, file, filename, tree } = this.state
+    const { activeBranch, nav, parents, file, filename, commit, tree } = this.state
+
+    console.log('STATE')
+    console.log(this.state)
+
     return (
       <Wrapper>
         <DropDown
-          items={branches.map(branch => branch[0])}
+          items={Object.keys(branches)}
           active={activeBranch}
           onChange={this.handleChangeActiveBranch}
         />

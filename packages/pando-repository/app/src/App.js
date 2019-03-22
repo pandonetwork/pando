@@ -107,15 +107,17 @@ export default observe(
       console.log('Branches from observable: ')
       console.log(branches)
 
-      return {
-        ...state,
-        branches:
-          Object.keys(branches).length > 0
-            ? Object.keys(branches).map(key => {
-                return [key, branches[key]]
-              })
-            : [],
-      }
+      return state
+
+      // return {
+      //   ...state,
+      //   branches:
+      //     Object.keys(branches).length > 0
+      //       ? Object.keys(branches).map(key => {
+      //           return [key, branches[key]]
+      //         })
+      //       : [],
+      // }
     }),
   {}
 )(App)
