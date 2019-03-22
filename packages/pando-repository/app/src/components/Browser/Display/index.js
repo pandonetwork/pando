@@ -30,6 +30,12 @@ const MarkdownWrapper = styled.div`
     margin-top: 1rem;
     margin-bottom: 0.5rem;
   }
+  blockquote {
+    border-left: 1px solid #eaecef;
+    font-style: italic;
+    margin: auto;
+    padding-left: 5px;
+  }
   p {
     margin-bottom: 1rem;
   }
