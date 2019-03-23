@@ -6,6 +6,8 @@ const app = new Aragon()
 export let repoCache = {}
 export let repoState = {}
 
+console.log('HELLO FROM SCRIPT!!!')
+
 app.store(async (state, event) => {
   if (!state) {
     state = { repos: [], cache: {} }

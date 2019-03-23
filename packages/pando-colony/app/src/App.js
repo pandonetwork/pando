@@ -1,4 +1,6 @@
 import { Main, observe } from '@aragon/ui'
+import { map } from 'rxjs/operators'
+
 import React from 'react'
 import Aragon from '@aragon/client'
 import AppLayout from './components/AppLayout'
@@ -8,17 +10,17 @@ import EmptyState from './screens/EmptyState'
 import Repositories from './screens/Repositories'
 import PandoRepository from '../../build/contracts/PandoRepository.json'
 
-// import { repoCache, repoState } from './script'
+const retryEvery = (callback, initialRetryTimer = 1000, increaseFactor = 5) => {
+  const attempt = (retryTimer = initialRetryTimer) => {
+    // eslint-disable-next-line standard/no-callback-literal
+    callback(() => {
+      console.error(`Retrying in ${retryTimer / 1000}s...`)
 
-const app = new Aragon()
-
-function loadRepoInformations(repoContract) {
-  return new Promise((resolve, reject) => {
-    repoContract
-      .name()
-      .first()
-      .subscribe(resolve, reject)
-  })
+      // Exponentially backoff attempts
+      setTimeout(() => attempt(retryTimer * increaseFactor), retryTimer)
+    })
+  }
+  attempt()
 }
 
 class App extends React.Component {
@@ -28,42 +30,54 @@ class App extends React.Component {
 
   constructor(props) {
     super(props)
+    this.state = { repos: props.repos, sidePanelOpen: false }
 
-    this.state = {
-      repos: [],
-      sidePanelOpen: false
-    }
+    this.handleMenuPanelOpen = this.handleMenuPanelOpen.bind(this)
+    this.handleSidePanelOpen = this.handleSidePanelOpen.bind(this)
+
+  }
+
+  componentDidMount() {
+    console.log('DidMount')
+    this.deriveReposInformationsFromProps(this.props)
   }
 
   componentWillReceiveProps(props) {
+    console.log('Receive props')
+    console.log(props)
+    this.deriveReposInformationsFromProps(props)
+  }
+
+  deriveReposInformationsFromProps(props) {
     const repos = []
+    const requests = []
 
-    console.log('RECEIVE PROPS')
+    try {
+      for (const repo of props.repos) {
+        const contract = props.app.external(repo, PandoRepository.abi)
+        requests.push(this.loadRepoInformations(contract))
+      }
 
-    for (const repo of props.repos) {
-      console.log('From will receive props')
-      console.log(repo)
-      const contract = props.app.external(repo.address, PandoRepository.abi)
-
-      this
-        .loadRepoInformations(contract)
-        .then(results => {
-          const [name, description] = results
-          console.log('NAME ' + name)
-          console.log('Description ' + description)
-
-          repos.push({ address: repo.address, name, description })
-          this.setState({ repos })
-
-        })
-        .catch(err => {
-          console.log('ERR: ' + err)
-        })
+    } catch (err) {
+      console.error('Failed to set repos informations due to:', err)
 
     }
- }
 
-  loadRepoName = repoContract => {
+    Promise
+      .all(requests)
+      .then(results => {
+        for (const index in results) {
+          const [name, description] = results[index]
+          repos.push({ address: props.repos[index], name, description })
+        }
+        this.setState({ repos })
+      })
+      .catch(err => {
+        console.error('Failed to set repos informations due to:', err)
+      })
+  }
+
+  loadRepoName(repoContract) {
    return new Promise((resolve, reject) => {
      repoContract
        .name()
@@ -72,7 +86,7 @@ class App extends React.Component {
    })
   }
 
-  loadRepoDescription = repoContract => {
+  loadRepoDescription(repoContract) {
    return new Promise((resolve, reject) => {
      repoContract
        .description()
@@ -81,42 +95,31 @@ class App extends React.Component {
    })
   }
 
-  loadRepoInformations = repoContract => {
+  loadRepoInformations(repoContract) {
    return Promise.all([
      this.loadRepoName(repoContract),
      this.loadRepoDescription(repoContract)
    ])
   }
 
-  handleMenuPanelOpen = () => {
+  handleMenuPanelOpen() {
     this.props.sendMessageToWrapper('menuPanel', true)
   }
 
-  handleSidePanelOpen = () => {
+  handleSidePanelOpen() {
     this.setState({ sidePanelOpen: true })
   }
 
-  handleSidePanelClose = () => {
+  handleSidePanelClose() {
     this.setState({ sidePanelOpen: false })
   }
 
-  handleCreateRepository = (name, description) => {
+  handleCreateRepository(name, description) {
     this.props.app.createRepository(name, description)
   }
 
   render() {
     const { repos, sidePanelOpen } = this.state
-    // const { sidePanelOpen } = this.state
-
-    console.log('repo from props')
-    console.log(repos)
-    console.log('props')
-    console.log(this.props)
-    console.log('app')
-    console.log(this.props.app.external)
-
-    // console.log('repo cache...', repoCache)
-    // console.log('repo state...', repoState)
 
     return (
       <div css="min-width: 320px">
@@ -147,6 +150,16 @@ class App extends React.Component {
     )
   }
 }
+
+// export default observe(
+//   observable =>
+//     observable.map(state => {
+//       console.log('From obsverable')
+//       console.log(state)
+//       return { ...state }
+//     }),
+//   {}
+// )(App)
 
 export default observe(
   observable =>

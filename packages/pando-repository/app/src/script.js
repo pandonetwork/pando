@@ -62,6 +62,8 @@ app.store(async (state, event) => {
     default:
       return state
   }
+
+  return state
 })
 
 const branchFromRef = ref => {

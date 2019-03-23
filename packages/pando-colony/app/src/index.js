@@ -31,8 +31,9 @@ class ConnectedApp extends React.Component {
         this.setState({ network })
       })
       // app.state().subscribe(state => {
-      //   console.log('FINAL STATE..', state)
-      //   this.setState({ repos: state.repos })
+      //   console.log('State from index')
+      //   console.log(state)
+      //   this.setState(state)
       // })
     }
   }
