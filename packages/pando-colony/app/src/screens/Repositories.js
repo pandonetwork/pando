@@ -30,7 +30,7 @@ export default class Repositories extends React.Component {
                 <TableCell>
                   <div>
                     <div>
-                      <Text size="xlarge" weight="bold">
+                      <Text size="large" weight="bold">
                         {repository.name}
                       </Text>
                     </div>
