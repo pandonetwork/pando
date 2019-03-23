@@ -10,9 +10,9 @@ import path from 'path'
 import shell from 'shelljs'
 import contractor from 'truffle-contract'
 import Web3 from 'web3'
-import GitHelper from './util/git-helper'
-import IPLDHelper from './util/ipld-helper'
-import LineHelper from './util/line-helper'
+import GitHelper from './lib/git'
+import IPLDHelper from './lib/ipld'
+import LineHelper from './lib/line'
 
 const _timeout = async (duration: any): Promise<void> => {
   return new Promise<any>((resolve, reject) => {
@@ -28,12 +28,12 @@ export default class Helper {
   public path: string
   public address: string
   public config: any
-  public debug: any
+  public debug: any // put it private ?
   public line: LineHelper
   public git: GitHelper
   public ipld: IPLDHelper
 
-  private _repo!: any
+  // private _repo!: any
   private _db: any
   private _artifact: any
   private _contract!: any
@@ -41,25 +41,38 @@ export default class Helper {
   private _web3: any
 
   constructor(name: string = '_', url: string) {
+    // name and url
     this.name = name
     this.url = url
-    this.path = path.resolve(process.env.GIT_DIR as string)
+
+    // address and path shortcuts
     this.address = this.url.split('://')[1]
+    this.path = path.resolve(process.env.GIT_DIR as string)
+
+    // config
     this.config = this._config()
+
+    // lib
     this.debug = debug('pando')
     this.line = new LineHelper()
     this.git = new GitHelper(this)
     this.ipld = new IPLDHelper()
   }
 
+  //OK
   public async initialize(): Promise<void> {
+    // create dirs
     fs.ensureDirSync(path.join(this.path, 'refs', 'remotes', this.name))
     fs.ensureDirSync(path.join(this.path, 'pando', 'refs'))
 
-    this._repo = await git.Repository.open(this.path)
+    // load db
     this._db = Level(path.join(this.path, 'pando', 'refs', this.address))
+
+    // initialize web3
     this._provider = await this._ethConnect()
     this._web3 = new Web3(this._provider)
+
+    // initialize contract
     this._artifact = contractor(require('@pando/repository/build/contracts/PandoRepository.json'))
     this._artifact.setProvider(this._provider)
     this._artifact.defaults({
@@ -67,9 +80,10 @@ export default class Helper {
       gasPrice: 15000000001,
       from: this.config.ethereum.account,
     })
-    this._contract = await this._artifact.at(this.address)
+    this._contract = await this._artifact.at(this.address, { from: this.config.ethereum.address })
   }
 
+  // OK
   public async run(): Promise<void> {
     while (true) {
       const cmd = await this.line.next()
@@ -93,50 +107,55 @@ export default class Helper {
         case 'end':
           this._exit()
         case 'unknown':
-          this._die('unknown command: ' + cmd)
+          throw new Error('Unknown command: ' + cmd)
       }
     }
   }
 
-  /***** command handling methods *****/
+  /***** commands handling methods *****/
 
+  // OK
   private async _handleCapabilities(): Promise<void> {
-    this.debug('capabilities')
+    this.debug('cmd', 'capabilities')
     // this._send('option')
     this._send('fetch')
     this._send('push')
     this._send('')
   }
 
+  // OK
   private async _handleList({ forPush = false }: { forPush?: boolean } = {}): Promise<void> {
-    forPush ? this.debug('list', 'for-push') : this.debug('list')
+    forPush ? this.debug('cmd', 'list', 'for-push') : this.debug('cmd, list')
+
     const refs = await this._fetchRefs()
+
     for (const ref in refs) {
       this._send(this.ipld.cidToSha(refs[ref]) + ' ' + ref)
     }
+
     // force HEAD to master and update once pando handle symbolic refs
     this._send('@refs/heads/master' + ' ' + 'HEAD')
     this._send('')
   }
 
+  // OK
   private async _handleFetch(line: string): Promise<void> {
-    this.debug(line)
+    this.debug('cmd', line)
 
     while (true) {
       const [cmd, oid, name] = line.split(' ')
       await this._fetch(oid, name)
       line = await this.line.next()
 
-      if (line === '') {
-        break
-      }
+      if (line === '') break
     }
 
     this._send('')
   }
 
+  // OK
   private async _handlePush(line: string): Promise<void> {
-    this.debug(line)
+    this.debug('cmd', line)
 
     while (true) {
       const [src, dst] = line.split(' ')[1].split(':')
@@ -149,24 +168,24 @@ export default class Helper {
 
       line = await this.line.next()
 
-      if (line === '') {
-        break
-      }
+      if (line === '') break
     }
 
     this._send('')
   }
 
-  /**********/
+  /***** refs db methods *****/
 
-  private async _fetchRefs(): Promise<any> {
-    this.debug('fetching refs')
+  // OK
+  private async _fetchRefs(): Promise<object> {
+    this.debug('fetching remote refs from chain')
 
     let start
     let block
     let events
     const ops: object[] = []
     const updates: object = {}
+    const spinner = ora('Fetching remote refs from chain [this may take a while]').start()
 
     try {
       start = await this._db.get('@block')
@@ -178,37 +197,45 @@ export default class Helper {
       }
     }
 
-    block = await this._web3.eth.getBlockNumber()
-    events = await this._contract.getPastEvents('UpdateRef', {
-      fromBlock: start,
-      toBlock: 'latest',
-    })
+    try {
+      block = await this._web3.eth.getBlockNumber()
+      events = await this._contract.getPastEvents('UpdateRef', {
+        fromBlock: start,
+        toBlock: 'latest',
+      })
 
-    for (const event of events) {
-      updates[event.args.ref] = event.args.hash
+      for (const event of events) {
+        updates[event.args.ref] = event.args.hash
+      }
+
+      for (const ref in updates) {
+        ops.push({ type: 'put', key: ref, value: updates[ref] })
+      }
+
+      ops.push({ type: 'put', key: '@block', value: block })
+
+      await this._db.batch(ops)
+
+      spinner.succeed('Remote refs fetched from chain')
+
+      return this._getRefs()
+    } catch (err) {
+      spinner.fail('Failed to fetch remote refs from chain')
+      throw err
     }
-
-    for (const ref in updates) {
-      ops.push({ type: 'put', key: ref, value: updates[ref] })
-    }
-
-    ops.push({ type: 'put', key: '@block', value: block })
-
-    await this._db.batch(ops)
-
-    return this._getRefs()
   }
 
+  // OK
   private async _getRefs(): Promise<object> {
+    this.debug('reading refs from local db')
+
     const refs: any = {}
 
     return new Promise<object>((resolve, reject) => {
       this._db
         .createReadStream()
         .on('data', ref => {
-          if (ref.key !== '@block') {
-            refs[ref.key] = ref.value
-          }
+          if (ref.key !== '@block') refs[ref.key] = ref.value
         })
         .on('error', err => {
           reject(err)
@@ -224,11 +251,13 @@ export default class Helper {
 
   /***** core methods *****/
 
+  // OK
   private async _fetch(oid: string, ref: string): Promise<void> {
-    this.debug('fetching', oid, this.ipld.shaToCid(oid), ref)
+    this.debug('fetching', ref, oid, this.ipld.shaToCid(oid))
     await this.git.download(oid)
   }
 
+  // OK
   private async _push(src: string, dst: string): Promise<void> {
     this.debug('pushing', src, 'to', dst)
 
@@ -236,14 +265,10 @@ export default class Helper {
     let head
     let mapping: any = {}
     const ops: any = []
-    const ops2: any = []
 
     try {
       const refs = await this._getRefs()
       const remote: any = refs[dst]
-      const oid = await git.Reference.nameToId(this._repo, src)
-      const revwalk = git.Revwalk.create(this._repo)
-      revwalk.pushRef(src)
 
       const srcBranch = src.split('/').pop()
       const dstBranch = dst.split('/').pop()
@@ -255,41 +280,46 @@ export default class Helper {
         .stdout.split('\n')
         .slice(0, -1)
 
-      console.error(commits)
+      // collect git objects
+      try {
+        spinner = ora('Collecting git objects [this may take a while]').start()
 
-      // collecting git objects
-      spinner = ora('collecting git objects').start()
-      for (const commit of commits) {
-        if (commit !== '') {
-          console.error('PUSH LOOP: ' + commit)
+        for (const commit of commits) {
           const _mapping = await this.git.collect(commit, mapping)
           mapping = { ...mapping, ..._mapping }
         }
+
+        head = this.ipld.shaToCid(commits[0])
+
+        for (const entry in mapping) {
+          ops.push(this.ipld.put(mapping[entry]))
+        }
+
+        spinner.succeed('Git objects collected')
+      } catch (err) {
+        spinner.fail('Failed to collect git objects: ' + err.message)
+        this._die()
       }
 
-      head = this.ipld.shaToCid(commits[0])
-      console.error('HEAD')
-      console.error(head)
-      for (const entry in mapping) {
-        console.error(this.ipld.cidToSha(entry) + ' ' + entry)
-        ops.push(this.ipld.put(mapping[entry]))
-        // try {
-        //   const testcid = await this.ipld.put(mapping[entry])
-        //   console.error(testcid.toBaseEncodedString())
-        // } catch (err) {
-        //   console.error('ERROR; ' + err)
-        // }
+      // upload git objects
+      try {
+        spinner = ora('Uploading git objects to IPFS').start()
+        await Promise.all(ops)
+        spinner.succeed('Git objects uploaded to IPFS')
+      } catch (err) {
+        spinner.fail('Failed to upload git objects to IPFS: ' + err.message)
+        this._die()
       }
-      spinner.succeed('git objects collected')
 
-      // pushing git objects to IPFS
-      spinner = ora('pushing git objects to IPFS').start()
-      await Promise.all(ops)
-      spinner.succeed('git objects pushed to IPFS')
-
-      spinner = ora(`pushing ref ${dst} on-chain`).start()
-      await this._contract.push(dst, head)
-      spinner.succeed(`ref ${dst} pushed on-chain`)
+      // register on chain
+      try {
+        spinner = ora(`Registering ref ${dst} ${head} on-chain`).start()
+        await this._contract.push(dst, head)
+        spinner.succeed(`Ref ${dst} ${head} registered on-chain`)
+      } catch (err) {
+        spinner.fail(`Failed to register ref ${dst} ${head} on-chain: ` + err.message)
+        this._die()
+      }
 
       this._send(`ok ${dst}`)
     } catch (err) {
@@ -297,57 +327,53 @@ export default class Helper {
     }
   }
 
+  // TODO
   private async _delete(dst: string): Promise<void> {
     this.debug('deleting', dst)
   }
 
   /***** utility methods *****/
 
-  private async _ethConnect(): Promise<void> {
-    const provider = ETHProvider(this.config.ethereum.gateway)
-    const message = 'Connecting to Ethereum'
-    const spinner = ora(message).start()
+  // OK
+  private async _ethConnect(): Promise<any> {
+    this.debug('connecting to gateway', this.config.ethereum.gateway)
+
+    const provider = ETHProvider(this.config.ethereum.gateway, { __frameOrigin: 'pando ' })
+    const spinner = ora('Connecting to Ethereum').start()
 
     while (true) {
       try {
         const accounts = await provider.send('eth_accounts')
         spinner.stop()
         for (const account of accounts) {
-          if (account === this.config.ethereum.account) {
-            return provider
-          }
+          if (account === this.config.ethereum.account) return provider
         }
-        this._die(
-          "Your Ethereum gateway does not handle your Ethereum account. Update your gateway configuration or run 'git pando config' to select another account."
-        )
+        this._die("Failed to access your Ethereum account. Update your gateway configuration or run 'git pando config' to select another account.")
       } catch (err) {
         if (err.code === 4100 || err.code === 4001) {
-          spinner.text = message + ': ' + err.message
+          spinner.text = `Error connecting to Ethereum. ${err.message}.`
           await _timeout(2000)
         } else {
           spinner.stop()
-          this._die('Cannot connect to Ethereum. Make sure your Ethereum gateway is running.')
+          this._die('Failed to connect to Ethereum. Make sure your Ethereum gateway is running.')
+          this._die()
         }
       }
     }
-
-    return provider
   }
 
+  // OK
   private _config(): any {
     const LOCAL = path.join(this.path, 'pando', '.pandorc')
     const GLOBAL = path.join(os.homedir(), '.pandorc')
 
-    if (fs.pathExistsSync(LOCAL)) {
-      return json.readFileSync(LOCAL)
-    }
-    if (fs.pathExistsSync(GLOBAL)) {
-      return json.readFileSync(GLOBAL)
-    }
+    if (fs.pathExistsSync(LOCAL)) return json.readFileSync(LOCAL)
+    if (fs.pathExistsSync(GLOBAL)) return json.readFileSync(GLOBAL)
 
     this._die("No configuration file found. Run 'git-pando config' and come back to us.")
   }
 
+  // OK
   private _cmd(line: string): string {
     if (line === 'capabilities') {
       return 'capabilities'
@@ -368,15 +394,20 @@ export default class Helper {
     }
   }
 
+  // OK
   private _send(message): void {
+    // tslint:disable-next-line:no-console
     console.log(message)
   }
 
-  private _die(message: string): void {
-    console.error(message)
+  // OK
+  private _die(message?: string): void {
+    // tslint:disable-next-line:no-console
+    if (message) console.error(message)
     process.exit(1)
   }
 
+  // OK
   private _exit(): void {
     process.exit(0)
   }

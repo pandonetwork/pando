@@ -1,9 +1,9 @@
 module.exports = {
   networks: {
     devnet: {
-      host: 'localhost',
+      host: "localhost",
       port: 8545,
-      network_id: '*',
+      network_id: "*",
       gas: 50e6,
       gasPrice: 1500000000
     }
@@ -13,4 +13,4 @@ module.exports = {
       version: "0.4.24"
     }
   }
-}
+};

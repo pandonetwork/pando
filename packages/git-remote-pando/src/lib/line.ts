@@ -1,6 +1,5 @@
 import readline from 'readline'
 
-
 export default class LineHelper {
   private _buffer: any[]
   private _done: boolean
