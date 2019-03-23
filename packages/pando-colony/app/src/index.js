@@ -1,4 +1,4 @@
-import Aragon, { providers } from '@aragon/client'
+import Aragon, { providers } from '@aragon/api'
 import React from 'react'
 import ReactDOM from 'react-dom'
 import App from './App'
@@ -30,11 +30,6 @@ class ConnectedApp extends React.Component {
       app.network().subscribe(network => {
         this.setState({ network })
       })
-      // app.state().subscribe(state => {
-      //   console.log('State from index')
-      //   console.log(state)
-      //   this.setState(state)
-      // })
     }
   }
   sendMessageToWrapper = (name, value) => {

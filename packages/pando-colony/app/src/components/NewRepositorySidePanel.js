@@ -1,7 +1,6 @@
 import React from 'react'
 import styled from 'styled-components'
-import { Button, SidePanel, Text, TextInput, Field } from '@aragon/ui'
-
+import { Button, SidePanel, TextInput, Field } from '@aragon/ui'
 
 export default class NewRepositorySidePanel extends React.Component {
   static defaultProps = {
@@ -14,7 +13,7 @@ export default class NewRepositorySidePanel extends React.Component {
 
     this.state = {
       name: '',
-      description: ''
+      description: '',
     }
   }
 
@@ -47,11 +46,7 @@ export default class NewRepositorySidePanel extends React.Component {
     const { opened, onClose } = this.props
 
     return (
-      <SidePanel
-        title="New repository"
-        opened={opened}
-        onClose={onClose}
-      >
+      <SidePanel title="New repository" opened={opened} onClose={onClose}>
         <Form onSubmit={this.handleSubmit}>
           <Field label="Name">
             <TextInput

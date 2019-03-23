@@ -1,8 +1,7 @@
 import { Main, observe } from '@aragon/ui'
-import { map } from 'rxjs/operators'
+import { first, map } from 'rxjs/operators'
 
 import React from 'react'
-import Aragon from '@aragon/client'
 import AppLayout from './components/AppLayout'
 import NewRepositoryIcon from './components/NewRepositoryIcon'
 import NewRepositorySidePanel from './components/NewRepositorySidePanel'
@@ -10,22 +9,9 @@ import EmptyState from './screens/EmptyState'
 import Repositories from './screens/Repositories'
 import PandoRepository from '../../build/contracts/PandoRepository.json'
 
-const retryEvery = (callback, initialRetryTimer = 1000, increaseFactor = 5) => {
-  const attempt = (retryTimer = initialRetryTimer) => {
-    // eslint-disable-next-line standard/no-callback-literal
-    callback(() => {
-      console.error(`Retrying in ${retryTimer / 1000}s...`)
-
-      // Exponentially backoff attempts
-      setTimeout(() => attempt(retryTimer * increaseFactor), retryTimer)
-    })
-  }
-  attempt()
-}
-
 class App extends React.Component {
   static defaultProps = {
-    repos: []
+    repos: [],
   }
 
   constructor(props) {
@@ -34,17 +20,15 @@ class App extends React.Component {
 
     this.handleMenuPanelOpen = this.handleMenuPanelOpen.bind(this)
     this.handleSidePanelOpen = this.handleSidePanelOpen.bind(this)
-
+    this.handleSidePanelClose = this.handleSidePanelClose.bind(this)
+    this.handleCreateRepository = this.handleCreateRepository.bind(this)
   }
 
   componentDidMount() {
-    console.log('DidMount')
     this.deriveReposInformationsFromProps(this.props)
   }
 
   componentWillReceiveProps(props) {
-    console.log('Receive props')
-    console.log(props)
     this.deriveReposInformationsFromProps(props)
   }
 
@@ -57,14 +41,11 @@ class App extends React.Component {
         const contract = props.app.external(repo, PandoRepository.abi)
         requests.push(this.loadRepoInformations(contract))
       }
-
     } catch (err) {
       console.error('Failed to set repos informations due to:', err)
-
     }
 
-    Promise
-      .all(requests)
+    Promise.all(requests)
       .then(results => {
         for (const index in results) {
           const [name, description] = results[index]
@@ -78,28 +59,28 @@ class App extends React.Component {
   }
 
   loadRepoName(repoContract) {
-   return new Promise((resolve, reject) => {
-     repoContract
-       .name()
-       .first()
-       .subscribe(resolve, reject)
-   })
+    return new Promise((resolve, reject) => {
+      repoContract
+        .name()
+        .pipe(first())
+        .subscribe(resolve, reject)
+    })
   }
 
   loadRepoDescription(repoContract) {
-   return new Promise((resolve, reject) => {
-     repoContract
-       .description()
-       .first()
-       .subscribe(resolve, reject)
-   })
+    return new Promise((resolve, reject) => {
+      repoContract
+        .description()
+        .pipe(first())
+        .subscribe(resolve, reject)
+    })
   }
 
   loadRepoInformations(repoContract) {
-   return Promise.all([
-     this.loadRepoName(repoContract),
-     this.loadRepoDescription(repoContract)
-   ])
+    return Promise.all([
+      this.loadRepoName(repoContract),
+      this.loadRepoDescription(repoContract),
+    ])
   }
 
   handleMenuPanelOpen() {
@@ -151,34 +132,12 @@ class App extends React.Component {
   }
 }
 
-// export default observe(
-//   observable =>
-//     observable.map(state => {
-//       console.log('From obsverable')
-//       console.log(state)
-//       return { ...state }
-//     }),
-//   {}
-// )(App)
-
 export default observe(
   observable =>
-    observable.map(state => {
-      const { repos } = state
-      console.log("repos from observable: ")
-      console.log(repos)
-      console.log('state from observable')
-      console.log(observable)
-
-      return {
-        ...state,
-        repos:
-          repos && repos.length > 0
-            ? repos.map(key => {
-                return { address: key, name: '', description: '' }
-              })
-            : []
-      }
-    }),
+    observable.pipe(
+      map(state => {
+        return { ...state }
+      })
+    ),
   {}
 )(App)
