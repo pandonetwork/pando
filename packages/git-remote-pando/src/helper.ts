@@ -75,11 +75,9 @@ export default class Helper {
     // tslint:disable-next-line:no-submodule-imports
     this._artifact = contractor(require('@pando/repository/build/contracts/PandoRepository.json'))
     this._artifact.setProvider(this._provider)
-    this._artifact.defaults({
-      from: this.config.ethereum.account,
-      gas: 30e6,
-      gasPrice: 15000000001,
-    })
+    this._artifact.defaults({ from: this.config.ethereum.account })
+    this._artifact.autoGas = true
+    this._artifact.gasMultiplier = 3
     this._contract = await this._artifact.at(this.address, { from: this.config.ethereum.address })
   }
 
@@ -263,71 +261,87 @@ export default class Helper {
   private async _push(src: string, dst: string): Promise<void> {
     this.debug('pushing', src, 'to', dst)
 
-    let spinner
-    let head
-    let mapping: any = {}
-    const ops: any = []
+    return new Promise<void>(async (resolve, reject) => {
+      let spinner
+      let head
+      let txHash
+      let mapping: any = {}
+      const ops: any = []
 
-    try {
-      const refs = await this._getRefs()
-      const remote: any = refs[dst]
-
-      const srcBranch = src.split('/').pop()
-      const dstBranch = dst.split('/').pop()
-
-      const revListCmd = remote ? `git rev-list --left-only ${srcBranch}...${this.name}/${dstBranch}` : 'git rev-list --all'
-
-      const commits = shell
-        .exec(revListCmd, { silent: true })
-        .stdout.split('\n')
-        .slice(0, -1)
-
-      // collect git objects
       try {
-        spinner = ora('Collecting git objects [this may take a while]').start()
+        const refs = await this._getRefs()
+        const remote: any = refs[dst]
 
-        for (const commit of commits) {
-          const _mapping = await this.git.collect(commit, mapping)
-          mapping = { ...mapping, ..._mapping }
+        const srcBranch = src.split('/').pop()
+        const dstBranch = dst.split('/').pop()
+
+        const revListCmd = remote ? `git rev-list --left-only ${srcBranch}...${this.name}/${dstBranch}` : 'git rev-list --all'
+
+        const commits = shell
+          .exec(revListCmd, { silent: true })
+          .stdout.split('\n')
+          .slice(0, -1)
+
+        // collect git objects
+        try {
+          spinner = ora('Collecting git objects [this may take a while]').start()
+
+          for (const commit of commits) {
+            const _mapping = await this.git.collect(commit, mapping)
+            mapping = { ...mapping, ..._mapping }
+          }
+
+          head = this.ipld.shaToCid(commits[0])
+
+          // tslint:disable-next-line:forin
+          for (const entry in mapping) {
+            ops.push(this.ipld.put(mapping[entry]))
+          }
+
+          spinner.succeed('Git objects collected')
+        } catch (err) {
+          spinner.fail('Failed to collect git objects: ' + err.message)
+          this._die()
         }
 
-        head = this.ipld.shaToCid(commits[0])
-
-        // tslint:disable-next-line:forin
-        for (const entry in mapping) {
-          ops.push(this.ipld.put(mapping[entry]))
+        // upload git objects
+        try {
+          spinner = ora('Uploading git objects to IPFS').start()
+          await Promise.all(ops)
+          spinner.succeed('Git objects uploaded to IPFS')
+        } catch (err) {
+          spinner.fail('Failed to upload git objects to IPFS: ' + err.message)
+          this._die()
         }
 
-        spinner.succeed('Git objects collected')
+        // register on chain
+        try {
+          spinner = ora(`Registering ref ${dst} ${head} on-chain`).start()
+          this._contract
+            .push(dst, head)
+            .on('error', err => {
+              if (!err.message.includes('Failed to subscribe to new newBlockHeaders to confirm the transaction receipts')) {
+                spinner.fail(`Failed to register ref ${dst} ${head} on-chain: ` + err.message)
+                this._die()
+              }
+            })
+            .on('transactionHash', hash => {
+              txHash = hash
+              spinner.text = `Registering ref ${dst} ${head} on-chain through tx ${txHash}`
+            })
+            .then(receipt => {
+              spinner.succeed(`Ref ${dst} ${head} registered on-chain through tx ${txHash}`)
+              this._send(`ok ${dst}`)
+              resolve()
+            })
+        } catch (err) {
+          spinner.fail(`Failed to register ref ${dst} ${head} on-chain: ` + err.message)
+          this._die()
+        }
       } catch (err) {
-        spinner.fail('Failed to collect git objects: ' + err.message)
-        this._die()
+        this._die(err)
       }
-
-      // upload git objects
-      try {
-        spinner = ora('Uploading git objects to IPFS').start()
-        await Promise.all(ops)
-        spinner.succeed('Git objects uploaded to IPFS')
-      } catch (err) {
-        spinner.fail('Failed to upload git objects to IPFS: ' + err.message)
-        this._die()
-      }
-
-      // register on chain
-      try {
-        spinner = ora(`Registering ref ${dst} ${head} on-chain`).start()
-        await this._contract.push(dst, head)
-        spinner.succeed(`Ref ${dst} ${head} registered on-chain`)
-      } catch (err) {
-        spinner.fail(`Failed to register ref ${dst} ${head} on-chain: ` + err.message)
-        this._die()
-      }
-
-      this._send(`ok ${dst}`)
-    } catch (err) {
-      this._die(err)
-    }
+    })
   }
 
   // TODO
