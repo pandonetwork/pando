@@ -354,7 +354,7 @@ export default class Helper {
   private async _ethConnect(): Promise<any> {
     this.debug('connecting to gateway', this.config.ethereum.gateway)
 
-    const provider = ETHProvider(this.config.ethereum.gateway, { __frameOrigin: 'pando ' })
+    const provider = ETHProvider(this.config.ethereum.gateway)
     const spinner = ora('Connecting to Ethereum').start()
 
     while (true) {
@@ -372,7 +372,6 @@ export default class Helper {
         } else {
           spinner.stop()
           this._die('Failed to connect to Ethereum. Make sure your Ethereum gateway is running.')
-          this._die()
         }
       }
     }
