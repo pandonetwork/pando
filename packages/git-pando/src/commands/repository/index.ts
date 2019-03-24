@@ -1,6 +1,7 @@
 import yargs from 'yargs'
 import * as subcommands from './subcommands'
 
+// OK
 const builder = () => {
   return yargs
     .command(subcommands.deploy)
@@ -14,6 +15,7 @@ const builder = () => {
 /* tslint:disable:object-literal-sort-keys */
 export const repository = {
   command: 'repository <subcommand>',
+  aliases: ['repo'],
   desc: 'Manage pando repositories',
   builder,
 }

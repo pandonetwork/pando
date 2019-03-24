@@ -1,7 +1,6 @@
 import APM from '@aragon/apm'
 import Web3 from 'web3'
 import Pando from '..'
-import PandoError from '../error'
 
 const APP_IDS = {
   // acl: '0xe3262375f45a6e2026b7e7b18c2b807434f2508fe1a2a3dfb493c7df8f4aad6a',
@@ -20,7 +19,7 @@ export default class OrganizationFactory {
       ensRegistryAddress: this.pando.options.apm.ens,
       ipfs: 'http://locahost:5001',
     })
-    const factory = await this.pando.contracts.PandoKit.at(await apm.getLatestVersionContract('pando-kit.aragonpm.eth'))
+    const factory = await this.pando.artifacts.PandoKit.at(await apm.getLatestVersionContract('pando-kit.aragonpm.eth'))
     const receipt = await factory.newInstance()
     const address = await this._getDAOAddressFromReceipt(receipt)
 

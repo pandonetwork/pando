@@ -1,6 +1,5 @@
 import Aragon from '@aragon/wrapper'
 import Pando from '..'
-import PandoError from '../error'
 
 const COLONY_APP_ID = '0x63987fbbd4634a34320d02f82ebf1c6017da9956e3c198ef2ac06bb346f64667'
 
@@ -21,14 +20,14 @@ export default class RepositoryFactory {
       defaultGasPriceFn: () => String(5e9), // gwei
       apm: {
         ipfs: {},
-        ensRegistryAddress: this.pando.options.apm.ens
-      }
+        ensRegistryAddress: this.pando.options.apm.ens,
+      },
     })
 
     await wrapper.init({ accounts: { providedAccounts: [this.pando.options.ethereum.account] } })
     const apps = await this._apps(wrapper)
     const address = apps.filter(app => app.appId === COLONY_APP_ID)[0].proxyAddress
-    const colony = await this.pando.contracts.PandoColony.at(address)
+    const colony = await this.pando.artifacts.PandoColony.at(address)
     const receipt = await colony.createRepository(name, '')
 
     return this._getRepositoryAddressFromReceipt(receipt)

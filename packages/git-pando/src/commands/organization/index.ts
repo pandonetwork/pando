@@ -1,6 +1,7 @@
 import yargs from 'yargs'
 import * as subcommands from './subcommands'
 
+// OK
 const builder = () => {
   return yargs
     .command(subcommands.deploy)

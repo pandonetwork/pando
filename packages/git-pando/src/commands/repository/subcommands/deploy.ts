@@ -4,7 +4,6 @@ import yargs from 'yargs'
 import Pando from '../../../lib'
 import options from '../../../util/options'
 
-
 const builder = () => {
   return yargs
     .option('organization', {
@@ -12,13 +11,13 @@ const builder = () => {
       description: 'The Aragon organization to deploy the repository in',
       required: true,
     })
+    .strict()
     .help()
-    .strict(false)
     .version(false)
 }
 
 const handler = async argv => {
-  const pando = await Pando.create(options(argv.options))
+  const pando = await Pando.create(options())
   const spinner = ora(chalk.dim(`Deploying repository '${argv.name}'`)).start()
 
   try {

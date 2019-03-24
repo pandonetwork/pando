@@ -1,42 +1,29 @@
-// import { Provider } from "web3/providers";
-
-// export interface PWebsocketProvider extends WebsocketProvider {
-//   connection: {
-//     onclose(e: any): void;
-//     onmessage(e: any): void;
-//     onerror(e?: any): void;
-//     close(): void;
-//   };
-// }
-
+// OK
 export interface IPandoOptions {
-  ethereum: IEthereumOptions;
-  apm?: APMOptions;
+  ethereum: IEthereumOptions
 }
 
+// OK
 export interface IEthereumOptions {
-  account: string;
-  connection: string;
-  gateway?: Gateway;
-  provider?: any;
+  account: string
+  gateway: string
+  network?: string
 }
 
+// OK
 export interface PandoOptions {
-  ethereum: EthereumOptions;
-  apm: APMOptions;
+  ethereum: EthereumOptions
+  apm: APMOptions
 }
 
+// OK
 export interface EthereumOptions {
-  account: string;
-  provider: any;
+  account: string
+  network: string
+  provider: any
 }
 
+// OK
 export interface APMOptions {
-  ens: string;
-}
-
-export interface Gateway {
-  protocol: "ws" | "http";
-  host: string;
-  port: string;
+  ens: string
 }

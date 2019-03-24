@@ -1,85 +1,111 @@
-import _ from "lodash";
-import ETHProvider from "eth-provider";
-import TruffleContract from "truffle-contract";
-import OrganizationFactory from "./organization/factory";
-import RepositoryFactory from "./repository/factory";
-import PandoError from "./error";
-import { APMOptions, Gateway, IPandoOptions, PandoOptions } from "./types";
+import ETHProvider from 'eth-provider'
+import chalk from 'chalk'
+import ora from 'ora'
+import contractor from 'truffle-contract'
+import OrganizationFactory from './organization/factory'
+import RepositoryFactory from './repository/factory'
+import { IPandoOptions, PandoOptions } from './types'
+import die from '../util/die'
 
-const _artifacts = [
-  "Kernel",
-  "ACL",
-  "PandoKit",
-  "PandoColony",
-  "PandoRepository"
-].map(name => {
+// OK
+const _artifacts = ['Kernel', 'ACL', 'PandoKit', 'PandoColony', 'PandoRepository'].map(name => {
   switch (name) {
-    case "PandoKit":
-      return require(`@pando/kit/build/contracts/${name}.json`);
-    case "PandoColony":
-      return require(`@pando/colony/build/contracts/${name}.json`);
-    case "PandoRepository":
-      return require(`@pando/repository/build/contracts/${name}.json`);
+    case 'PandoKit':
+      return require(`@pando/kit/build/contracts/${name}.json`)
+    case 'PandoColony':
+      return require(`@pando/colony/build/contracts/${name}.json`)
+    case 'PandoRepository':
+      return require(`@pando/repository/build/contracts/${name}.json`)
     default:
-      return require(`@aragon/os/build/contracts/${name}.json`);
+      return require(`@aragon/os/build/contracts/${name}.json`)
   }
-});
+})
 
-const _defaults = (options: IPandoOptions): PandoOptions => {
-  const apm = _.defaultsDeep(options.apm, {
-    ens: "0x5f6f7e8cc7346a11ca2def8f827b7a0b612c56a1"
-  });
-
-  const provider = ETHProvider(options.ethereum.gateway);
-
-  return { ethereum: { account: options.ethereum.account, provider }, apm };
-};
+// OK
+const _timeout = async (duration: any): Promise<void> => {
+  return new Promise<any>((resolve, reject) => {
+    setTimeout(() => {
+      resolve()
+    }, duration)
+  })
+}
 
 export default class Pando {
+  // OK
   public static async create(options: IPandoOptions): Promise<Pando> {
-    const pando = new Pando(_defaults(options));
-    await pando._initialize();
-
-    return pando;
+    return new Pando(await this._defaults(options))
   }
 
-  public options: PandoOptions;
-  public organizations: OrganizationFactory;
-  public repositories: RepositoryFactory;
+  // OK
+  private static async _defaults(options: IPandoOptions): Promise<PandoOptions> {
+    const provider = await this._provider(options)
+    const network = options.ethereum.network ? options.ethereum.network : 'devchain'
+    const ethereum = { account: options.ethereum.account, network, provider }
 
-  public contracts: any;
-
-  constructor(options: PandoOptions) {
-    this.options = options;
-    this.organizations = new OrganizationFactory(this);
-    this.repositories = new RepositoryFactory(this);
-
-    this.contracts = Object.assign(
-      {},
-      ..._artifacts
-        .map(artifact => TruffleContract(artifact))
-        .map(contract => ({ [contract._json.contractName]: contract }))
-    );
-  }
-
-  public async close(): Promise<void> {
-    if (typeof this.options.ethereum.provider.connection !== "undefined") {
-      this.options.ethereum.provider.connection.close();
+    switch (network) {
+      case 'devchain':
+        return {
+          ethereum,
+          apm: { ens: '0x5f6f7e8cc7346a11ca2def8f827b7a0b612c56a1' },
+        }
+      case 'rinkeby':
+        return {
+          ethereum,
+          apm: { ens: '0x98Df287B6C145399Aaa709692c8D308357bC085D' },
+        }
+      default:
+        return {
+          ethereum,
+          apm: { ens: '0x5f6f7e8cc7346a11ca2def8f827b7a0b612c56a1' },
+        }
     }
   }
 
-  private async _initialize(): Promise<Pando> {
-    for (const contract in this.contracts) {
-      if (this.contracts.hasOwnProperty(contract)) {
-        this.contracts[contract].setProvider(this.options.ethereum.provider);
-        this.contracts[contract].defaults({
-          from: this.options.ethereum.account,
-          gas: 30e6,
-          gasPrice: 15000000001
-        });
+  // OK
+  private static async _provider(options: IPandoOptions): Promise<any> {
+    const provider = ETHProvider(options.ethereum.gateway)
+    const spinner = ora(chalk.dim('Connecting to Ethereum')).start()
+
+    while (true) {
+      try {
+        const accounts = await provider.send('eth_accounts')
+        spinner.stop()
+        for (const account of accounts) {
+          if (account === options.ethereum.account) return provider
+        }
+        die("Failed to access your Ethereum account. Update your gateway configuration or run 'git pando config' to select another account.")
+      } catch (err) {
+        if (err.code === 4100 || err.code === 4001) {
+          spinner.text = chalk.dim(`Error connecting to Ethereum. ${err.message}.`)
+          await _timeout(2000)
+        } else {
+          spinner.stop()
+          die('Failed to connect to Ethereum. Make sure your Ethereum gateway is running.')
+        }
       }
     }
+  }
 
-    return this;
+  // OK
+  public artifacts: any
+  public options: PandoOptions
+  public organizations: OrganizationFactory
+  public repositories: RepositoryFactory
+
+  // OK
+  constructor(options: PandoOptions) {
+    this.artifacts = Object.assign({}, ..._artifacts.map(artifact => contractor(artifact)).map(artifact => ({ [artifact._json.contractName]: artifact })))
+    this.options = options
+    this.organizations = new OrganizationFactory(this)
+    this.repositories = new RepositoryFactory(this)
+
+    for (const artifact in this.artifacts) {
+      if (this.artifacts.hasOwnProperty(artifact)) {
+        this.artifacts[artifact].setProvider(this.options.ethereum.provider)
+        this.artifacts[artifact].defaults({ from: this.options.ethereum.account })
+        this.artifacts[artifact].autoGas = true
+        this.artifacts[artifact].gasMultiplier = 1.25
+      }
+    }
   }
 }

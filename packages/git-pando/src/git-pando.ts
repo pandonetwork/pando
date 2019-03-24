@@ -2,11 +2,8 @@
 
 import yargs from 'yargs'
 import * as commands from './commands'
-import configuration from './configuration'
-
 
 const argv = yargs
-  .config(configuration())
   .usage('pando <command>')
   .command(commands.config)
   .command(commands.organization)
