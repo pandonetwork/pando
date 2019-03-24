@@ -2,6 +2,7 @@ import debug from 'debug'
 import fs from 'fs-extra'
 import npath from 'path'
 import shell from 'shelljs'
+// tslint:disable-next-line:no-submodule-imports
 import gitP from 'simple-git/promise'
 import { SmartBuffer } from 'smart-buffer'
 import zlib from 'zlib'
@@ -39,6 +40,7 @@ export default class GitHelper {
       return { ...mapping, ...{ [cid]: node } }
     } else {
       // node is a tree
+      // tslint:disable-next-line:forin
       for (const entry in node) {
         const _mapping = await this.collect(this.helper.ipld.cidToSha(node[entry].hash['/']), mapping)
         mapping = { ...mapping, ..._mapping }
@@ -71,6 +73,7 @@ export default class GitHelper {
       await this.dump(oid, node)
     } else {
       // node is a tree
+      // tslint:disable-next-line:forin
       for (const entry in node) {
         await this.download(await this.helper.ipld.cidToSha(node[entry].hash['/']))
       }

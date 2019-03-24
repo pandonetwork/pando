@@ -4,11 +4,13 @@ export default class LineHelper {
   private _buffer: any[]
   private _done: boolean
 
+  // OK
   constructor() {
     this._buffer = []
     this._done = false
   }
 
+  // OK
   public async next(): Promise<any> {
     return new Promise<any>((resolve, reject) => {
       if (this._buffer.length > 0) {

@@ -2,6 +2,7 @@ import CID from 'cids'
 import IPFS from 'ipfs-http-client'
 import IPLD from 'ipld'
 import IPLDGit from 'ipld-git'
+// tslint:disable-next-line:no-submodule-imports
 import { cidToSha, shaToCid } from 'ipld-git/src/util/util'
 
 export default class IPLDHelper {

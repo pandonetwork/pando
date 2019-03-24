@@ -23,35 +23,37 @@ const _timeout = async (duration: any): Promise<void> => {
 }
 
 export default class Helper {
+  // name and url
   public name: string
   public url: string
-  public path: string
+  // address and path shortcuts
   public address: string
+  public path: string
+  // config
   public config: any
-  public debug: any // put it private ?
+  // lib
+  public debug: any
   public line: LineHelper
   public git: GitHelper
   public ipld: IPLDHelper
-
-  // private _repo!: any
+  // db
   private _db: any
-  private _artifact: any
-  private _contract!: any
+  // provider and web3
   private _provider: any
   private _web3: any
+  // artifact and contract
+  private _artifact: any
+  private _contract!: any
 
   constructor(name: string = '_', url: string) {
     // name and url
     this.name = name
     this.url = url
-
     // address and path shortcuts
     this.address = this.url.split('://')[1]
     this.path = path.resolve(process.env.GIT_DIR as string)
-
     // config
     this.config = this._config()
-
     // lib
     this.debug = debug('pando')
     this.line = new LineHelper()
@@ -59,26 +61,24 @@ export default class Helper {
     this.ipld = new IPLDHelper()
   }
 
-  //OK
+  // OK
   public async initialize(): Promise<void> {
     // create dirs
     fs.ensureDirSync(path.join(this.path, 'refs', 'remotes', this.name))
     fs.ensureDirSync(path.join(this.path, 'pando', 'refs'))
-
     // load db
     this._db = Level(path.join(this.path, 'pando', 'refs', this.address))
-
     // initialize web3
     this._provider = await this._ethConnect()
     this._web3 = new Web3(this._provider)
-
     // initialize contract
+    // tslint:disable-next-line:no-submodule-imports
     this._artifact = contractor(require('@pando/repository/build/contracts/PandoRepository.json'))
     this._artifact.setProvider(this._provider)
     this._artifact.defaults({
+      from: this.config.ethereum.account,
       gas: 30e6,
       gasPrice: 15000000001,
-      from: this.config.ethereum.account,
     })
     this._contract = await this._artifact.at(this.address, { from: this.config.ethereum.address })
   }
@@ -129,6 +129,7 @@ export default class Helper {
 
     const refs = await this._fetchRefs()
 
+    // tslint:disable-next-line:forin
     for (const ref in refs) {
       this._send(this.ipld.cidToSha(refs[ref]) + ' ' + ref)
     }
@@ -208,6 +209,7 @@ export default class Helper {
         updates[event.args.ref] = event.args.hash
       }
 
+      // tslint:disable-next-line:forin
       for (const ref in updates) {
         ops.push({ type: 'put', key: ref, value: updates[ref] })
       }
@@ -240,10 +242,10 @@ export default class Helper {
         .on('error', err => {
           reject(err)
         })
-        .on('end', function() {
+        .on('end', () => {
           //
         })
-        .on('close', function() {
+        .on('close', () => {
           resolve(refs)
         })
     })
@@ -291,6 +293,7 @@ export default class Helper {
 
         head = this.ipld.shaToCid(commits[0])
 
+        // tslint:disable-next-line:forin
         for (const entry in mapping) {
           ops.push(this.ipld.put(mapping[entry]))
         }
