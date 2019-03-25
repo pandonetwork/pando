@@ -35,28 +35,41 @@ contract PandoRepository is AragonApp {
     event UpdateRef(string ref, string hash);
     event UpdateInformations(string name, string description);
 
+    /***** external functions *****/
+
     function initialize(string _name, string _description) external onlyInit {
         initialized();
 
-        name = _name;
-        description = _description;
+        _updateInformations(_name, _description);
     }
 
     function push(string _ref, string _cid) external auth(PUSH_ROLE) {
+        _push(_ref, _cid);
+    }
+
+    function updateInformations(string _name, string _description) external auth(UPDATE_INFORMATIONS_ROLE) {
+        _updateInformations(_name, _description);
+    }
+
+    /***** public functions *****/
+
+    function ref(string _ref) public view returns (string cid) {
+        cid = refs[_ref];
+    }
+
+    /***** private functions *****/
+
+    function _push(string _ref, string _cid) internal {
         refs[_ref] = _cid;
 
         emit UpdateRef(_ref, _cid);
     }
 
-    function updateInformations(string _name, string _description) external auth(UPDATE_INFORMATIONS_ROLE) {
+    function _updateInformations(string _name, string _description) internal {
         name = _name;
         description = _description;
 
         emit UpdateInformations(_name, _description);
-    }
-
-    function ref(string _ref) external view returns (string cid) {
-        cid = refs[_ref];
     }
 
 
