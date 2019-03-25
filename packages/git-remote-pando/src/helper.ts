@@ -57,7 +57,7 @@ export default class Helper {
     this.debug = debug('pando')
     this.line = new LineHelper()
     this.git = new GitHelper(this)
-    this.ipld = new IPLDHelper()
+    this.ipld = new IPLDHelper(this)
   }
 
   // OK

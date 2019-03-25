@@ -4,14 +4,19 @@ import IPLD from 'ipld'
 import IPLDGit from 'ipld-git'
 // tslint:disable-next-line:no-submodule-imports
 import { cidToSha, shaToCid } from 'ipld-git/src/util/util'
+import URL from 'url-parse'
+import Helper from '../helper'
 
 export default class IPLDHelper {
+  public helper: Helper
   private _ipfs: IPFS
   private _ipld: IPLD
 
   // OK
-  constructor() {
-    this._ipfs = IPFS({ host: 'localhost', port: '5001', protocol: 'http' })
+  constructor(helper: Helper) {
+    const url = new URL(helper.config.ipfs.gateway)
+    this.helper = helper
+    this._ipfs = IPFS({ host: url.hostname, port: url.port, protocol: url.protocol.slice(0, url.protocol.length - 1) })
     this._ipld = new IPLD({
       blockService: this._ipfs.block,
       formats: [IPLDGit],
