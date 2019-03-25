@@ -46,7 +46,7 @@ const questions = {
       name: 'result',
       type: 'input',
       message: 'IPFS gateway',
-      default: 'http://locahost:5001',
+      default: 'http://localhost:5001',
     },
   },
 }
