@@ -10,8 +10,7 @@ npm install -g @pando/git-remote-pando @pando/git-pando
 
 ## Deploy a test environment
 
-See the pando [README](../../README.md) to see how to deploy a test environment. 
-
+See the pando [README](../../README.md) to see how to deploy a test environment.
 
 ## Usage
 
@@ -50,7 +49,7 @@ git pando dao deploy
 ### Copy the address of this DAO and deploy a repository
 
 ```bash
-git pando repository deploy <name> --dao <address>
+git pando repository deploy --name <name> --dao <address>
 ```
 
 ### Copy the address of this repository and add it as a remote in your git repo
@@ -60,4 +59,3 @@ git remote add origin pando://<address>
 ```
 
 ### You can now use git as you're used to!
-

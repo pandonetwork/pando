@@ -13,9 +13,9 @@ This repository is a monorepo including all pando-related smart contracts, apps 
 | ------------------------------------------------------- | ------------------------------------------ |
 | [`@pando/git-pando`](/packages/git-pando)               | Git extension for pando                    |
 | [`@pando/git-remote-pando`](/packages/git-remote-pando) | git-remote-helper for pando                |
-| [`@pando/pando-colony`](/packages/pando-colony)         | Aragon app implementing pando colonies     |
-| [`@pando/pando-kit`](/packages/pando-kit)               | Aragon DAOKit for pando organizations      |
-| [`@pando/pando-repository`](/packages/pando-repository) | Aragon app implementing pando repositories |
+| [`@pando/colony`](/packages/pando-colony)               | Aragon app implementing pando colonies     |
+| [`@pando/kit`](/packages/pando-kit)                     | Aragon DAOKit for pando organizations      |
+| [`@pando/repository`](/packages/pando-repository)       | Aragon app implementing pando repositories |
 
 ## Background
 
