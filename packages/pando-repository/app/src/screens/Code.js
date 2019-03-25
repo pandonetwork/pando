@@ -4,7 +4,9 @@ import Box from "../components/Box";
 import Browser from "../components/Browser";
 
 export default ({ name, branches }) => {
-  if (!branches || !branches.length) {
+  console.log("BRANCHES de ERROR");
+  console.log(branches);
+  if (!(branches && Object.keys(branches).length > 0)) {
     return (
       <Box
         display="flex"
