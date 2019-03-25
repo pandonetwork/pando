@@ -333,12 +333,16 @@ export default class Helper {
               this._send(`ok ${dst}`)
               resolve()
             })
+            .catch(err => {
+              spinner.fail(`Failed to register ref ${dst} ${head} on-chain: ` + err.message)
+              this._die()
+            })
         } catch (err) {
           spinner.fail(`Failed to register ref ${dst} ${head} on-chain: ` + err.message)
           this._die()
         }
       } catch (err) {
-        this._die(err)
+        this._die(err.message)
       }
     })
   }
