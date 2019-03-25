@@ -1,11 +1,8 @@
 import ETHProvider from 'eth-provider'
-import chalk from 'chalk'
 import ora from 'ora'
 import contractor from 'truffle-contract'
-import OrganizationFactory from './organization/factory'
-import RepositoryFactory from './repository/factory'
+import die from './die'
 import { IPandoOptions, PandoOptions } from './types'
-import die from '../util/die'
 
 // OK
 const _artifacts = ['Kernel', 'ACL', 'PandoKit', 'PandoColony', 'PandoRepository'].map(name => {
@@ -45,18 +42,18 @@ export default class Pando {
     switch (network) {
       case 'devchain':
         return {
-          ethereum,
           apm: { ens: '0x5f6f7e8cc7346a11ca2def8f827b7a0b612c56a1' },
+          ethereum,
         }
       case 'rinkeby':
         return {
-          ethereum,
           apm: { ens: '0x98Df287B6C145399Aaa709692c8D308357bC085D' },
+          ethereum,
         }
       default:
         return {
-          ethereum,
           apm: { ens: '0x5f6f7e8cc7346a11ca2def8f827b7a0b612c56a1' },
+          ethereum,
         }
     }
   }
@@ -64,7 +61,7 @@ export default class Pando {
   // OK
   private static async _provider(options: IPandoOptions): Promise<any> {
     const provider = ETHProvider(options.ethereum.gateway)
-    const spinner = ora(chalk.dim('Connecting to Ethereum')).start()
+    const spinner = ora('Connecting to Ethereum').start()
 
     while (true) {
       try {
@@ -76,7 +73,7 @@ export default class Pando {
         die("Failed to access your Ethereum account. Update your gateway configuration or run 'git pando config' to select another account.")
       } catch (err) {
         if (err.code === 4100 || err.code === 4001) {
-          spinner.text = chalk.dim(`Error connecting to Ethereum. ${err.message}.`)
+          spinner.text = `Error connecting to Ethereum. ${err.message}.`
           await _timeout(2000)
         } else {
           spinner.stop()
@@ -89,15 +86,11 @@ export default class Pando {
   // OK
   public artifacts: any
   public options: PandoOptions
-  public organizations: OrganizationFactory
-  public repositories: RepositoryFactory
 
   // OK
   constructor(options: PandoOptions) {
     this.artifacts = Object.assign({}, ..._artifacts.map(artifact => contractor(artifact)).map(artifact => ({ [artifact._json.contractName]: artifact })))
     this.options = options
-    this.organizations = new OrganizationFactory(this)
-    this.repositories = new RepositoryFactory(this)
 
     for (const artifact in this.artifacts) {
       if (this.artifacts.hasOwnProperty(artifact)) {
