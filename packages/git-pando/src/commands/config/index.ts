@@ -4,7 +4,8 @@ import json from 'jsonfile'
 import os from 'os'
 import path from 'path'
 import yargs from 'yargs'
-import prompt from './questions'
+import die from '../../lib/die'
+import questions from './questions'
 
 const builder = () => {
   return yargs
@@ -21,22 +22,21 @@ const builder = () => {
 const handler = async argv => {
   try {
     if (argv.global) {
-      const configuration = await prompt.configure()
+      const configuration = await questions()
       await fs.ensureFile(path.join(os.homedir(), '.pandorc'))
       await json.writeFile(path.join(os.homedir(), '.pandorc'), configuration)
     } else {
       const GIT_DIR = find.sync(['.git'])
-      if (!GIT_DIR) {
-        throw new Error('Not a git repository (or any of the parent directories)')
-      }
-      const configuration = await prompt.configure()
+      if (!GIT_DIR) throw new Error('Not a git repository (or any of the parent directories)')
 
+      const configuration = await questions()
       await fs.ensureFile(path.join(GIT_DIR, 'pando', '.pandorc'))
       await json.writeFile(path.join(GIT_DIR, 'pando', '.pandorc'), configuration)
     }
+
+    process.exit(0)
   } catch (err) {
-    console.error(err.message)
-    process.exit(1)
+    die(err.message)
   }
 }
 
