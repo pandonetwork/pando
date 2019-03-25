@@ -44,14 +44,4 @@ contract PandoColony is APMFetcher, AragonApp {
 
         emit CreateRepository(address(repository));
     }
-
-    function getRepositories() public view returns (address[]) {
-        address[] memory all = new address[](repositoriesLength);
-
-        for (uint i = 1; i <= repositoriesLength; i++) {
-            all[i - 1] = repositories[i];
-        }
-
-        return all;
-    }
 }
