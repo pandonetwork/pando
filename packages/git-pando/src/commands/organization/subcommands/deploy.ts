@@ -10,9 +10,9 @@ import Pando from '../../../lib/pando'
 const builder = () => {
   return yargs
     .option('network', {
-      describe: 'Network you want to deploy the DAO to',
       choices: ['devchain', 'rinkeby'],
       default: 'devchain',
+      describe: 'Network you want to deploy the DAO to',
       required: false,
     })
     .strict()
@@ -22,7 +22,8 @@ const builder = () => {
 
 const handler = async argv => {
   try {
-    let txHash, spinner
+    let txHash
+    let spinner
 
     const pando = await Pando.create(defaultsDeep(options(), { ethereum: { network: argv.network } }))
     const apm = APM(new Web3(pando.options.ethereum.provider), {

@@ -31,9 +31,9 @@ const builder = () => {
       required: true,
     })
     .option('network', {
-      describe: 'Network you want to deploy the repository to',
       choices: ['devchain', 'rinkeby'],
       default: 'devchain',
+      describe: 'Network you want to deploy the repository to',
       required: false,
     })
     .strict()
@@ -43,22 +43,23 @@ const builder = () => {
 
 const handler = async argv => {
   try {
-    let txHash, spinner
+    let txHash
+    let spinner
 
     const pando = await Pando.create(defaultsDeep(options(), { ethereum: { network: argv.network } }))
     const appId = pando.options.ethereum.network === 'devchain' ? namehash.hash('pando-colony.aragonpm.eth') : namehash.hash('pando-colony.open.aragonpm.eth')
     const wrapper = new Aragon(argv.organization, {
-      provider: pando.options.ethereum.provider,
-      defaultGasPriceFn: () => String(5e9), // gwei
       apm: {
         ensRegistryAddress: pando.options.apm.ens,
         ipfs: 'http://locahost:5001',
       },
+      defaultGasPriceFn: () => String(5e9), // gwei
+      provider: pando.options.ethereum.provider,
     })
     await wrapper.init({ accounts: { providedAccounts: [pando.options.ethereum.account] } })
     const apps = await _apps(wrapper)
-    const address = apps.filter(app => app.appId === appId)[0].proxyAddress
-    const colony = await pando.artifacts.PandoColony.at(address)
+    const colonyAddress = apps.filter(app => app.appId === appId)[0].proxyAddress
+    const colony = await pando.artifacts.PandoColony.at(colonyAddress)
 
     try {
       spinner = ora(`Deploying repository '${argv.name}' on ${pando.options.ethereum.network}`).start()
