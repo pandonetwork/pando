@@ -3,9 +3,13 @@ const Kernel = artifacts.require('@aragon/os/contracts/kernel/Kernel.sol')
 const ACL = artifacts.require('@aragon/core/contracts/acl/ACL')
 const Vault = artifacts.require('@aragon/apps-vault/contracts/Vault')
 const Finance = artifacts.require('@aragon/apps-finance/contracts/Finance')
+const TokenManager = artifacts.require(
+  '@aragon/apps-token-manager/contracts/TokenManager'
+)
 const Voting = artifacts.require('@aragon/apps-voting/contracts/Voting')
-const TokenManager = artifacts.require('@aragon/apps-token-manager/contracts/TokenManager')
-const Scheme = artifacts.require('@pando/scheme-democracy/contracts/DemocracyScheme')
+const Scheme = artifacts.require(
+  '@pando/scheme-democracy/contracts/DemocracyScheme'
+)
 const Colony = artifacts.require('@pando/core/contracts/colony/IColony')
 const OrganizationFactory = artifacts.require('OrganizationFactory')
 
@@ -40,7 +44,8 @@ contract('OrganizationFactory', accounts => {
     it('it should deploy DAO', async () => {
       const receipt = await factory.newInstance()
 
-      address = receipt.logs.filter(l => l.event === 'DeployInstance')[0].args.dao
+      address = receipt.logs.filter(l => l.event === 'DeployInstance')[0].args
+        .dao
       apps = receipt.logs
         .filter(l => l.event === 'InstalledApp')
         .map(event => {
@@ -80,21 +85,106 @@ contract('OrganizationFactory', accounts => {
 
     it('it should set permissions', async () => {
       ;(await Promise.all([
-        kernel.hasPermission(colony.address, kernel.address, await kernel.APP_MANAGER_ROLE(), '0x0'),
-        kernel.hasPermission(colony.address, acl.address, await acl.CREATE_PERMISSIONS_ROLE(), '0x0'),
-        kernel.hasPermission(finance.address, vault.address, await vault.TRANSFER_ROLE(), '0x0'),
-        kernel.hasPermission(voting.address, finance.address, await finance.CREATE_PAYMENTS_ROLE(), '0x0'),
-        kernel.hasPermission(voting.address, finance.address, await finance.EXECUTE_PAYMENTS_ROLE(), '0x0'),
-        kernel.hasPermission(voting.address, finance.address, await finance.MANAGE_PAYMENTS_ROLE(), '0x0'),
-        kernel.hasPermission(colony.address, tokenManager.address, await tokenManager.MINT_ROLE(), '0x0'),
-        kernel.hasPermission(voting.address, tokenManager.address, await tokenManager.ISSUE_ROLE(), '0x0'),
-        kernel.hasPermission(voting.address, tokenManager.address, await tokenManager.ASSIGN_ROLE(), '0x0'),
-        kernel.hasPermission(voting.address, tokenManager.address, await tokenManager.REVOKE_VESTINGS_ROLE(), '0x0'),
-        kernel.hasPermission(voting.address, tokenManager.address, await tokenManager.BURN_ROLE(), '0x0'),
-        kernel.hasPermission(ADDR_ANY, voting.address, await voting.CREATE_VOTES_ROLE(), '0x0'),
-        kernel.hasPermission(voting.address, scheme.address, await scheme.UPDATE_PARAMETERS_ROLE(), '0x0'),
-        kernel.hasPermission(ADDR_ANY, colony.address, await colony.DEPLOY_ORGANISM_ROLE(), '0x0'),
-      ])).should.deep.equal([true, true, true, true, true, true, true, true, true, true, true, true, true, true])
+        kernel.hasPermission(
+          colony.address,
+          kernel.address,
+          await kernel.APP_MANAGER_ROLE(),
+          '0x0'
+        ),
+        kernel.hasPermission(
+          colony.address,
+          acl.address,
+          await acl.CREATE_PERMISSIONS_ROLE(),
+          '0x0'
+        ),
+        kernel.hasPermission(
+          finance.address,
+          vault.address,
+          await vault.TRANSFER_ROLE(),
+          '0x0'
+        ),
+        kernel.hasPermission(
+          voting.address,
+          finance.address,
+          await finance.CREATE_PAYMENTS_ROLE(),
+          '0x0'
+        ),
+        kernel.hasPermission(
+          voting.address,
+          finance.address,
+          await finance.EXECUTE_PAYMENTS_ROLE(),
+          '0x0'
+        ),
+        kernel.hasPermission(
+          voting.address,
+          finance.address,
+          await finance.MANAGE_PAYMENTS_ROLE(),
+          '0x0'
+        ),
+        kernel.hasPermission(
+          colony.address,
+          tokenManager.address,
+          await tokenManager.MINT_ROLE(),
+          '0x0'
+        ),
+        kernel.hasPermission(
+          voting.address,
+          tokenManager.address,
+          await tokenManager.ISSUE_ROLE(),
+          '0x0'
+        ),
+        kernel.hasPermission(
+          voting.address,
+          tokenManager.address,
+          await tokenManager.ASSIGN_ROLE(),
+          '0x0'
+        ),
+        kernel.hasPermission(
+          voting.address,
+          tokenManager.address,
+          await tokenManager.REVOKE_VESTINGS_ROLE(),
+          '0x0'
+        ),
+        kernel.hasPermission(
+          voting.address,
+          tokenManager.address,
+          await tokenManager.BURN_ROLE(),
+          '0x0'
+        ),
+        kernel.hasPermission(
+          ADDR_ANY,
+          voting.address,
+          await voting.CREATE_VOTES_ROLE(),
+          '0x0'
+        ),
+        kernel.hasPermission(
+          voting.address,
+          scheme.address,
+          await scheme.UPDATE_PARAMETERS_ROLE(),
+          '0x0'
+        ),
+        kernel.hasPermission(
+          ADDR_ANY,
+          colony.address,
+          await colony.DEPLOY_ORGANISM_ROLE(),
+          '0x0'
+        ),
+      ])).should.deep.equal([
+        true,
+        true,
+        true,
+        true,
+        true,
+        true,
+        true,
+        true,
+        true,
+        true,
+        true,
+        true,
+        true,
+        true,
+      ])
     })
   })
 })
