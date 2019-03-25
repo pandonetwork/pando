@@ -76,6 +76,11 @@ export default class IPLDHelper {
   }
 
   // OK
+  public async pin(cid: string): Promise<void> {
+    return this._ipfs.pin.add(cid)
+  }
+
+  // OK
   public async cid(object: any): Promise<any> {
     return new Promise<any>((resolve, reject) => {
       this._ipld.put(object, { format: 'git-raw', onlyHash: true }, (err, cid) => {

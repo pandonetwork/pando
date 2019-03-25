@@ -265,7 +265,8 @@ export default class Helper {
       let head
       let txHash
       let mapping: any = {}
-      const ops: any = []
+      const puts: any = []
+      const pins: any = []
 
       try {
         const refs = await this._getRefs()
@@ -294,7 +295,7 @@ export default class Helper {
 
           // tslint:disable-next-line:forin
           for (const entry in mapping) {
-            ops.push(this.ipld.put(mapping[entry]))
+            puts.push(this.ipld.put(mapping[entry]))
           }
 
           spinner.succeed('Git objects collected')
@@ -306,10 +307,24 @@ export default class Helper {
         // upload git objects
         try {
           spinner = ora('Uploading git objects to IPFS').start()
-          await Promise.all(ops)
+          await Promise.all(puts)
           spinner.succeed('Git objects uploaded to IPFS')
         } catch (err) {
           spinner.fail('Failed to upload git objects to IPFS: ' + err.message)
+          this._die()
+        }
+
+        // pin git objects
+        try {
+          // tslint:disable-next-line:forin
+          for (const entry in mapping) {
+            pins.push(this.ipld.pin(entry))
+          }
+          spinner = ora('Pinning git objects to IPFS').start()
+          await Promise.all(pins)
+          spinner.succeed('Git objects pinned to IPFS')
+        } catch (err) {
+          spinner.fail('Failed to pin git objects to IPFS: ' + err.message)
           this._die()
         }
 
