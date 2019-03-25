@@ -1,10 +1,10 @@
-import { EmptyStateCard } from '@aragon/ui'
-import React from 'react'
-import Box from '../components/Box'
-import Browser from '../components/Browser'
+import { EmptyStateCard } from "@aragon/ui";
+import React from "react";
+import Box from "../components/Box";
+import Browser from "../components/Browser";
 
 export default ({ name, branches }) => {
-  if (branches.length === 0) {
+  if (!branches || !branches.length) {
     return (
       <Box
         display="flex"
@@ -17,8 +17,8 @@ export default ({ name, branches }) => {
           text="Create a commit into this repository to get started."
         />
       </Box>
-    )
+    );
   } else {
-    return <Browser name={name} branches={branches} />
+    return <Browser name={name} branches={branches} />;
   }
-}
+};
