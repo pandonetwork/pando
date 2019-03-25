@@ -27,7 +27,7 @@ contract PandoColony is APMFetcher, AragonApp {
     }
 
     /**
-    * @notice Create repository `_name`
+    * @notice Create repository '`_name`'
     */
     function createRepository(string _name, string _description) external auth(CREATE_REPOSITORY_ROLE) {
         Kernel dao = Kernel(kernel());
