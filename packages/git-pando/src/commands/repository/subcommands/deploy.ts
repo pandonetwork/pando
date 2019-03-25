@@ -51,7 +51,7 @@ const handler = async argv => {
     const wrapper = new Aragon(argv.organization, {
       apm: {
         ensRegistryAddress: pando.options.apm.ens,
-        ipfs: 'http://locahost:5001',
+        ipfs: pando.options.ipfs.gateway,
       },
       defaultGasPriceFn: () => String(5e9), // gwei
       provider: pando.options.ethereum.provider,

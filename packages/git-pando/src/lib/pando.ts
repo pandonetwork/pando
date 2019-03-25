@@ -44,16 +44,19 @@ export default class Pando {
         return {
           apm: { ens: '0x5f6f7e8cc7346a11ca2def8f827b7a0b612c56a1' },
           ethereum,
+          ipfs: options.ipfs,
         }
       case 'rinkeby':
         return {
           apm: { ens: '0x98Df287B6C145399Aaa709692c8D308357bC085D' },
           ethereum,
+          ipfs: options.ipfs,
         }
       default:
         return {
           apm: { ens: '0x5f6f7e8cc7346a11ca2def8f827b7a0b612c56a1' },
           ethereum,
+          ipfs: options.ipfs,
         }
     }
   }

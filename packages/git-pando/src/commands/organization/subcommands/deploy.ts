@@ -28,7 +28,7 @@ const handler = async argv => {
     const pando = await Pando.create(defaultsDeep(options(), { ethereum: { network: argv.network } }))
     const apm = APM(new Web3(pando.options.ethereum.provider), {
       ensRegistryAddress: pando.options.apm.ens,
-      ipfs: 'http://locahost:5001',
+      ipfs: pando.options.ipfs.gateway,
     })
     const packageName = pando.options.ethereum.network === 'devchain' ? 'pando-kit.aragonpm.eth' : 'pando-kit.open.aragonpm.eth'
     const factory = await pando.artifacts.PandoKit.at(await apm.getLatestVersionContract(packageName))

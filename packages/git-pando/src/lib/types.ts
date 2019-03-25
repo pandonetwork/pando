@@ -1,6 +1,7 @@
 // OK
 export interface IPandoOptions {
   ethereum: IEthereumOptions
+  ipfs: IPFSOptions
 }
 
 // OK
@@ -13,6 +14,7 @@ export interface IEthereumOptions {
 // OK
 export interface PandoOptions {
   ethereum: EthereumOptions
+  ipfs: IPFSOptions
   apm: APMOptions
 }
 
@@ -21,6 +23,11 @@ export interface EthereumOptions {
   account: string
   network: string
   provider: any
+}
+
+// OK
+export interface IPFSOptions {
+  gateway: string
 }
 
 // OK
