@@ -34,27 +34,49 @@ const handler = async argv => {
     const factory = await pando.artifacts.PandoKit.at(await apm.getLatestVersionContract(packageName))
 
     try {
-      spinner = ora(`Deploying organization on ${pando.options.ethereum.network}`).start()
+      spinner = ora(`Deploying token on ${pando.options.ethereum.network}`).start()
 
       factory
-        .newInstance()
+        .newToken('Native Governance Token', 'NGT')
         .on('error', err => {
           if (!err.message.includes('Failed to subscribe to new newBlockHeaders to confirm the transaction receipts')) {
-            spinner.fail(`Failed to deploy organization on ${pando.options.ethereum.network}: ` + err.message)
+            spinner.fail(`Failed to deploy token on ${pando.options.ethereum.network}: ` + err.message)
             die()
           }
         })
         .on('transactionHash', hash => {
           txHash = hash
-          spinner.text = `Deploying organization on ${pando.options.ethereum.network} through tx ${txHash}`
+          spinner.text = `Deploying token on ${pando.options.ethereum.network} through tx ${txHash}`
         })
-        .then(receipt => {
-          const address = receipt.logs.filter(l => l.event === 'DeployInstance')[0].args.dao
-          spinner.succeed(`Organization deployed on ${pando.options.ethereum.network} at address ${address} through tx ${txHash}`)
-          process.exit(0)
+        .then(receiptToken => {
+          const tokenAddress = receiptToken.logs.filter(l => l.event === 'DeployToken')[0].args.token
+          spinner.succeed(`Token deployed on ${pando.options.ethereum.network} at address ${tokenAddress} through tx ${txHash}`)
+          spinner = ora(`Deploying organization on ${pando.options.ethereum.network}`).start()
+
+          factory
+            .newInstance(tokenAddress)
+            .on('error', err => {
+              if (!err.message.includes('Failed to subscribe to new newBlockHeaders to confirm the transaction receipts')) {
+                spinner.fail(`Failed to deploy organization on ${pando.options.ethereum.network}: ` + err.message)
+                die()
+              }
+            })
+            .on('transactionHash', hash => {
+              txHash = hash
+              spinner.text = `Deploying organization on ${pando.options.ethereum.network} through tx ${txHash}`
+            })
+            .then(receiptDAO => {
+              const address = receiptDAO.logs.filter(l => l.event === 'DeployInstance')[0].args.dao
+              spinner.succeed(`Organization deployed on ${pando.options.ethereum.network} at address ${address} through tx ${txHash}`)
+              process.exit(0)
+            })
+            .catch(err => {
+              spinner.fail(`Failed to deploy organization on ${pando.options.ethereum.network}: ` + err.message)
+              die()
+            })
         })
         .catch(err => {
-          spinner.fail(`Failed to deploy organization on ${pando.options.ethereum.network}: ` + err.message)
+          spinner.fail(`Failed to deploy token on ${pando.options.ethereum.network}: ` + err.message)
           die()
         })
     } catch (err) {
