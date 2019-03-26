@@ -62,12 +62,21 @@ contract PandoKit is KitBase {
     uint256 constant PCT = 10 ** 16;
     address constant ANY_ENTITY = address(-1);
 
-    constructor(ENS _ens, bool _devchain) public KitBase(DAOFactory(0), _ens) {
+    event DeployToken(address token, string name, string symbol);
+
+    constructor(ENS _ens, MiniMeTokenFactory _tokenFactory, bool _devchain) public KitBase(DAOFactory(0), _ens) {
         devchain = _devchain;
-        tokenFactory = new MiniMeTokenFactory();
+        tokenFactory = _tokenFactory;
     }
 
-    function newInstance() external {
+    function newToken(string _name, string _symbol) external {
+        MiniMeToken token = tokenFactory.createCloneToken(MiniMeToken(address(0)), 0, _name, 0, _symbol, true);
+        token.generateTokens(msg.sender, 1);
+
+        emit DeployToken(address(token), _name, _symbol);
+    }
+
+    function newInstance(MiniMeToken token) external {
         bytes32[5] memory appIds = [
             apmNamehash("vault", false),            // 0
             apmNamehash("finance", false),          // 1
@@ -81,10 +90,6 @@ contract PandoKit is KitBase {
         ACL    acl = ACL(dao.acl());
         EVMScriptRegistry reg = EVMScriptRegistry(acl.getEVMScriptRegistry());
         acl.createPermission(this, dao, dao.APP_MANAGER_ROLE(), this);
-
-        // Token
-        MiniMeToken token = tokenFactory.createCloneToken(MiniMeToken(address(0)), 0, "Native Governance Token", 0, "NGT", true);
-        token.generateTokens(msg.sender, 1);
 
         // Apps
         Vault vault = Vault(

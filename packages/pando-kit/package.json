@@ -14,9 +14,12 @@
     "lint:tests": "eslint ./test",
     "lint": "npm run lint:contracts && npm run lint:tests",
     "compile": "aragon contracts compile",
-    "test": "aragon contracts test --network devnet",
-    "publish:devnet": "aragon apm publish major --init @ARAGON_ENS true --environment default",
-    "publish": "npm run publish:devnet"
+    "test": "aragon contracts test --network devchain",
+    "deploy:devchain": "npm run compile && scripts/deploy.js devchain",
+    "deploy:rinkeby": "npm run compile && scripts/deploy.js rinkeby",
+    "publish:major:devchain": "aragon apm publish major $(npm run deploy:devchain | tail -n 1) --environment default",
+    "publish:major:rinkeby": "aragon apm publish major $(npm run deploy:rinkeby | tail -n 1) --use-frame --environment rinkeby",
+    "publish": "npm run publish:major:devchain"
   },
   "dependencies": {
     "@aragon/apps-finance": "^2.1.0",
@@ -39,8 +42,10 @@
     "eslint-plugin-promise": "^4.0.1",
     "eslint-plugin-standard": "^4.0.0",
     "eth-ens-namehash": "^2.0.8",
+    "eth-provider": "^0.2.1",
     "ethlint": "^1.2.1",
     "prettier": "^1.8.2",
-    "truffle": "^5.0.0"
+    "truffle": "^5.0.0",
+    "truffle-contract": "^4.0.10"
   }
 }

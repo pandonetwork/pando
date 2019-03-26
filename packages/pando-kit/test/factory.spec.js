@@ -2,6 +2,7 @@
 const Kernel = artifacts.require('Kernel')
 const ACL = artifacts.require('ACL')
 const EVMScriptRegistry = artifacts.require('EVMScriptRegistry')
+const MiniMeTokenFactory = artifacts.require('MiniMeTokenFactory')
 const Vault = artifacts.require('Vault')
 const Finance = artifacts.require('Finance')
 const TokenManager = artifacts.require('TokenManager')
@@ -18,12 +19,16 @@ const ENS_ADDRESS = arapp.environments.default.registry
 
 contract('PandoKit', accounts => {
   context('> #newInstance', () => {
+    let factory
     let kit
     let receipt
 
     beforeEach(async () => {
-      kit = await PandoKit.new(ENS_ADDRESS, true)
-      receipt = await kit.newInstance()
+      factory = await MiniMeTokenFactory.new()
+      kit = await PandoKit.new(ENS_ADDRESS, factory.address, true)
+      const tokenReceipt = await kit.newToken('Native Governance Token', 'NGT')
+      const token = tokenReceipt.logs.filter(l => l.event === 'DeployToken')[0].args.token
+      receipt = await kit.newInstance(token)
     })
 
     it('it should deploy DAO', async () => {
@@ -65,6 +70,8 @@ contract('PandoKit', accounts => {
       assert.isTrue(await tokenManager.hasInitialized())
       assert.isTrue(await voting.hasInitialized())
       assert.isTrue(await colony.hasInitialized())
+
+      // add initialization parameters check for mainnet launch?
     })
 
     it('it should set permissions', async () => {
