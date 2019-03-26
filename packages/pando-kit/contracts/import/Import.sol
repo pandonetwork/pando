@@ -1,10 +1,7 @@
 pragma solidity ^0.4.24;
 
-
 import "@aragon/os/contracts/acl/ACL.sol";
 import "@aragon/os/contracts/kernel/Kernel.sol";
-import "@aragon/os/contracts/factory/DAOFactory.sol";
-import "@aragon/os/contracts/factory/EVMScriptRegistryFactory.sol";
 
 // You might think this file is a bit odd, but let me explain.
 // We only use some contracts in our tests, which means Truffle
@@ -21,6 +18,6 @@ import "@aragon/os/contracts/factory/EVMScriptRegistryFactory.sol";
 
 contract Import {
     constructor() public {
-        // to avoid lint error
+        // solium-disable-previous-line no-empty-blocks
     }
 }

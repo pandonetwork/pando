@@ -60,6 +60,7 @@ contract PandoKit is KitBase {
             apmNamehash("pando-colony")      // 4
         ];
 
+        // DAO
         Kernel dao = fac.newDAO(this);
         ACL    acl = ACL(dao.acl());
         EVMScriptRegistry reg = EVMScriptRegistry(acl.getEVMScriptRegistry());
