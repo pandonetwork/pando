@@ -60,8 +60,10 @@ contract PandoKit is KitBase {
             apmNamehash("pando-colony")      // 4
         ];
 
+        // DAO
         Kernel dao = fac.newDAO(this);
         ACL    acl = ACL(dao.acl());
+        EVMScriptRegistry reg = EVMScriptRegistry(acl.getEVMScriptRegistry());
         acl.createPermission(this, dao, dao.APP_MANAGER_ROLE(), this);
 
         // Token
@@ -118,18 +120,17 @@ contract PandoKit is KitBase {
         acl.createPermission(metavoting, finance, finance.CREATE_PAYMENTS_ROLE(), metavoting);
         acl.createPermission(metavoting, finance, finance.EXECUTE_PAYMENTS_ROLE(), metavoting);
         acl.createPermission(metavoting, finance, finance.MANAGE_PAYMENTS_ROLE(), metavoting);
-        acl.createPermission(colony, tokenManager, tokenManager.MINT_ROLE(), metavoting);
+        acl.createPermission(metavoting, tokenManager, tokenManager.MINT_ROLE(), metavoting);
         acl.createPermission(metavoting, tokenManager, tokenManager.ISSUE_ROLE(), metavoting);
         acl.createPermission(metavoting, tokenManager, tokenManager.ASSIGN_ROLE(), metavoting);
         acl.createPermission(metavoting, tokenManager, tokenManager.REVOKE_VESTINGS_ROLE(), metavoting);
         acl.createPermission(metavoting, tokenManager, tokenManager.BURN_ROLE(), metavoting);
         acl.createPermission(ANY_ENTITY, metavoting, metavoting.CREATE_VOTES_ROLE(), metavoting);
+        acl.createPermission(metavoting, metavoting, metavoting.MODIFY_SUPPORT_ROLE(), metavoting);
+        acl.createPermission(metavoting, metavoting, metavoting.MODIFY_QUORUM_ROLE(), metavoting);
         acl.createPermission(ANY_ENTITY, colony, colony.CREATE_REPOSITORY_ROLE(), metavoting);
-
-        EVMScriptRegistry reg = EVMScriptRegistry(acl.getEVMScriptRegistry());
         acl.createPermission(metavoting, reg, reg.REGISTRY_ADD_EXECUTOR_ROLE(), metavoting);
         acl.createPermission(metavoting, reg, reg.REGISTRY_MANAGER_ROLE(), metavoting);
-
 
         // Initialize apps
         token.changeController(tokenManager);
@@ -143,7 +144,6 @@ contract PandoKit is KitBase {
         acl.grantPermission(metavoting, dao, dao.APP_MANAGER_ROLE());
         acl.revokePermission(this, dao, dao.APP_MANAGER_ROLE());
         acl.setPermissionManager(metavoting, dao, dao.APP_MANAGER_ROLE());
-
         acl.grantPermission(metavoting, acl, acl.CREATE_PERMISSIONS_ROLE());
         acl.revokePermission(this, acl, acl.CREATE_PERMISSIONS_ROLE());
         acl.setPermissionManager(metavoting, acl, acl.CREATE_PERMISSIONS_ROLE());
