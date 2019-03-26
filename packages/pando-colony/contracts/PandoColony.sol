@@ -11,20 +11,24 @@ contract PandoColony is APMFetcher, AragonApp {
     bytes32 constant public CREATE_REPOSITORY_ROLE = keccak256("CREATE_REPOSITORY_ROLE");
 
     ENS public ens;
+    bool public devchain;
     mapping(uint256 => PandoRepository) public repositories;
     uint256 public repositoriesLength = 0;
 
     event CreateRepository(address repository);
 
-    /***** external function *****/
+    /***** external functions *****/
 
     /**
     * @notice Initialize Colony app with `_ens` as a ENS registry
     * @param _ens Address of the ENS registry to fetch pando apps address from
+    * @param _devchain Whether the app is deployed on devchain or not
+
     */
-    function initialize(ENS _ens) external onlyInit {
+    function initialize(ENS _ens, bool _devchain) external onlyInit {
         initialized();
         ens = _ens;
+        devchain = _devchain;
     }
 
     /**
@@ -36,12 +40,12 @@ contract PandoColony is APMFetcher, AragonApp {
         _createRepository(_name, _description);
     }
 
-    /***** internal function *****/
+    /***** internal functions *****/
 
     function _createRepository(string _name, string _description) internal {
         Kernel dao = Kernel(kernel());
         ACL acl = ACL(dao.acl());
-        bytes32 hash = apmNamehash("pando-repository");
+        bytes32 hash = apmNamehash("pando-repository", !devchain);
 
         PandoRepository repository = PandoRepository(dao.newAppInstance(hash, latestVersionAppBase(ens, hash)));
         repositoriesLength = repositoriesLength + 1;

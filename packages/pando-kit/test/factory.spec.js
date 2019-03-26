@@ -22,7 +22,7 @@ contract('PandoKit', accounts => {
     let receipt
 
     beforeEach(async () => {
-      kit = await PandoKit.new(ENS_ADDRESS)
+      kit = await PandoKit.new(ENS_ADDRESS, true)
       receipt = await kit.newInstance()
     })
 

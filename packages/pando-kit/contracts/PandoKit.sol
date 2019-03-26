@@ -3,14 +3,28 @@ pragma solidity ^0.4.24;
 import "@aragon/os/contracts/lib/ens/ENS.sol";
 import "@aragon/os/contracts/lib/ens/PublicResolver.sol";
 import "@aragon/os/contracts/apm/Repo.sol";
-import "@aragon/os/contracts/apm/APMNamehash.sol";
 import "@aragon/os/contracts/factory/DAOFactory.sol";
 import "@aragon/apps-shared-minime/contracts/MiniMeToken.sol";
 import "@aragon/apps-vault/contracts/Vault.sol";
 import "@aragon/apps-finance/contracts/Finance.sol";
 import "@aragon/apps-voting/contracts/Voting.sol";
-import "@pando/colony/contracts/PandoColony.sol";
+import { PandoColony } from "@pando/colony/contracts/PandoColony.sol";
 import { TokenManager } from "@aragon/apps-token-manager/contracts/TokenManager.sol";
+
+
+contract APMNamehash {
+    bytes32 constant public ETH_NODE = keccak256(bytes32(0), keccak256("eth"));
+    bytes32 constant public APM_NODE = keccak256(ETH_NODE, keccak256("aragonpm"));
+    bytes32 constant public OPEN_NODE = keccak256(APM_NODE, keccak256("open"));
+
+    function apmNamehash(string name, bool open) internal pure returns (bytes32) {
+        if (open) {
+            return keccak256(OPEN_NODE, keccak256(name));
+        } else {
+            return keccak256(APM_NODE, keccak256(name));
+        }
+    }
+}
 
 
 contract KitBase is APMNamehash {
@@ -25,7 +39,7 @@ contract KitBase is APMNamehash {
 
         // If no factory is passed, get it from on-chain bare-kit
         if (address(_fac) == address(0)) {
-            bytes32 bareKit = apmNamehash("bare-kit");
+            bytes32 bareKit = apmNamehash("bare-kit", false);
             fac = KitBase(latestVersionAppBase(bareKit)).fac();
         } else {
             fac = _fac;
@@ -42,22 +56,24 @@ contract KitBase is APMNamehash {
 
 
 contract PandoKit is KitBase {
+    bool devchain;
     MiniMeTokenFactory tokenFactory;
 
     uint256 constant PCT = 10 ** 16;
     address constant ANY_ENTITY = address(-1);
 
-    constructor(ENS ens) public KitBase(DAOFactory(0), ens) {
+    constructor(ENS _ens, bool _devchain) public KitBase(DAOFactory(0), _ens) {
+        devchain = _devchain;
         tokenFactory = new MiniMeTokenFactory();
     }
 
     function newInstance() external {
         bytes32[5] memory appIds = [
-            apmNamehash("vault"),            // 0
-            apmNamehash("finance"),          // 1
-            apmNamehash("token-manager"),    // 2
-            apmNamehash("voting"),           // 3
-            apmNamehash("pando-colony")      // 4
+            apmNamehash("vault", false),            // 0
+            apmNamehash("finance", false),          // 1
+            apmNamehash("token-manager", false),    // 2
+            apmNamehash("voting", false),           // 3
+            apmNamehash("pando-colony", !devchain)  // 4
         ];
 
         // DAO
@@ -138,7 +154,7 @@ contract PandoKit is KitBase {
         finance.initialize(vault, 30 days);
         tokenManager.initialize(token, true, 0);
         metavoting.initialize(token, uint64(50 * PCT), uint64(20 * PCT), 1 days);
-        colony.initialize(ens);
+        colony.initialize(ens, devchain);
 
         // Cleanup permissions
         acl.grantPermission(metavoting, dao, dao.APP_MANAGER_ROLE());

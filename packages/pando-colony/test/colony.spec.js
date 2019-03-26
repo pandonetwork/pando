@@ -30,7 +30,7 @@ contract('PandoColony', accounts => {
     const receipt2 = await dao.methods['newAppInstance(bytes32,address)']('0x0001', (await PandoColony.new()).address)
     const colony = await PandoColony.at(receipt2.logs.filter(l => l.event === 'NewAppProxy')[0].args.proxy)
     // Initialization
-    await colony.initialize(ENS_ADDRESS, { from: root })
+    await colony.initialize(ENS_ADDRESS, true, { from: root })
     // Permissions
     await acl.grantPermission(colony.address, dao.address, await dao.APP_MANAGER_ROLE(), { from: root })
     await acl.grantPermission(colony.address, acl.address, await acl.CREATE_PERMISSIONS_ROLE(), { from: root })
