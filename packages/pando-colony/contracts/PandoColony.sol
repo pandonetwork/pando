@@ -16,20 +16,29 @@ contract PandoColony is APMFetcher, AragonApp {
 
     event CreateRepository(address repository);
 
+    /***** external function *****/
 
     /**
-    * @notice Initialize Colony app with `_ens` as ENS registry
-    * @param _ens Address of the ENS registry to fetch pando apps from
+    * @notice Initialize Colony app with `_ens` as a ENS registry
+    * @param _ens Address of the ENS registry to fetch pando apps address from
     */
-    function initialize(ENS _ens) onlyInit {
+    function initialize(ENS _ens) external onlyInit {
         initialized();
         ens = _ens;
     }
 
     /**
     * @notice Create repository '`_name`'
+    * @param _name Name of the repository
+    * @param _description Description of the repository
     */
     function createRepository(string _name, string _description) external auth(CREATE_REPOSITORY_ROLE) {
+        _createRepository(_name, _description);
+    }
+
+    /***** internal function *****/
+
+    function _createRepository(string _name, string _description) internal {
         Kernel dao = Kernel(kernel());
         ACL acl = ACL(dao.acl());
         bytes32 hash = apmNamehash("pando-repository");
