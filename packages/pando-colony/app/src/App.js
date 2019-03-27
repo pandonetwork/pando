@@ -77,10 +77,7 @@ class App extends React.Component {
   }
 
   loadRepoInformations(repoContract) {
-    return Promise.all([
-      this.loadRepoName(repoContract),
-      this.loadRepoDescription(repoContract),
-    ])
+    return Promise.all([this.loadRepoName(repoContract), this.loadRepoDescription(repoContract)])
   }
 
   handleMenuPanelOpen() {
@@ -114,18 +111,10 @@ class App extends React.Component {
               onClick: this.handleSidePanelOpen,
             }}
           >
-            {repos.length > 0 ? (
-              <Repositories repositories={repos} />
-            ) : (
-              <EmptyState onActivate={this.handleSidePanelOpen} />
-            )}
+            {repos.length > 0 ? <Repositories repositories={repos} /> : <EmptyState onActivate={this.handleSidePanelOpen} />}
           </AppLayout>
 
-          <NewRepositorySidePanel
-            opened={sidePanelOpen}
-            onClose={this.handleSidePanelClose}
-            onSubmit={this.handleCreateRepository}
-          />
+          <NewRepositorySidePanel opened={sidePanelOpen} onClose={this.handleSidePanelClose} onSubmit={this.handleCreateRepository} />
         </Main>
       </div>
     )

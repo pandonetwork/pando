@@ -1,12 +1,4 @@
-import {
-  AddressField,
-  Table,
-  TableCell,
-  TableHeader,
-  TableRow,
-  Text,
-  Viewport,
-} from '@aragon/ui'
+import { AddressField, Table, TableCell, TableHeader, TableRow, Text, Viewport } from '@aragon/ui'
 import React from 'react'
 import Box from '../components/Box'
 

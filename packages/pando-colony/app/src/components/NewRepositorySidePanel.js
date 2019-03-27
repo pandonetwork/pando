@@ -49,21 +49,10 @@ export default class NewRepositorySidePanel extends React.Component {
       <SidePanel title="New repository" opened={opened} onClose={onClose}>
         <Form onSubmit={this.handleSubmit}>
           <Field label="Name">
-            <TextInput
-              ref={name => (this.nameInput = name)}
-              value={name}
-              onChange={this.handleNameChange}
-              required
-              wide
-            />
+            <TextInput ref={name => (this.nameInput = name)} value={name} onChange={this.handleNameChange} required wide />
           </Field>
           <Field label="Description">
-            <TextInput
-              ref={description => (this.descriptionInput = description)}
-              value={description}
-              onChange={this.handleDescriptionChange}
-              wide
-            />
+            <TextInput ref={description => (this.descriptionInput = description)} value={description} onChange={this.handleDescriptionChange} wide />
           </Field>
           <Button mode="strong" type="submit" wide>
             Create Repository
