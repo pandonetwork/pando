@@ -6,33 +6,34 @@ import "@aragon/os/contracts/apps/AragonApp.sol";
 
 contract PandoRepository is AragonApp {
     bytes32 constant public PUSH_ROLE = keccak256("PUSH_ROLE");
-    bytes32 constant public OPEN_MR_ROLE = keccak256("OPEN_MR_ROLE");
-    bytes32 constant public SORT_MR_ROLE = keccak256("SORT_MR_ROLE");
-    bytes32 constant public OPEN_LR_ROLE = keccak256("OPEN_LR_ROLE");
-    bytes32 constant public SORT_LR_ROLE = keccak256("SORT_LR_ROLE");
+    bytes32 constant public OPEN_PR_ROLE = keccak256("OPEN_PR_ROLE");
+    bytes32 constant public SORT_PR_ROLE = keccak256("SORT_PR_ROLE");
     bytes32 constant public UPDATE_INFORMATIONS_ROLE = keccak256("UPDATE_INFORMATIONS_ROLE");
 
-    enum MRState { Pending, Merged, Rejected, Cancelled }
-    enum LRState { Pending, Issued, Rejected, Cancelled }
+    string private constant ERROR_REPO_CANNOT_SORT_PR = "REPO_CANNOT_SORT_PR";
 
-    struct MR {
-      MRState state;
-      address author;
-      string  ref;
-      string  cid;
-    }
+    enum PRState { Pending, Merged, Rejected }
 
-    struct LR {
-      LRState state;
-      address receiver;
-      uint256 value;
+    struct PR {
+        PRState state;
+        address author;
+        string  title;
+        string  description;
+        string  ref;
+        string  hash;
     }
 
     string public name;
     string public description;
     mapping (string => string) refs;
 
+    mapping(uint256 => PR) public PRs;
+    uint256 public PRsLength;
+
     event UpdateRef(string ref, string hash);
+    event OpenPR(uint256 indexed id, address author, string title, string description, string ref, string hash);
+    event MergePR(uint256 indexed id);
+    event RejectPR(uint256 indexed id);
     event UpdateInformations(string name, string description);
 
     /***** external functions *****/
@@ -47,14 +48,39 @@ contract PandoRepository is AragonApp {
         _push(_ref, _cid);
     }
 
+    function openPR(string _title, string _description, string _ref, string _hash) external auth(OPEN_PR_ROLE) {
+        _openPR(msg.sender, _title, _description, _ref, _hash);
+    }
+
+    function mergePR(uint256 _id) external auth(SORT_PR_ROLE) {
+        require(canSortPR(_id), ERROR_REPO_CANNOT_SORT_PR);
+        _mergePR(_id);
+    }
+
+    function rejectPR(uint256 _id) external auth(SORT_PR_ROLE) {
+        require(canSortPR(_id), ERROR_REPO_CANNOT_SORT_PR);
+        _rejectPR(_id);
+    }
+
     function updateInformations(string _name, string _description) external auth(UPDATE_INFORMATIONS_ROLE) {
         _updateInformations(_name, _description);
     }
 
     /***** public functions *****/
 
-    function ref(string _ref) public view returns (string cid) {
-        cid = refs[_ref];
+    function ref(string _ref) public view returns (string hash) {
+        hash = refs[_ref];
+    }
+
+    function canSortPR(uint256 _id) public view returns (bool) {
+        if (_id < 1 || _id > PRsLength)
+            return false;
+
+        PR storage pr = PRs[_id];
+        if (pr.state != PRState.Pending)
+            return false;
+
+        return true;
     }
 
     /***** private functions *****/
@@ -63,6 +89,39 @@ contract PandoRepository is AragonApp {
         refs[_ref] = _cid;
 
         emit UpdateRef(_ref, _cid);
+    }
+
+    function _openPR(address _author, string _title, string _description, string _ref, string _hash) internal {
+        PRsLength = PRsLength + 1;
+        uint256 id = PRsLength;
+
+        PR storage pr = PRs[id];
+
+        pr.state = PRState.Pending;
+        pr.author = _author;
+        pr.title = _title;
+        pr.description = _description;
+        pr.ref = _ref;
+        pr.hash = _hash;
+
+        emit OpenPR(id, _author, _title, _description, _ref, _hash);
+    }
+
+    function _mergePR(uint256 _id) internal {
+        PR storage pr = PRs[_id];
+
+        pr.state = PRState.Merged;
+        _push(pr.ref, pr.hash);
+
+        emit MergePR(_id);
+    }
+
+    function _rejectPR(uint256 _id) internal {
+        PR storage pr = PRs[_id];
+
+        pr.state = PRState.Rejected;
+
+        emit RejectPR(_id);
     }
 
     function _updateInformations(string _name, string _description) internal {
