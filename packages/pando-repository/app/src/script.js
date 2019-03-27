@@ -25,7 +25,7 @@ app
   })
 
 app.store(async (state, event) => {
-  state = state || { branches: {}, name: '', description: '', cache: {} }
+  state = state || { branches: {}, PRs: [], name: '', description: '', cache: {} }
 
   if (!state.cache[event.id]) {
     state.cache[event.id] = true
@@ -53,6 +53,18 @@ app.store(async (state, event) => {
         } catch (err) {
           console.error('Failed to load commit history due to:', err)
         }
+        return state
+      case 'OpenPR':
+        const PR = {
+          id: event.returnValues.id,
+          state: 0,
+          author: event.returnValues.author,
+          title: event.returnValues.title,
+          description: event.returnValues.description,
+          destination: branchFromRef(event.returnValues.ref),
+          hash: event.returnValues.hash,
+        }
+        state.PRs.push(PR)
         return state
       case 'UpdateInformations':
         state.name = event.returnValues.name

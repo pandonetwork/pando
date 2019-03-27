@@ -43,7 +43,7 @@ class App extends React.Component {
   }
 
   render() {
-    let { branches, name, description } = this.props
+    let { branches, PRs, name, description } = this.props
     const { tabIndex, updateInformationsSidePanelOpen } = this.state
     const currentTab = tabs[tabIndex]
 
@@ -53,7 +53,7 @@ class App extends React.Component {
           <AppView title={name} tabs={<TabBar items={tabs} selected={tabIndex} onChange={tabIndex => this.setState({ tabIndex })} />}>
             {currentTab === 'Overview' && <Overview name={name} description={description} branches={branches} />}
             {currentTab === 'Code' && <Code name={name} branches={branches} />}
-            {(currentTab === 'Pull requests' || currentTab === 'Lineage requests') && <Requests />}
+            {(currentTab === 'Pull requests' || currentTab === 'Lineage requests') && <Requests PRs={PRs} />}
             {currentTab === 'Settings' && (
               <Settings name={name} description={description} handleUpdateInformationsSidePanelOpen={this.handleUpdateInformationsSidePanelOpen} />
             )}

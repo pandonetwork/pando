@@ -1,9 +1,5 @@
 import { Text } from '@aragon/ui'
-import Octicon, {
-  Check,
-  GitMerge,
-  GitPullRequest,
-} from '@githubprimer/octicons-react'
+import Octicon, { Check, CircleSlash, GitMerge, GitPullRequest } from '@githubprimer/octicons-react'
 import Prism from 'prismjs'
 import React from 'react'
 import ReactDiffViewer from 'react-diff-viewer'
@@ -11,6 +7,11 @@ import styled from 'styled-components'
 import Box from '../components/Box'
 import { prismMapping } from '../components/Browser/constants'
 import Display from '../components/Browser/Display'
+
+const PR_STATE = ['PENDING', 'MERGED', 'REJECTED'].reduce((state, key, index) => {
+  state[key] = index
+  return state
+}, {})
 
 const testData = [
   {
@@ -204,74 +205,67 @@ export default class Requests extends React.Component {
   }
 
   render() {
+    const { PRs } = this.props
     const { viewState, currentPR, diffViewState } = this.state
+
+    console.log('PRs from requests')
+    console.log(PRs)
 
     const filename = 'test.js'
     const language = prismMapping[filename.split('.').pop()]
 
-    const openCount = testData.filter(({ status }) => status === 'open').length
-    const closedCount = testData.filter(({ status }) => status === 'closed')
-      .length
+    const openCount = PRs.filter(({ state }) => state === PR_STATE.PENDING).length
+    const closedCount = PRs.filter(({ state }) => state !== PR_STATE.PENDING).length
 
     let items
 
     if (viewState === 'open') {
-      items = testData
-        .filter(({ status }) => status === 'open')
-        .map(PR => (
-          <TableItem
-            onClick={() =>
-              this.setState({ viewState: 'pull-request', currentPR: PR })
-            }
-          >
-            <Box mr="0.5rem" color="#28a745">
-              <Octicon icon={GitPullRequest} />
-            </Box>
-            <Box display="flex" flexDirection="column">
-              <Text size="large" weight="bold">
-                {PR.title}
-              </Text>
-              <Text size="small" color="#666666">
-                opened 6 days ago by {PR.author}
-              </Text>
-            </Box>
-          </TableItem>
-        ))
+      items = PRs.filter(({ state }) => state === PR_STATE.PENDING).map(PR => (
+        <TableItem onClick={() => this.setState({ viewState: 'pull-request', currentPR: PR })}>
+          <Box mr="0.5rem" color="#28a745">
+            <Octicon icon={GitPullRequest} />
+          </Box>
+          <Box display="flex" flexDirection="column">
+            <Text size="large" weight="bold">
+              {PR.title}
+            </Text>
+            <Text size="small" color="#666666">
+              opened by {PR.author}
+            </Text>
+          </Box>
+        </TableItem>
+      ))
     }
 
     if (viewState === 'closed') {
-      items = testData
-        .filter(({ status }) => status === 'closed')
-        .map(PR => (
-          <TableItem
-            onClick={() =>
-              this.setState({ viewState: 'pull-request', currentPR: PR })
-            }
-          >
-            <Box mr="0.5rem" color="#6f42c1">
-              <Octicon icon={GitMerge} />
-            </Box>
-            <Box display="flex" flexDirection="column">
-              <Text size="large" weight="bold">
-                {PR.title}
-              </Text>
-              <Text size="small" color="#666666">
-                merged 6 days ago by {PR.author}
-              </Text>
-            </Box>
-          </TableItem>
-        ))
+      items = PRs.filter(({ state }) => state !== PR_STATE.PENDING).map(PR => (
+        <TableItem onClick={() => this.setState({ viewState: 'pull-request', currentPR: PR })}>
+          <Box mr="0.5rem" color="#6f42c1">
+            <Octicon icon={GitMerge} />
+          </Box>
+          <Box display="flex" flexDirection="column">
+            <Text size="large" weight="bold">
+              {PR.title}
+            </Text>
+            <Text size="small" color="#666666">
+              merged by {PR.author}
+            </Text>
+          </Box>
+        </TableItem>
+      ))
     }
 
     if (viewState === 'pull-request') {
-      const { author, status, title, description, destination } = currentPR
+      const { author, state, title, description, destination } = currentPR
       return (
         <Wrapper>
-          <Button onClick={() => this.setState({ viewState: 'open' })}>
-            Go back
-          </Button>
+          <Button onClick={() => this.setState({ viewState: 'open' })}>Go back</Button>
           <PRTitle>{title}</PRTitle>
-          {status === 'open' && (
+          <div>
+            <Button onClick={() => this.setState({ viewState: 'open' })}>Reject</Button>
+            <Button onClick={() => this.setState({ viewState: 'open' })}>Merge</Button>
+          </div>
+          {state === PR_STATE.PENDING && (
             <Box display="flex" alignItems="center" color="#666666" mb="1rem">
               <Status color="#2cbe4e">
                 <Box mr="0.25rem">
@@ -285,7 +279,7 @@ export default class Requests extends React.Component {
               </div>
             </Box>
           )}
-          {status === 'closed' && (
+          {state === PR_STATE.MERGED && (
             <Box display="flex" alignItems="center" color="#666666" mb="1rem">
               <Status color="#6f42c1">
                 <Box mr="0.25rem">
@@ -295,23 +289,34 @@ export default class Requests extends React.Component {
               </Status>
               <div>
                 <Text weight="bold">{author}</Text> merged into
-                <Text weight="bold"> {destination} 4 days ago</Text>
+                <Text weight="bold"> {destination}</Text>
+              </div>
+            </Box>
+          )}
+          {state === PR_STATE.REJECTED && (
+            <Box display="flex" alignItems="center" color="#666666" mb="1rem">
+              <Status color="#6f42c1">
+                <Box mr="0.25rem">
+                  <Octicon icon={CircleSlash} />
+                </Box>
+                <span>Merged</span>
+              </Status>
+              <div>
+                <Text weight="bold">{author}</Text> rejected from
+                <Text weight="bold"> {destination}</Text>
               </div>
             </Box>
           )}
           <Text size="large">{description}</Text>
           <DiffView>
             <DiffViewHeader>
-              <Link onClick={() => this.setState({ diffViewState: 'file' })}>
-                path/to/file.js
-              </Link>
+              <Link onClick={() => this.setState({ diffViewState: 'file' })}>path/to/file.js</Link>
               <Box display="flex">
                 <Box mr="2rem">
                   <Link
                     onClick={() =>
                       this.setState({
-                        diffViewState:
-                          diffViewState === 'file' ? 'split' : 'file',
+                        diffViewState: diffViewState === 'file' ? 'split' : 'file',
                       })
                     }
                   >
@@ -321,8 +326,7 @@ export default class Requests extends React.Component {
                 <Link
                   onClick={() =>
                     this.setState({
-                      diffViewState:
-                        diffViewState === 'split' ? 'single' : 'split',
+                      diffViewState: diffViewState === 'split' ? 'single' : 'split',
                     })
                   }
                 >
@@ -340,19 +344,14 @@ export default class Requests extends React.Component {
                     <pre
                       style={{ display: 'inline' }}
                       dangerouslySetInnerHTML={{
-                        __html: Prism.highlight(
-                          code,
-                          Prism.languages[language]
-                        ),
+                        __html: Prism.highlight(code, Prism.languages[language]),
                       }}
                     />
                   )}
                 />
               </DiffViewContent>
             )}
-            {diffViewState === 'file' && (
-              <Display file={newCode} filename={filename} removeBorder plain />
-            )}
+            {diffViewState === 'file' && <Display file={newCode} filename={filename} removeBorder plain />}
           </DiffView>
         </Wrapper>
       )
@@ -362,33 +361,17 @@ export default class Requests extends React.Component {
       <Wrapper>
         <Table>
           <Box display="flex">
-            <Box
-              display="flex"
-              mr="1.5rem"
-              onClick={() => this.setState({ viewState: 'open' })}
-              cursor="pointer"
-              color={viewState === 'open' ? '' : '#666666'}
-            >
+            <Box display="flex" mr="1.5rem" onClick={() => this.setState({ viewState: 'open' })} cursor="pointer" color={viewState === 'open' ? '' : '#666666'}>
               <Box mr="0.5rem">
                 <Octicon color="#28a745" icon={GitPullRequest} />
               </Box>
-              <Text weight={viewState === 'open' ? 'bold' : ''}>
-                {openCount} Open
-              </Text>
+              <Text weight={viewState === 'open' ? 'bold' : ''}>{openCount} Open</Text>
             </Box>
-            <Box
-              display="flex"
-              mr="1rem"
-              onClick={() => this.setState({ viewState: 'closed' })}
-              cursor="pointer"
-              color={viewState === 'open' ? '#666666' : ''}
-            >
+            <Box display="flex" mr="1rem" onClick={() => this.setState({ viewState: 'closed' })} cursor="pointer" color={viewState === 'open' ? '#666666' : ''}>
               <Box mr="0.5rem">
                 <Octicon icon={Check} />
               </Box>
-              <Text weight={viewState === 'open' ? '' : 'bold'}>
-                {closedCount} Closed
-              </Text>
+              <Text weight={viewState === 'open' ? '' : 'bold'}>{closedCount} Closed</Text>
             </Box>
           </Box>
           {/* <Box>
