@@ -1,5 +1,13 @@
 import styled from 'styled-components'
-import { alignItems, display, height, justifyContent, space } from 'styled-system'
+import {
+  alignItems,
+  color,
+  display,
+  flexDirection,
+  height,
+  justifyContent,
+  space,
+} from 'styled-system'
 
 export default styled.div`
   ${space}
@@ -7,4 +15,7 @@ export default styled.div`
   ${alignItems}
   ${justifyContent}
   ${height}
+  ${flexDirection}
+  ${color}
+  ${({ cursor }) => cursor && `cursor: ${cursor}`}
 `
