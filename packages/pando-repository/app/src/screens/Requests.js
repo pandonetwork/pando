@@ -163,10 +163,24 @@ const Link = styled.a`
   }
 `
 
-const Button = styled.button`
+const BackButton = styled.button`
   position: absolute;
   right: 2rem;
   margin-bottom: 1rem;
+  padding: 0.5rem 1rem;
+  background: white;
+  border: 1px solid rgb(230, 230, 230);
+  border-radius: 3px;
+
+  &:hover {
+    box-shadow: rgba(0, 0, 0, 0.03) 0px 4px 4px 0px;
+    cursor: pointer;
+  }
+`
+
+const Button = styled.button`
+  margin-top: 2rem;
+  margin-right: 1rem;
   padding: 0.5rem 1rem;
   background: white;
   border: 1px solid rgb(230, 230, 230);
@@ -197,6 +211,21 @@ if(a === 10) {
 }
 `
 
+const data = [
+  {
+    path: 'path/to/file.js',
+    filename: 'file.js',
+    newCode,
+    oldCode,
+  },
+  {
+    path: 'path/to/file.js',
+    filename: 'file.js',
+    newCode,
+    oldCode,
+  },
+]
+
 export default class Requests extends React.Component {
   state = {
     viewState: 'open',
@@ -210,9 +239,6 @@ export default class Requests extends React.Component {
 
     console.log('PRs from requests')
     console.log(PRs)
-
-    const filename = 'test.js'
-    const language = prismMapping[filename.split('.').pop()]
 
     const openCount = PRs.filter(({ state }) => state === PR_STATE.PENDING).length
     const closedCount = PRs.filter(({ state }) => state !== PR_STATE.PENDING).length
@@ -259,12 +285,8 @@ export default class Requests extends React.Component {
       const { author, state, title, description, destination } = currentPR
       return (
         <Wrapper>
-          <Button onClick={() => this.setState({ viewState: 'open' })}>Go back</Button>
+          <BackButton onClick={() => this.setState({ viewState: 'open' })}>Go back</BackButton>
           <PRTitle>{title}</PRTitle>
-          <div>
-            <Button onClick={() => this.setState({ viewState: 'open' })}>Reject</Button>
-            <Button onClick={() => this.setState({ viewState: 'open' })}>Merge</Button>
-          </div>
           {state === PR_STATE.PENDING && (
             <Box display="flex" alignItems="center" color="#666666" mb="1rem">
               <Status color="#2cbe4e">
@@ -308,51 +330,55 @@ export default class Requests extends React.Component {
             </Box>
           )}
           <Text size="large">{description}</Text>
-          <DiffView>
-            <DiffViewHeader>
-              <Link onClick={() => this.setState({ diffViewState: 'file' })}>path/to/file.js</Link>
-              <Box display="flex">
-                <Box mr="2rem">
+          {data.map(({ path, oldCode, newCode, filename }) => (
+            <DiffView>
+              <DiffViewHeader>
+                <Link onClick={() => this.setState({ diffViewState: 'file' })}>{path}</Link>
+                <Box display="flex">
+                  <Box mr="2rem">
+                    <Link
+                      onClick={() =>
+                        this.setState({
+                          diffViewState: diffViewState === 'file' ? 'split' : 'file',
+                        })
+                      }
+                    >
+                      {diffViewState === 'file' ? 'Diff file' : 'View file'}
+                    </Link>
+                  </Box>
                   <Link
                     onClick={() =>
                       this.setState({
-                        diffViewState: diffViewState === 'file' ? 'split' : 'file',
+                        diffViewState: diffViewState === 'split' ? 'single' : 'split',
                       })
                     }
                   >
-                    {diffViewState === 'file' ? 'Diff file' : 'View file'}
+                    {diffViewState === 'split' ? 'Single view' : 'Split view'}
                   </Link>
                 </Box>
-                <Link
-                  onClick={() =>
-                    this.setState({
-                      diffViewState: diffViewState === 'split' ? 'single' : 'split',
-                    })
-                  }
-                >
-                  {diffViewState === 'split' ? 'Single view' : 'Split view'}
-                </Link>
-              </Box>
-            </DiffViewHeader>
-            {diffViewState !== 'file' && (
-              <DiffViewContent>
-                <ReactDiffViewer
-                  oldValue={oldCode}
-                  newValue={newCode}
-                  splitView={diffViewState === 'split'}
-                  renderContent={code => (
-                    <pre
-                      style={{ display: 'inline' }}
-                      dangerouslySetInnerHTML={{
-                        __html: Prism.highlight(code, Prism.languages[language]),
-                      }}
-                    />
-                  )}
-                />
-              </DiffViewContent>
-            )}
-            {diffViewState === 'file' && <Display file={newCode} filename={filename} removeBorder plain />}
-          </DiffView>
+              </DiffViewHeader>
+              {diffViewState !== 'file' && (
+                <DiffViewContent>
+                  <ReactDiffViewer
+                    oldValue={oldCode}
+                    newValue={newCode}
+                    splitView={diffViewState === 'split'}
+                    renderContent={code => (
+                      <pre
+                        style={{ display: 'inline' }}
+                        dangerouslySetInnerHTML={{
+                          __html: Prism.highlight(code, Prism.languages[prismMapping[filename.split('.').pop()]]),
+                        }}
+                      />
+                    )}
+                  />
+                </DiffViewContent>
+              )}
+              {diffViewState === 'file' && <Display file={newCode} filename={filename} removeBorder plain />}
+            </DiffView>
+          ))}
+          <Button onClick={() => console.log('Merge logic here...')}>Merge PR</Button>
+          <Button onClick={() => console.log('Reject logic here...')}>Reject PR</Button>
         </Wrapper>
       )
     }
