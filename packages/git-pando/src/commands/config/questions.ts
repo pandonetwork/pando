@@ -46,7 +46,7 @@ const questions = {
       name: 'result',
       type: 'input',
       message: 'IPFS gateway',
-      default: 'http://localhost:5001',
+      default: 'https://ipfs.infura.io:5001',
     },
   },
 }
