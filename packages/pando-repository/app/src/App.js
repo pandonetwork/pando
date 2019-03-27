@@ -1,11 +1,12 @@
 import { AppView, Main, observe, TabBar } from '@aragon/ui'
+import { first, map } from 'rxjs/operators'
+
 import React from 'react'
 import UpdateInformationsSidePanel from './components/UpdateInformationsSidePanel'
 import Code from './screens/Code'
 import Overview from './screens/Overview'
 import Requests from './screens/Requests'
 import Settings from './screens/Settings'
-
 
 const repository = {
   name: 'aragonAPI',
@@ -17,23 +18,31 @@ const repository = {
   ],
 }
 
-const tabs = ['Overview', 'Code', 'Pull requests', 'Lineage requests', 'Settings']
+const tabs = [
+  'Overview',
+  'Code',
+  'Pull requests',
+  'Lineage requests',
+  'Settings',
+]
 
 class App extends React.Component {
   static defaultProps = {
     branches: [],
     name: 'Loading...',
-    description: 'Loading...'
+    description: 'Loading...',
   }
 
   constructor(props) {
     super(props)
 
-    this.handleUpdateInformationsSidePanelOpen = this.handleUpdateInformationsSidePanelOpen.bind(this);
+    this.handleUpdateInformationsSidePanelOpen = this.handleUpdateInformationsSidePanelOpen.bind(
+      this
+    )
 
     this.state = {
       tabIndex: 0,
-      updateInformationsSidePanelOpen: false
+      updateInformationsSidePanelOpen: false,
     }
   }
 
@@ -61,7 +70,7 @@ class App extends React.Component {
 
     const currentTab = tabs[tabIndex]
 
-    //branches = [['master', 'z8mWaGFSwuNWgUq3VFQxPuVDiFj9NdAJG']]
+    // branches = [['master', 'z8mWaGFSwuNWgUq3VFQxPuVDiFj9NdAJG']]
 
     return (
       <div css="min-width: 320px">
@@ -77,14 +86,24 @@ class App extends React.Component {
             }
           >
             {currentTab === 'Overview' && (
-              <Overview name={name} description={description} branches={branches} />
+              <Overview
+                name={name}
+                description={description}
+                branches={branches}
+              />
             )}
-            {currentTab === 'Code' && (
-              <Code name={name} branches={branches} />
-            )}
+            {currentTab === 'Code' && <Code name={name} branches={branches} />}
             {(currentTab === 'Pull requests' ||
               currentTab === 'Lineage requests') && <Requests />}
-            {currentTab === 'Settings' && <Settings name={name} description={description} handleUpdateInformationsSidePanelOpen={this.handleUpdateInformationsSidePanelOpen}/>}
+            {currentTab === 'Settings' && (
+              <Settings
+                name={name}
+                description={description}
+                handleUpdateInformationsSidePanelOpen={
+                  this.handleUpdateInformationsSidePanelOpen
+                }
+              />
+            )}
           </AppView>
 
           <UpdateInformationsSidePanel
@@ -102,18 +121,10 @@ class App extends React.Component {
 
 export default observe(
   observable =>
-    observable.map(state => {
-      return state
-
-      // return {
-      //   ...state,
-      //   branches:
-      //     Object.keys(branches).length > 0
-      //       ? Object.keys(branches).map(key => {
-      //           return [key, branches[key]]
-      //         })
-      //       : [],
-      // }
-    }),
+    observable.pipe(
+      map(state => {
+        return { ...state }
+      })
+    ),
   {}
 )(App)
