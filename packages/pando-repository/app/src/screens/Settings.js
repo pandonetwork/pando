@@ -2,7 +2,7 @@ import { Button, Info, Table, TableHeader, TableRow, TableCell, Text, theme } fr
 import React from 'react'
 import styled from 'styled-components'
 
-export default (props) => {
+export default props => {
   const { name, description, handleUpdateInformationsSidePanelOpen } = { props }
 
   console.log('props from Setting')
@@ -25,7 +25,9 @@ export default (props) => {
             <Text>{props.description}</Text>
           </TableCell>
           <TableCellLeft>
-            <Button mode="secondary" onClick={() => props.handleUpdateInformationsSidePanelOpen()}>Update</Button>
+            <Button mode="secondary" onClick={() => props.handleUpdateInformationsSidePanelOpen()}>
+              Update
+            </Button>
           </TableCellLeft>
         </TableRow>
       </Table>
@@ -40,7 +42,9 @@ export default (props) => {
         <TableRow>
           <TableCellFull>
             <Info.Permissions title="Coming soon">
-              <Text color={theme.textTertiary}>In the meanwhile head to the <i>Permissions</i> app in the left panel ...</Text>
+              <Text color={theme.textTertiary}>
+                In the meanwhile head to the <i>Permissions</i> app in the left panel ...
+              </Text>
             </Info.Permissions>
           </TableCellFull>
         </TableRow>
@@ -72,7 +76,8 @@ const TableCellLeft = styled(TableCell)`
 const TableCellFull = styled(TableCell)`
   padding: 0;
 
-  div, section {
+  div,
+  section {
     width: 100%;
   }
 `

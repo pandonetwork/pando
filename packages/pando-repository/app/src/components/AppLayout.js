@@ -4,15 +4,7 @@ import styled from 'styled-components'
 import { AppBar, AppView, Button, ButtonIcon, Viewport, font } from '@aragon/ui'
 import MenuButton from './MenuButton/MenuButton'
 
-const AppLayout = ({
-  children,
-  title,
-  afterTitle,
-  smallViewPadding,
-  largeViewPadding,
-  onMenuOpen,
-  mainButton,
-}) => {
+const AppLayout = ({ children, title, afterTitle, smallViewPadding, largeViewPadding, onMenuOpen, mainButton }) => {
   return (
     <Viewport>
       {({ below }) => (
@@ -20,7 +12,7 @@ const AppLayout = ({
           padding={below('medium') ? smallViewPadding : largeViewPadding}
           appBar={
             <AppBar>
-              <AppBarContainer style={{ padding: below('medium') ? '0' : '0 30px' }} >
+              <AppBarContainer style={{ padding: below('medium') ? '0' : '0 30px' }}>
                 <Title>
                   {below('medium') && <MenuButton onClick={onMenuOpen} />}
                   <TitleLabel>{title}</TitleLabel>
@@ -28,26 +20,26 @@ const AppLayout = ({
                 </Title>
                 {mainButton &&
                   (below('medium') ? (
-                   <ButtonIcon
-                    onClick={mainButton.onClick}
-                    title={mainButton.label}
-                    css={`
-                      width: auto;
-                      height: 100%;
-                      padding: 0 20px 0 10px;
-                      margin-left: 8px;
-                    `}
-                   >
-                    {mainButton.icon}
-                   </ButtonIcon>
-                 ) : (
-                  <Button mode="strong" onClick={mainButton.onClick}>
-                    {mainButton.label}
-                  </Button>
-                ))}
-               </AppBarContainer>
-             </AppBar>
-           }
+                    <ButtonIcon
+                      onClick={mainButton.onClick}
+                      title={mainButton.label}
+                      css={`
+                        width: auto;
+                        height: 100%;
+                        padding: 0 20px 0 10px;
+                        margin-left: 8px;
+                      `}
+                    >
+                      {mainButton.icon}
+                    </ButtonIcon>
+                  ) : (
+                    <Button mode="strong" onClick={mainButton.onClick}>
+                      {mainButton.label}
+                    </Button>
+                  ))}
+              </AppBarContainer>
+            </AppBar>
+          }
         >
           {children}
         </AppView>

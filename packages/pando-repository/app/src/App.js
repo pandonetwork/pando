@@ -1,5 +1,5 @@
 import { AppView, Main, observe, TabBar } from '@aragon/ui'
-import { first, map } from 'rxjs/operators'
+import { map } from 'rxjs/operators'
 
 import React from 'react'
 import UpdateInformationsSidePanel from './components/UpdateInformationsSidePanel'
@@ -8,23 +8,7 @@ import Overview from './screens/Overview'
 import Requests from './screens/Requests'
 import Settings from './screens/Settings'
 
-const repository = {
-  name: 'aragonAPI',
-  address: '0xb4124cEB3451635DAcedd11767f004d8a28c6eE7',
-  description: 'JS library to interact with Aragon DAOs',
-  branches: [
-    ['master', 'z8mWaJHXieAVxxLagBpdaNWFEBKVWmMiE'],
-    ['dev', 'z8mWaFhhBAZv6LEcYTHBfiUtAC7cGNgnt'],
-  ],
-}
-
-const tabs = [
-  'Overview',
-  'Code',
-  'Pull requests',
-  'Lineage requests',
-  'Settings',
-]
+const tabs = ['Overview', 'Code', 'Pull requests', 'Lineage requests', 'Settings']
 
 class App extends React.Component {
   static defaultProps = {
@@ -36,9 +20,9 @@ class App extends React.Component {
   constructor(props) {
     super(props)
 
-    this.handleUpdateInformationsSidePanelOpen = this.handleUpdateInformationsSidePanelOpen.bind(
-      this
-    )
+    this.handleUpdateInformationsSidePanelOpen = this.handleUpdateInformationsSidePanelOpen.bind(this)
+    this.handleUpdateInformationsSidePanelClose = this.handleUpdateInformationsSidePanelClose.bind(this)
+    this.handleUpdateInformations = this.handleUpdateInformations.bind(this)
 
     this.state = {
       tabIndex: 0,
@@ -46,63 +30,32 @@ class App extends React.Component {
     }
   }
 
-  handleUpdateInformationsSidePanelOpen = () => {
+  handleUpdateInformationsSidePanelOpen() {
     this.setState({ updateInformationsSidePanelOpen: true })
   }
 
-  handleUpdateInformationsSidePanelClose = () => {
+  handleUpdateInformationsSidePanelClose() {
     this.setState({ updateInformationsSidePanelOpen: false })
   }
 
-  handleUpdateInformations = (name, description) => {
-    // console.log(name)
-    // console.log(description)
+  handleUpdateInformations(name, description) {
     this.props.app.updateInformations(name, description)
   }
 
   render() {
     let { branches, name, description } = this.props
-    console.log(this.props)
-    // const { name, description } = { name: 'aragonOS', description: 'A solidity framework to develop DAOs' }
     const { tabIndex, updateInformationsSidePanelOpen } = this.state
-
-    console.log(updateInformationsSidePanelOpen)
-
     const currentTab = tabs[tabIndex]
-
-    // branches = [['master', 'z8mWaGFSwuNWgUq3VFQxPuVDiFj9NdAJG']]
 
     return (
       <div css="min-width: 320px">
         <Main>
-          <AppView
-            title={name}
-            tabs={
-              <TabBar
-                items={tabs}
-                selected={tabIndex}
-                onChange={tabIndex => this.setState({ tabIndex })}
-              />
-            }
-          >
-            {currentTab === 'Overview' && (
-              <Overview
-                name={name}
-                description={description}
-                branches={branches}
-              />
-            )}
+          <AppView title={name} tabs={<TabBar items={tabs} selected={tabIndex} onChange={tabIndex => this.setState({ tabIndex })} />}>
+            {currentTab === 'Overview' && <Overview name={name} description={description} branches={branches} />}
             {currentTab === 'Code' && <Code name={name} branches={branches} />}
-            {(currentTab === 'Pull requests' ||
-              currentTab === 'Lineage requests') && <Requests />}
+            {(currentTab === 'Pull requests' || currentTab === 'Lineage requests') && <Requests />}
             {currentTab === 'Settings' && (
-              <Settings
-                name={name}
-                description={description}
-                handleUpdateInformationsSidePanelOpen={
-                  this.handleUpdateInformationsSidePanelOpen
-                }
-              />
+              <Settings name={name} description={description} handleUpdateInformationsSidePanelOpen={this.handleUpdateInformationsSidePanelOpen} />
             )}
           </AppView>
 

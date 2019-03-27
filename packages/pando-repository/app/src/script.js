@@ -3,7 +3,7 @@ import CID from 'cids'
 import IPFS from 'ipfs-http-client'
 import IPLD from 'ipld'
 import IPLDGit from 'ipld-git'
-import { parsePersonLine, cidToSha } from 'ipld-git/src/util/util.js'
+import { cidToSha } from 'ipld-git/src/util/util.js'
 import orderBy from 'lodash.orderby'
 import uniqWith from 'lodash.uniqwith'
 
@@ -21,17 +21,11 @@ app
     app.identify(name)
   })
   .catch(err => {
-    console.error(
-      'Failed to load information to identify repository app due to:',
-      err
-    )
+    console.error('Failed to load information to identify repository app due to:', err)
   })
 
 app.store(async (state, event) => {
   state = state || { branches: {}, name: '', description: '', cache: {} }
-
-  console.log('NEW event')
-  console.log(event)
 
   if (!state.cache[event.id]) {
     state.cache[event.id] = true
@@ -48,6 +42,7 @@ app.store(async (state, event) => {
             [
               commit => {
                 // https://github.com/git/git/blob/v2.3.0/Documentation/date-formats.txt
+                /* eslint-disable-next-line no-unused-vars */
                 const [timestamp, offset] = commit.author.date.split(' ')
                 return timestamp
               },
@@ -79,6 +74,7 @@ const fetchHistory = async (hash, history) => {
   return new Promise((resolve, reject) => {
     try {
       const cid = new CID(hash)
+
       ipld.get(cid, async (err, result) => {
         if (err) {
           reject(err)

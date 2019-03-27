@@ -77,10 +77,6 @@ const MarkdownWrapper = styled.div`
 `
 
 export default class Display extends React.Component {
-  constructor(props) {
-    super(props)
-  }
-
   render() {
     const { file, filename } = this.props
     const normalizedFile = file.split('\u0000')[1] // TODO: find a better way to get rid of "blob 2610\u0000"
@@ -95,12 +91,7 @@ export default class Display extends React.Component {
           </MarkdownWrapper>
         )}
         {language !== 'markdown' && (
-          <Highlight
-            {...defaultProps}
-            code={normalizedFile}
-            language={language}
-            theme={Theme}
-          >
+          <Highlight {...defaultProps} code={normalizedFile} language={language} theme={Theme}>
             {({ className, style, tokens, getLineProps, getTokenProps }) => (
               <pre className={className} style={style}>
                 {tokens.map((line, i) => (

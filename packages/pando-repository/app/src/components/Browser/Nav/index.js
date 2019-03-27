@@ -2,10 +2,6 @@ import React from 'react'
 import styled from 'styled-components'
 
 export default class Nav extends React.Component {
-  constructor(props) {
-    super(props)
-  }
-
   render() {
     const { nav, goto } = this.props
 
@@ -16,7 +12,9 @@ export default class Nav extends React.Component {
             <LinkSpan key={idx}>
               <LinkColor
                 title={entry}
-                onClick={() => { goto(idx) }}
+                onClick={() => {
+                  goto(idx)
+                }}
               >
                 {entry.toString()}
               </LinkColor>

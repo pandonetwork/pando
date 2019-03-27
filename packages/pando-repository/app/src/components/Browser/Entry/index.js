@@ -4,10 +4,6 @@ import IconFile from '../Icons/File'
 import IconFolder from '../Icons/Folder'
 
 class Parent extends React.Component {
-  constructor(props) {
-    super(props)
-  }
-
   render() {
     const { onClick } = this.props
 
@@ -26,10 +22,6 @@ class Parent extends React.Component {
 }
 
 class File extends React.Component {
-  constructor(props) {
-    super(props)
-  }
-
   render() {
     const { name, hash, onClick } = this.props
 
@@ -49,10 +41,6 @@ class File extends React.Component {
 }
 
 class Folder extends React.Component {
-  constructor(props) {
-    super(props)
-  }
-
   render() {
     const { name, hash, onClick } = this.props
 
@@ -88,16 +76,6 @@ const Column = styled.td`
 
 const Link = styled.a`
   &:hover {
-    display: inline-block;
-    text-decoration: underline;
-  }
-`
-
-const LinkColor = styled.a`
-  margin-right: 5px;
-  color: #02cbe6;
-  &:hover {
-    cursor: pointer;
     display: inline-block;
     text-decoration: underline;
   }

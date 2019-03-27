@@ -1,7 +1,6 @@
 import React from 'react'
 import styled from 'styled-components'
-import { Button, SidePanel, Text, TextInput, Field } from '@aragon/ui'
-
+import { Button, SidePanel, TextInput, Field } from '@aragon/ui'
 
 export default class UpdateInformationsSidePanel extends React.Component {
   static defaultProps = {
@@ -16,14 +15,13 @@ export default class UpdateInformationsSidePanel extends React.Component {
 
     this.state = {
       name: props.name,
-      description: props.description
+      description: props.description,
     }
   }
 
   // check how the name input works in the vote panel
   componentWillReceiveProps({ opened, name, description }) {
     this.setState({ name: name, description: description })
-
     if (opened && !this.props.opened) {
       // setTimeout is needed as a small hack to wait until the input's on
       // screen until we call focus
@@ -49,28 +47,13 @@ export default class UpdateInformationsSidePanel extends React.Component {
     const { opened, onClose } = this.props
 
     return (
-      <SidePanel
-        title="Update informations"
-        opened={opened}
-        onClose={onClose}
-      >
+      <SidePanel title="Update informations" opened={opened} onClose={onClose}>
         <Form onSubmit={this.handleSubmit}>
           <Field label="Name">
-            <TextInput
-              ref={name => (this.nameInput = name)}
-              value={name}
-              onChange={this.handleNameChange}
-              required
-              wide
-            />
+            <TextInput ref={name => (this.nameInput = name)} value={name} onChange={this.handleNameChange} required wide />
           </Field>
           <Field label="Description">
-            <TextInput
-              ref={description => (this.descriptionInput = description)}
-              value={description}
-              onChange={this.handleDescriptionChange}
-              wide
-            />
+            <TextInput ref={description => (this.descriptionInput = description)} value={description} onChange={this.handleDescriptionChange} wide />
           </Field>
           <Button mode="strong" type="submit" wide>
             Update Informations

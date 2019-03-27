@@ -26,8 +26,6 @@ export default class Browser extends React.Component {
     this.handleChangeActiveBranch = this.handleChangeActiveBranch.bind(this)
     this.handleChangeActiveCommit = this.handleChangeActiveCommit.bind(this)
 
-    // this.deriveCommitAndTreeFromBranch = this.deriveCommitFromBranch.bind(this)
-
     this.state = {
       activeBranch: 0,
       activeCommit: 0,
@@ -38,43 +36,14 @@ export default class Browser extends React.Component {
       parents: [],
       nav: [props.name],
     }
-
-    console.log('RECEVING PROPS FROM CONSTRUCTOR')
-    console.log(props)
-    // this.deriveCommitAndTreeFromBranch(props.branches, 0, 0)
-
-    // if (Object.keys(props.branches).length && props.branches[Object.keys(props.branches)[this.state.activeBranch]][0]) {
-    //   const commit = props.branches[Object.keys(props.branches)[this.state.activeBranch]][0]
-    //   console.log('commit')
-    //   console.log(commit)
-    //   this.get(commit.cid, 'tree').then(tree => {
-    //     this.setState({ commit, tree, nav: [props.name] })
-    //     console.log('STATE FROM PROPS')
-    //     console.log(this.state)
-    //   })
-    // }
   }
 
   componentDidMount() {
-   this.deriveCommitAndTreeFromBranch(this.props.branches, 0, 0)
+    this.deriveCommitAndTreeFromBranch(this.props.branches, 0, 0)
   }
 
-
   componentWillReceiveProps(props) {
-    console.log('RECEVING PROPS')
-    console.log(props)
-
     this.deriveCommitAndTreeFromBranch(props.branches, 0, 0)
-    // if (Object.keys(props.branches).length && props.branches[Object.keys(props.branches)[this.state.activeBranch]][0]) {
-    //   const commit = props.branches[Object.keys(props.branches)[this.state.activeBranch]][0]
-    //   console.log('commit')
-    //   console.log(commit)
-    //   this.get(commit.cid, 'tree').then(tree => {
-    //     this.setState({ commit, tree, nav: [props.name] })
-    //     console.log('STATE FROM PROPS FROM CONSTRUCTOR')
-    //     console.log(state)
-    //   })
-    // }
   }
 
   deriveCommitFromBranch(branches, branchId, commitId) {
@@ -90,8 +59,6 @@ export default class Browser extends React.Component {
   deriveTreeFromCommit(commit) {
     try {
       this.get(commit.cid, 'tree').then(tree => {
-        console.log('Tree')
-        console.log(tree)
         this.setState({ tree })
       })
     } catch (err) {
@@ -100,10 +67,7 @@ export default class Browser extends React.Component {
   }
 
   deriveCommitAndTreeFromBranch(branches, branchId, commitId) {
-    console.log('DERIVE COMMIT AND TREE')
     const commit = this.deriveCommitFromBranch(branches, branchId, commitId)
-    console.log('COMMIT')
-    console.log(commit)
     if (commit) this.deriveTreeFromCommit(commit)
   }
 
@@ -131,7 +95,7 @@ export default class Browser extends React.Component {
 
     this.get(hash).then(buffer => {
       const content = buffer.toString()
-      const file = content ? content : 'Empty file'
+      const file = content || 'Empty file'
       this.setState({ file, filename: name, nav, tree, parents })
     })
   }
@@ -149,39 +113,18 @@ export default class Browser extends React.Component {
   handleChangeActiveBranch(id) {
     this.setState({ activeBranch: id, nav: [this.props.name], parents: [], file: null })
     this.deriveCommitAndTreeFromBranch(this.props.branches, id, 0)
-    // this.get(this.props.branches[id][1], 'tree').then(tree => {
-    //   this.setState({
-    //     activeBranch: id,
-    //     tree,
-    //     nav: [this.props.name],
-    //     parents: [],
-    //     file: null,
-    //   })
-    // })
   }
 
   handleChangeActiveCommit(id) {
     this.setState({ activeCommit: id, nav: [this.props.name], parents: [], file: null })
     this.deriveCommitAndTreeFromBranch(this.props.branches, this.state.activeBranch, id)
-    // this.get(this.props.branches[id][1], 'tree').then(tree => {
-    //   this.setState({
-    //     activeBranch: id,
-    //     tree,
-    //     nav: [this.props.name],
-    //     parents: [],
-    //     file: null,
-    //   })
-    // })
   }
 
   async get(hash, path) {
-    console.log('GETTING')
-    console.log(hash.toString())
     const cid = CID.isCID(hash) ? hash : new CID(hash)
-    console.log('ENCODED')
-    console.log(cid.toBaseEncodedString())
+
     return new Promise((resolve, reject) => {
-      this.ipld.get(new CID(hash), path, (err, result) => {
+      this.ipld.get(cid, path, (err, result) => {
         if (err) {
           reject(err)
         } else {
@@ -195,42 +138,25 @@ export default class Browser extends React.Component {
     const { branches } = this.props
     const { activeBranch, activeCommit, nav, parents, file, filename, commit, tree } = this.state
 
-    console.log('PROPS')
-    console.log(this.props)
-    console.log('STATE')
-    console.log(this.state)
-
     return (
       <Wrapper>
         <Header>
           <div>
-          <DropDown
-            items={Object.keys(branches)}
-            active={activeBranch}
-            onChange={this.handleChangeActiveBranch}
-          />
+            <DropDown items={Object.keys(branches)} active={activeBranch} onChange={this.handleChangeActiveBranch} />
 
-          <Nav nav={nav} goto={this.goto} />
+            <Nav nav={nav} goto={this.goto} />
           </div>
           <div>
-          {commit && <Message color={theme.textSecondary}>{commit.message}</Message>}
-          <DropDown
-            items={branches[Object.keys(branches)[activeBranch]].map(commit => commit.sha.substring(0, 7))}
-            active={activeCommit}
-            onChange={this.handleChangeActiveCommit}
-          />
+            {commit && <Message color={theme.textSecondary}>{commit.message}</Message>}
+            <DropDown
+              items={branches[Object.keys(branches)[activeBranch]].map(commit => commit.sha.substring(0, 7))}
+              active={activeCommit}
+              onChange={this.handleChangeActiveCommit}
+            />
           </div>
         </Header>
         {file && <Display file={file} filename={filename} />}
-        {!file && tree && (
-          <Tree
-            tree={tree}
-            parents={parents}
-            forward={this.forward}
-            backward={this.backward}
-            display={this.display}
-          />
-        )}
+        {!file && tree && <Tree tree={tree} parents={parents} forward={this.forward} backward={this.backward} display={this.display} />}
       </Wrapper>
     )
   }
@@ -245,6 +171,7 @@ const Header = styled.div`
   flex-direction: row;
   justify-content: space-between;
 `
+
 const Message = styled(Text)`
   margin-right: 15px;
 `
