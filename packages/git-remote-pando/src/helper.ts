@@ -40,9 +40,9 @@ export default class Helper {
   // provider and web3
   private _provider: any
   private _web3: any
-  // artifact and contract
-  private _artifact: any
-  private _contract!: any
+  // artifacts and contracts
+  private _repo!: any
+  private _kernel!: any
 
   constructor(name: string = '_', url: string) {
     // name and url
@@ -70,14 +70,24 @@ export default class Helper {
     // initialize web3
     this._provider = await this._ethConnect()
     this._web3 = new Web3(this._provider)
-    // initialize contract
+    // initialize repo contract
+    this._repo = { artifact: undefined, contract: undefined }
     // tslint:disable-next-line:no-submodule-imports
-    this._artifact = contractor(require('@pando/repository/build/contracts/PandoRepository.json'))
-    this._artifact.setProvider(this._provider)
-    this._artifact.defaults({ from: this.config.ethereum.account })
-    this._artifact.autoGas = true
-    this._artifact.gasMultiplier = 3
-    this._contract = await this._artifact.at(this.address, { from: this.config.ethereum.address })
+    this._repo.artifact = contractor(require('@pando/repository/abi/PandoRepository.json'))
+    this._repo.artifact.setProvider(this._provider)
+    this._repo.artifact.defaults({ from: this.config.ethereum.account })
+    this._repo.artifact.autoGas = true
+    this._repo.artifact.gasMultiplier = 3
+    this._repo.contract = await this._repo.artifact.at(this.address)
+    // initialize kernel contract
+    this._kernel = { artifact: undefined, contract: undefined }
+    // tslint:disable-next-line:no-submodule-imports
+    this._kernel.artifact = contractor(require('@pando/repository/abi/Kernel.json'))
+    this._kernel.artifact.setProvider(this._provider)
+    this._kernel.artifact.defaults({ from: this.config.ethereum.account })
+    this._kernel.artifact.autoGas = true
+    this._kernel.artifact.gasMultiplier = 3
+    this._kernel.contract = await this._kernel.artifact.at(await this._repo.contract.kernel())
   }
 
   // OK
@@ -197,7 +207,7 @@ export default class Helper {
 
     try {
       block = await this._web3.eth.getBlockNumber()
-      events = await this._contract.getPastEvents('UpdateRef', {
+      events = await this._repo.contract.getPastEvents('UpdateRef', {
         fromBlock: start,
         toBlock: 'latest',
       })
@@ -282,6 +292,30 @@ export default class Helper {
           .stdout.split('\n')
           .slice(0, -1)
 
+        // checking permissions
+        try {
+          spinner = ora(`Checking permissions over ${this.address}`).start()
+
+          if (process.env.PANDO_OPEN_PR) {
+            if (await this._kernel.contract.hasPermission(this.config.ethereum.account, this.address, await this._repo.contract.OPEN_PR_ROLE(), '0x0')) {
+              spinner.succeed(`You have open PR permission over ${this.address}`)
+            } else {
+              spinner.fail(`You do not have open PR permission over ${this.address}`)
+              this._die()
+            }
+          } else {
+            if (await this._kernel.contract.hasPermission(this.config.ethereum.account, this.address, await this._repo.contract.PUSH_ROLE(), '0x0')) {
+              spinner.succeed(`You have push permission over ${this.address}`)
+            } else {
+              spinner.fail(`You do not have push permission over ${this.address}. Try to run 'git pando pr open' to open a push request.`)
+              this._die()
+            }
+          }
+        } catch (err) {
+          spinner.fail(`Failed to check permissions over ${this.address}: ` + err.message)
+          this._die()
+        }
+
         // collect git objects
         try {
           spinner = ora('Collecting git objects [this may take a while]').start()
@@ -329,32 +363,63 @@ export default class Helper {
         }
 
         // register on chain
-        try {
-          spinner = ora(`Registering ref ${dst} ${head} on-chain`).start()
-          this._contract
-            .push(dst, head)
-            .on('error', err => {
-              if (!err.message.includes('Failed to subscribe to new newBlockHeaders to confirm the transaction receipts')) {
+        if (!process.env.PANDO_OPEN_PR) {
+          try {
+            spinner = ora(`Registering ref ${dst} ${head} on-chain`).start()
+            this._repo.contract
+              .push(dst, head)
+              .on('error', err => {
+                if (!err.message.includes('Failed to subscribe to new newBlockHeaders to confirm the transaction receipts')) {
+                  spinner.fail(`Failed to register ref ${dst} ${head} on-chain: ` + err.message)
+                  this._die()
+                }
+              })
+              .on('transactionHash', hash => {
+                txHash = hash
+                spinner.text = `Registering ref ${dst} ${head} on-chain through tx ${txHash}`
+              })
+              .then(receipt => {
+                spinner.succeed(`Ref ${dst} ${head} registered on-chain through tx ${txHash}`)
+                this._send(`ok ${dst}`)
+                resolve()
+              })
+              .catch(err => {
                 spinner.fail(`Failed to register ref ${dst} ${head} on-chain: ` + err.message)
                 this._die()
-              }
-            })
-            .on('transactionHash', hash => {
-              txHash = hash
-              spinner.text = `Registering ref ${dst} ${head} on-chain through tx ${txHash}`
-            })
-            .then(receipt => {
-              spinner.succeed(`Ref ${dst} ${head} registered on-chain through tx ${txHash}`)
-              this._send(`ok ${dst}`)
-              resolve()
-            })
-            .catch(err => {
-              spinner.fail(`Failed to register ref ${dst} ${head} on-chain: ` + err.message)
-              this._die()
-            })
-        } catch (err) {
-          spinner.fail(`Failed to register ref ${dst} ${head} on-chain: ` + err.message)
-          this._die()
+              })
+          } catch (err) {
+            spinner.fail(`Failed to register ref ${dst} ${head} on-chain: ` + err.message)
+            this._die()
+          }
+        } else {
+          try {
+            spinner = ora(`Opening PR for ${dst} ${head} on-chain`).start()
+            this._repo.contract
+              .openPR(process.env.PANDO_PR_TITLE, process.env.PANDO_PR_DESCRIPTION || '', dst, head)
+              .on('error', err => {
+                if (!err.message.includes('Failed to subscribe to new newBlockHeaders to confirm the transaction receipts')) {
+                  spinner.fail(`Failed to open PR for ${dst} ${head} on-chain: ` + err.message)
+                  this._die()
+                }
+              })
+              .on('transactionHash', hash => {
+                txHash = hash
+                spinner.text = `Opening PR for ${dst} ${head} on-chain through tx ${txHash}`
+              })
+              .then(receipt => {
+                const id = receipt.logs.filter(l => l.event === 'OpenPR')[0].args.id
+                spinner.succeed(`PR #${id} for ${dst} ${head} opened on-chain through tx ${txHash}`)
+                this._send(`error ${dst} Relax! This is because you do not have push permission: PR #${id} has been opened for you instead`)
+                resolve()
+              })
+              .catch(err => {
+                spinner.fail(`Failed to open PR for ${dst} ${head} on-chain: ` + err.message)
+                this._die()
+              })
+          } catch (err) {
+            spinner.fail(`Failed to open PR for ${dst} ${head} on-chain: ` + err.message)
+            this._die()
+          }
         }
       } catch (err) {
         this._die(err.message)
