@@ -129,10 +129,7 @@ export default class Display extends React.Component {
         {(plain || language !== 'markdown') && (
           <pre
             dangerouslySetInnerHTML={{
-              __html: Prism.highlight(
-                normalizedFile,
-                Prism.languages[language]
-              ),
+              __html: Prism.highlight(normalizedFile, Prism.languages[language]),
             }}
           />
         )}

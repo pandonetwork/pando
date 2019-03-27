@@ -1,13 +1,5 @@
 import styled from 'styled-components'
-import {
-  alignItems,
-  color,
-  display,
-  flexDirection,
-  height,
-  justifyContent,
-  space,
-} from 'styled-system'
+import { alignItems, color, display, flexDirection, height, justifyContent, space } from 'styled-system'
 
 export default styled.div`
   ${space}
