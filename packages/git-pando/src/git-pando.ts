@@ -7,6 +7,7 @@ const argv = yargs
   .usage('pando <command>')
   .command(commands.config)
   .command(commands.organization)
+  .command(commands.pr)
   .command(commands.repository)
   .demandCommand(1, 'No command provided')
   .strict()
