@@ -53,6 +53,8 @@ contract PandoColony is APMFetcher, AragonApp {
 
         repository.initialize(_name, _description);
         acl.createPermission(msg.sender, repository, repository.PUSH_ROLE(), msg.sender);
+        acl.createPermission(address(-1), repository, repository.OPEN_PR_ROLE(), msg.sender);
+        acl.createPermission(msg.sender, repository, repository.SORT_PR_ROLE(), msg.sender);
         acl.createPermission(msg.sender, repository, repository.UPDATE_INFORMATIONS_ROLE(), msg.sender);
 
         emit CreateRepository(address(repository));
