@@ -13,7 +13,7 @@ export default class Browser extends React.Component {
   constructor(props) {
     super(props)
 
-    this.ipfs = IPFS({ host: 'localhost', port: '5001', protocol: 'http' })
+    this.ipfs = IPFS({ host: 'ipfs.infura.io', port: '5001', protocol: 'https' })
     this.ipld = new IPLD({
       blockService: this.ipfs.block,
       formats: [IPLDGit],

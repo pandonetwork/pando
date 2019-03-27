@@ -2,12 +2,7 @@ import { Button, Info, Table, TableHeader, TableRow, TableCell, Text, theme } fr
 import React from 'react'
 import styled from 'styled-components'
 
-export default props => {
-  const { name, description, handleUpdateInformationsSidePanelOpen } = { props }
-
-  console.log('props from Setting')
-  console.log(props)
-
+export default ({ name, description, handleUpdateInformationsSidePanelOpen }) => {
   return (
     <Wrapper>
       <Table
@@ -19,13 +14,13 @@ export default props => {
       >
         <TableRow>
           <TableCell>
-            <Text weight="bold">{props.name}</Text>
+            <Text weight="bold">{name}</Text>
           </TableCell>
           <TableCell>
-            <Text>{props.description}</Text>
+            <Text>{description}</Text>
           </TableCell>
           <TableCellLeft>
-            <Button mode="secondary" onClick={() => props.handleUpdateInformationsSidePanelOpen()}>
+            <Button mode="secondary" onClick={() => handleUpdateInformationsSidePanelOpen()}>
               Update
             </Button>
           </TableCellLeft>

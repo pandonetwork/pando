@@ -8,7 +8,7 @@ import orderBy from 'lodash.orderby'
 import uniqWith from 'lodash.uniqwith'
 
 const app = new Aragon()
-const ipfs = IPFS({ host: 'localhost', port: '5001', protocol: 'http' })
+const ipfs = IPFS({ host: 'ipfs.infura.io', port: '5001', protocol: 'https' })
 const ipld = new IPLD({
   blockService: ipfs.block,
   formats: [IPLDGit],

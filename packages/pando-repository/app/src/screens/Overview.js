@@ -1,11 +1,10 @@
-import { EmptyStateCard, Table, TableRow, TableCell, Text, theme } from '@aragon/ui'
+import { Table, TableRow, TableCell, Text, theme } from '@aragon/ui'
 import CID from 'cids'
 import IPFS from 'ipfs-http-client'
 import IPLD from 'ipld'
 import IPLDGit from 'ipld-git'
 import React from 'react'
 import styled from 'styled-components'
-import Box from '../components/Box'
 import Display from '../components/Browser/Display'
 
 const EMPTY_REPO = `\u0000
@@ -29,7 +28,7 @@ export default class Overview extends React.Component {
 
   constructor(props) {
     super(props)
-    this.ipfs = IPFS({ host: 'localhost', port: '5001', protocol: 'http' })
+    this.ipfs = IPFS({ host: 'ipfs.infura.io', port: '5001', protocol: 'https' })
     this.ipld = new IPLD({
       blockService: this.ipfs.block,
       formats: [IPLDGit],
@@ -59,18 +58,22 @@ export default class Overview extends React.Component {
     const commit = this.deriveCommitFromBranch(branches, 0, 0)
 
     if (commit) {
-      this.get(commit.cid, 'tree').then(tree => {
-        if (tree['README.md']) {
-          this.get(commit.cid, 'tree/README.md/hash')
-            .then(buffer => {
-              const content = buffer.toString()
-              this.setState({ readme: content })
-            })
-            .catch(err => {
-              console.error('Failed to load README.md due to: ' + err)
-            })
-        }
-      })
+      this.get(commit.cid, 'tree')
+        .then(tree => {
+          if (tree['README.md']) {
+            this.get(commit.cid, 'tree/README.md/hash')
+              .then(buffer => {
+                const content = buffer.toString()
+                this.setState({ readme: content })
+              })
+              .catch(err => {
+                console.error('Failed to load README.md due to: ' + err)
+              })
+          }
+        })
+        .catch(err => {
+          console.error('Failed to load README.md due to: ' + err)
+        })
     }
   }
 
