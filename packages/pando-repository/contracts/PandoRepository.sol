@@ -44,24 +44,49 @@ contract PandoRepository is AragonApp {
         _updateInformations(_name, _description);
     }
 
-    function push(string _ref, string _cid) external auth(PUSH_ROLE) {
-        _push(_ref, _cid);
+    /**
+    * @notice Push `_hash` to `_ref`
+    * @param _ref Reference to push to
+    * @param _hash CID of the git-ipld commit to push
+    */
+    function push(string _ref, string _hash) external auth(PUSH_ROLE) {
+        _push(_ref, _hash);
     }
 
+    /**
+    * @notice Open PR '`_title`'
+    * @param _title Title of the PR
+    * @param _description Description of the PR
+    * @param _ref Reference to push to
+    * @param _hash CID of the git-ipld commit to push
+    */
     function openPR(string _title, string _description, string _ref, string _hash) external auth(OPEN_PR_ROLE) {
         _openPR(msg.sender, _title, _description, _ref, _hash);
     }
 
+    /**
+    * @notice Merge PR #`_id`
+    * @param _id ID of the PR
+    */
     function mergePR(uint256 _id) external auth(SORT_PR_ROLE) {
         require(canSortPR(_id), ERROR_REPO_CANNOT_SORT_PR);
         _mergePR(_id);
     }
 
+    /**
+    * @notice Reject PR #`_id`
+    * @param _id ID of the PR
+    */
     function rejectPR(uint256 _id) external auth(SORT_PR_ROLE) {
         require(canSortPR(_id), ERROR_REPO_CANNOT_SORT_PR);
         _rejectPR(_id);
     }
 
+    /**
+    * @notice Update repository name to '`_name`' and description to '`_description`'
+    * @param _name Name of the repository
+    * @param _description Description of the repository
+    */
     function updateInformations(string _name, string _description) external auth(UPDATE_INFORMATIONS_ROLE) {
         _updateInformations(_name, _description);
     }
@@ -85,10 +110,10 @@ contract PandoRepository is AragonApp {
 
     /***** private functions *****/
 
-    function _push(string _ref, string _cid) internal {
-        refs[_ref] = _cid;
+    function _push(string _ref, string _hash) internal {
+        refs[_ref] = _hash;
 
-        emit UpdateRef(_ref, _cid);
+        emit UpdateRef(_ref, _hash);
     }
 
     function _openPR(address _author, string _title, string _description, string _ref, string _hash) internal {
