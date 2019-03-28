@@ -23,6 +23,8 @@ class App extends React.Component {
     this.handleUpdateInformationsSidePanelOpen = this.handleUpdateInformationsSidePanelOpen.bind(this)
     this.handleUpdateInformationsSidePanelClose = this.handleUpdateInformationsSidePanelClose.bind(this)
     this.handleUpdateInformations = this.handleUpdateInformations.bind(this)
+    this.handleMergePR = this.handleMergePR.bind(this)
+    this.handleRejectPR = this.handleRejectPR.bind(this)
 
     this.state = {
       tabIndex: 0,
@@ -36,6 +38,14 @@ class App extends React.Component {
 
   handleUpdateInformationsSidePanelClose() {
     this.setState({ updateInformationsSidePanelOpen: false })
+  }
+
+  handleMergePR(id) {
+    this.props.app.mergePR(id)
+  }
+
+  handleRejectPR(id) {
+    this.props.app.rejectPR(id)
   }
 
   handleUpdateInformations(name, description) {
@@ -53,7 +63,9 @@ class App extends React.Component {
           <AppView title={name} tabs={<TabBar items={tabs} selected={tabIndex} onChange={tabIndex => this.setState({ tabIndex })} />}>
             {currentTab === 'Overview' && <Overview name={name} description={description} branches={branches} />}
             {currentTab === 'Code' && <Code name={name} branches={branches} />}
-            {(currentTab === 'Pull requests' || currentTab === 'Lineage requests') && <Requests PRs={PRs} />}
+            {(currentTab === 'Pull requests' || currentTab === 'Lineage requests') && (
+              <Requests branches={branches} PRs={PRs} merge={this.handleMergePR} reject={this.handleRejectPR} />
+            )}
             {currentTab === 'Settings' && (
               <Settings name={name} description={description} handleUpdateInformationsSidePanelOpen={this.handleUpdateInformationsSidePanelOpen} />
             )}
@@ -76,7 +88,14 @@ export default observe(
   observable =>
     observable.pipe(
       map(state => {
-        return { ...state }
+        return {
+          ...state,
+          PRs: state.PRs
+            ? Object.keys(state.PRs)
+                .map(id => state.PRs[id])
+                .reverse()
+            : [],
+        }
       })
     ),
   {}

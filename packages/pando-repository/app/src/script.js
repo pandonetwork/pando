@@ -7,6 +7,10 @@ import { cidToSha } from 'ipld-git/src/util/util.js'
 import orderBy from 'lodash.orderby'
 import uniqWith from 'lodash.uniqwith'
 
+const PR_STATE = ['PENDING', 'MERGED', 'REJECTED'].reduce((state, key, index) => {
+  state[key] = index
+  return state
+}, {})
 const app = new Aragon()
 const ipfs = IPFS({ host: 'ipfs.infura.io', port: '5001', protocol: 'https' })
 const ipld = new IPLD({
@@ -25,7 +29,7 @@ app
   })
 
 app.store(async (state, event) => {
-  state = state || { branches: {}, PRs: [], name: '', description: '', cache: {} }
+  state = state || { branches: {}, PRs: {}, name: '', description: '', cache: {} }
 
   if (!state.cache[event.id]) {
     state.cache[event.id] = true
@@ -57,14 +61,21 @@ app.store(async (state, event) => {
       case 'OpenPR':
         const PR = {
           id: event.returnValues.id,
-          state: 0,
+          state: PR_STATE.PENDING,
           author: event.returnValues.author,
           title: event.returnValues.title,
           description: event.returnValues.description,
           destination: branchFromRef(event.returnValues.ref),
           hash: event.returnValues.hash,
+          commit: await fetchCommit(event.returnValues.hash),
         }
-        state.PRs.push(PR)
+        state.PRs[event.returnValues.id] = PR
+        return state
+      case 'MergePR':
+        state.PRs[event.returnValues.id].state = PR_STATE.MERGED
+        return state
+      case 'RejectPR':
+        state.PRs[event.returnValues.id].state = PR_STATE.REJECTED
         return state
       case 'UpdateInformations':
         state.name = event.returnValues.name
@@ -83,6 +94,23 @@ const branchFromRef = ref => {
 }
 
 const fetchHistory = async (hash, history) => {
+  return new Promise(async (resolve, reject) => {
+    try {
+      const commit = await fetchCommit(hash)
+      history.push(commit)
+
+      for (let parent of commit.parents) {
+        history = await fetchHistory(parent['/'], history)
+      }
+
+      resolve(history)
+    } catch (err) {
+      reject(err)
+    }
+  })
+}
+
+const fetchCommit = async hash => {
   return new Promise((resolve, reject) => {
     try {
       const cid = new CID(hash)
@@ -94,18 +122,37 @@ const fetchHistory = async (hash, history) => {
           const commit = result.value
           commit.cid = cid.toBaseEncodedString()
           commit.sha = cidToSha(hash).toString('hex')
-
-          history.push(commit)
-
-          for (let parent of commit.parents) {
-            history = await fetchHistory(parent['/'], history)
-          }
-
-          resolve(history)
+          commit.files = await fetchFilesFromTree(commit.tree['/'])
+          resolve(commit)
         }
       })
     } catch (err) {
       reject(err)
     }
+  })
+}
+
+const fetchFilesFromTree = (hash, path) => {
+  return new Promise(async (resolve, reject) => {
+    let files = {}
+    const cid = new CID(hash)
+
+    ipld.get(cid, async (err, result) => {
+      if (err) {
+        reject(err)
+      } else {
+        const tree = result.value
+        for (let entry in tree) {
+          const _path = path ? path + '/' + entry : entry
+          if (tree[entry].mode === '40000') {
+            const _files = await fetchFilesFromTree(tree[entry]['hash']['/'], _path)
+            files = { ...files, ..._files }
+          } else {
+            files[_path] = new CID(tree[entry]['hash']['/']).toBaseEncodedString()
+          }
+        }
+        resolve(files)
+      }
+    })
   })
 }
