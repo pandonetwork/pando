@@ -1,4 +1,4 @@
-import { Text, theme } from '@aragon/ui'
+import { Info, Text, theme } from '@aragon/ui'
 import Octicon, { CircleSlash, GitMerge, GitPullRequest } from '@githubprimer/octicons-react'
 import CID from 'cids'
 import IPFS from 'ipfs-http-client'
@@ -354,6 +354,7 @@ export default class Requests extends React.Component {
           </Box>
         )}
         <Text size="large">{PR.description}</Text>
+        {diffs.length === 0 && <Info title="Up-to-date">This PR is up-to-date with its destination branch</Info>}
         {diffs.map(({ path, oldCode, newCode, filename }) => (
           <DiffView>
             <DiffViewHeader>
