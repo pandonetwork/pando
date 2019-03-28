@@ -13,12 +13,12 @@ const builder = () => {
   return yargs
     .option('title', {
       alias: 't',
-      description: 'Title of the push request',
+      description: 'Title of the pull request',
       required: true,
     })
     .option('description', {
       alias: 'd',
-      description: 'Description of the push request',
+      description: 'Description of the pull request',
       required: false,
     })
     .strict()

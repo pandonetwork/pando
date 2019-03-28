@@ -15,7 +15,7 @@ const builder = () => {
 /* tslint:disable:object-literal-sort-keys */
 export const pr = {
   command: 'pr <subcommand>',
-  desc: 'Manage pando push requests',
+  desc: 'Manage pando pull requests',
   builder,
 }
 /* tslint:enable:object-literal-sort-keys */
