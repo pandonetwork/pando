@@ -23,7 +23,6 @@ contract PandoColony is APMFetcher, AragonApp {
     * @notice Initialize Colony app with `_ens` as a ENS registry
     * @param _ens Address of the ENS registry to fetch pando apps address from
     * @param _devchain Whether the app is deployed on devchain or not
-
     */
     function initialize(ENS _ens, bool _devchain) external onlyInit {
         initialized();
