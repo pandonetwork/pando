@@ -36,14 +36,12 @@ const main = async () => {
       const provider = await _provider(gateway)
 
       MiniMeTokenFactory.setProvider(provider)
-      MiniMeTokenFactory.defaults({ from: root, gasPrice: 10000000000 })
-      // MiniMeTokenFactory.autoGas = true
-      // MiniMeTokenFactory.gasMultiplier = 3
+      MiniMeTokenFactory.defaults({ from: root, gasPrice: 20000000000 })
+      MiniMeTokenFactory.autoGas = true
 
       PandoKit.setProvider(provider)
-      PandoKit.defaults({ from: root })
+      PandoKit.defaults({ from: root, gasPrice: 20000000000 })
       PandoKit.autoGas = true
-      PandoKit.gasMultiplier = 1.5
 
       MiniMeTokenFactory.new()
         .on('error', err => {

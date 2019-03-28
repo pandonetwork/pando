@@ -98,9 +98,8 @@ export default class Pando {
     for (const artifact in this.artifacts) {
       if (this.artifacts.hasOwnProperty(artifact)) {
         this.artifacts[artifact].setProvider(this.options.ethereum.provider)
-        this.artifacts[artifact].defaults({ from: this.options.ethereum.account })
+        this.artifacts[artifact].defaults({ from: this.options.ethereum.account, gasPrice: 20000000000 })
         this.artifacts[artifact].autoGas = true
-        this.artifacts[artifact].gasMultiplier = 1.25
       }
     }
   }
