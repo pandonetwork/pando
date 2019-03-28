@@ -47,7 +47,7 @@ const handler = async argv => {
 /* tslint:disable:object-literal-sort-keys */
 export const open = {
   command: 'open [gitArgs...]',
-  desc: 'Open a push request',
+  desc: 'Open a pull request',
   builder,
   handler,
 }
