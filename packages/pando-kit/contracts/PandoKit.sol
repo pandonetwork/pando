@@ -71,7 +71,6 @@ contract PandoKit is KitBase {
 
     function newToken(string _name, string _symbol) external {
         MiniMeToken token = tokenFactory.createCloneToken(MiniMeToken(address(0)), 0, _name, 0, _symbol, true);
-        token.generateTokens(msg.sender, 1);
 
         emit DeployToken(address(token), _name, _symbol);
     }
@@ -141,7 +140,7 @@ contract PandoKit is KitBase {
         acl.createPermission(metavoting, finance, finance.CREATE_PAYMENTS_ROLE(), metavoting);
         acl.createPermission(metavoting, finance, finance.EXECUTE_PAYMENTS_ROLE(), metavoting);
         acl.createPermission(metavoting, finance, finance.MANAGE_PAYMENTS_ROLE(), metavoting);
-        acl.createPermission(metavoting, tokenManager, tokenManager.MINT_ROLE(), metavoting);
+        acl.createPermission(this, tokenManager, tokenManager.MINT_ROLE(), this);
         acl.createPermission(metavoting, tokenManager, tokenManager.ISSUE_ROLE(), metavoting);
         acl.createPermission(metavoting, tokenManager, tokenManager.ASSIGN_ROLE(), metavoting);
         acl.createPermission(metavoting, tokenManager, tokenManager.REVOKE_VESTINGS_ROLE(), metavoting);
@@ -161,6 +160,9 @@ contract PandoKit is KitBase {
         metavoting.initialize(token, uint64(50 * PCT), uint64(20 * PCT), 1 days);
         colony.initialize(ens, devchain);
 
+        // Mint token
+        tokenManager.mint(msg.sender, uint256(1));
+
         // Cleanup permissions
         acl.grantPermission(metavoting, dao, dao.APP_MANAGER_ROLE());
         acl.revokePermission(this, dao, dao.APP_MANAGER_ROLE());
@@ -168,6 +170,9 @@ contract PandoKit is KitBase {
         acl.grantPermission(metavoting, acl, acl.CREATE_PERMISSIONS_ROLE());
         acl.revokePermission(this, acl, acl.CREATE_PERMISSIONS_ROLE());
         acl.setPermissionManager(metavoting, acl, acl.CREATE_PERMISSIONS_ROLE());
+        acl.grantPermission(metavoting, tokenManager, tokenManager.MINT_ROLE());
+        acl.revokePermission(this, tokenManager, tokenManager.MINT_ROLE());
+        acl.setPermissionManager(metavoting, tokenManager, tokenManager.MINT_ROLE());
 
         emit DeployInstance(dao);
     }
