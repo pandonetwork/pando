@@ -8,7 +8,7 @@ export default ({ name, description, handleUpdateInformationsSidePanelOpen }) =>
       <Table
         header={
           <TableRow>
-            <TableHeader title="Informations" />
+            <TableHeader title="Information" />
           </TableRow>
         }
       >
