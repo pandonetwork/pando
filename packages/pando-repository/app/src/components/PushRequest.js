@@ -94,6 +94,13 @@ const DiffViewHeader = styled.div`
   border-bottom: 1px solid #e6e6e6;
 `
 
+const DiffViewContentHeader = styled.p`
+  text-align: center;
+  padding: 1rem;
+  color: #666666;
+  ${({ background }) => background && `background: ${background};`}
+`
+
 const DiffViewContent = styled.div`
   @import url('https://fonts.googleapis.com/css?family=Overpass+Mono:300');
 
@@ -178,19 +185,23 @@ const ActionButtons = styled.div`
   }
 `
 
+// const oldCode = ''
+
 // const oldCode = `const a = 10
 // const b = 10
 // const c = () => console.log('foo')
-//
+
 // if(a > 10) {
 //   console.log('bar')
 // }
-//
+
 // console.log('done')
 // `
+// const newCode = ''
+
 // const newCode = `const a = 10
 // const boo = 10
-//
+
 // if(a === 10) {
 //   console.log('bar')
 // }
@@ -231,6 +242,32 @@ export default class Requests extends React.Component {
     this.state = {
       diffViewState: 'split',
       diffs: [],
+      highlightLine: [],
+    }
+  }
+
+  onLineNumberClick = (id, e) => {
+    let highlightLine = [id]
+    if (e.shiftKey && this.state.highlightLine.length === 1) {
+      const [dir, oldId] = this.state.highlightLine[0].split('-')
+      const [newDir, newId] = id.split('-')
+      if (dir === newDir) {
+        highlightLine = []
+        const lowEnd = Math.min(Number(oldId), Number(newId))
+        const highEnd = Math.max(Number(oldId), Number(newId))
+        for (var i = lowEnd; i <= highEnd; i++) {
+          highlightLine.push(`${dir}-${i}`)
+        }
+      }
+    }
+    this.setState({
+      highlightLine,
+    })
+
+    if (this.state.highlightLine.length > 1 && this.state.highlightLine.filter(line => line === id).length) {
+      this.setState({ highlightLine: [] })
+    } else if (this.state.highlightLine.length === 1 && id === this.state.highlightLine[0]) {
+      this.setState({ highlightLine: [] })
     }
   }
 
@@ -295,7 +332,7 @@ export default class Requests extends React.Component {
 
   render() {
     const { PR, merge, reject, back } = this.props
-    const { diffs, diffViewState } = this.state
+    const { diffs, diffViewState, highlightLine } = this.state
 
     return (
       <Wrapper>
@@ -354,7 +391,11 @@ export default class Requests extends React.Component {
           </Box>
         )}
         <Text size="large">{PR.description}</Text>
-        {diffs.length === 0 && <Info title="Up-to-date">This PR is up-to-date with its destination branch</Info>}
+        {diffs.length === 0 && (
+          <Box mt="1rem">
+            <Info title="Up-to-date">This PR is up-to-date with its destination branch</Info>
+          </Box>
+        )}
         {diffs.map(({ path, oldCode, newCode, filename }) => (
           <DiffView>
             <DiffViewHeader>
@@ -384,21 +425,29 @@ export default class Requests extends React.Component {
             </DiffViewHeader>
             {diffViewState !== 'file' && (
               <DiffViewContent>
-                <ReactDiffViewer
-                  oldValue={oldCode}
-                  newValue={newCode}
-                  splitView={diffViewState === 'split'}
-                  renderContent={code => (
-                    <pre
-                      style={{ display: 'inline' }}
-                      dangerouslySetInnerHTML={{
-                        __html: Prism.highlight(code, Prism.languages[prismMapping[filename.split('.').pop()]]),
-                      }}
-                    />
-                  )}
-                />
+                {newCode === '' && <DiffViewContentHeader background="#ffeef0">This file has been deleted</DiffViewContentHeader>}
+                {oldCode === '' && <DiffViewContentHeader background="#e6ffed">This file has just been added</DiffViewContentHeader>}
+                {newCode !== '' && oldCode !== '' && (
+                  <ReactDiffViewer
+                    oldValue={oldCode}
+                    newValue={newCode}
+                    splitView={diffViewState === 'split'}
+                    onLineNumberClick={this.onLineNumberClick}
+                    highlightLines={highlightLine}
+                    renderContent={code => (
+                      <pre
+                        style={{ display: 'inline' }}
+                        dangerouslySetInnerHTML={{
+                          __html: Prism.highlight(code, filename.split('.').length > 1 ? Prism.languages[prismMapping[filename.split('.').pop()]] : ''),
+                        }}
+                      />
+                    )}
+                  />
+                )}
               </DiffViewContent>
             )}
+            {newCode === '' && <Display file={oldCode} filename={filename} removeBorder plain />}
+            {oldCode === '' && <Display file={newCode} filename={filename} removeBorder plain />}
             {diffViewState === 'file' && <Display file={newCode} filename={filename} removeBorder plain />}
           </DiffView>
         ))}

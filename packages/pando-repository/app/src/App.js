@@ -1,11 +1,11 @@
 import { AppView, Main, observe, TabBar } from '@aragon/ui'
-import { map } from 'rxjs/operators'
-
 import React from 'react'
+import { map } from 'rxjs/operators'
 import UpdateInformationsSidePanel from './components/UpdateInformationsSidePanel'
 import Code from './screens/Code'
+import LineageRequests from './screens/LineageRequests'
 import Overview from './screens/Overview'
-import Requests from './screens/Requests'
+import PullRequests from './screens/PullRequests'
 import Settings from './screens/Settings'
 
 const tabs = ['Overview', 'Code', 'Pull requests', 'Lineage requests', 'Settings']
@@ -63,9 +63,8 @@ class App extends React.Component {
           <AppView title={name} tabs={<TabBar items={tabs} selected={tabIndex} onChange={tabIndex => this.setState({ tabIndex })} />}>
             {currentTab === 'Overview' && <Overview name={name} description={description} branches={branches} />}
             {currentTab === 'Code' && <Code name={name} branches={branches} />}
-            {(currentTab === 'Pull requests' || currentTab === 'Lineage requests') && (
-              <Requests branches={branches} PRs={PRs} merge={this.handleMergePR} reject={this.handleRejectPR} />
-            )}
+            {currentTab === 'Pull requests' && <PullRequests branches={branches} PRs={PRs} merge={this.handleMergePR} reject={this.handleRejectPR} />}
+            {currentTab === 'Lineage requests' && <LineageRequests />}
             {currentTab === 'Settings' && (
               <Settings name={name} description={description} handleUpdateInformationsSidePanelOpen={this.handleUpdateInformationsSidePanelOpen} />
             )}
