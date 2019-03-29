@@ -47,7 +47,7 @@ export default class UpdateInformationsSidePanel extends React.Component {
     const { opened, onClose } = this.props
 
     return (
-      <SidePanel title="Update informations" opened={opened} onClose={onClose}>
+      <SidePanel title="Update Information" opened={opened} onClose={onClose}>
         <Form onSubmit={this.handleSubmit}>
           <Field label="Name">
             <TextInput ref={name => (this.nameInput = name)} value={name} onChange={this.handleNameChange} required wide />
@@ -56,7 +56,7 @@ export default class UpdateInformationsSidePanel extends React.Component {
             <TextInput ref={description => (this.descriptionInput = description)} value={description} onChange={this.handleDescriptionChange} wide />
           </Field>
           <Button mode="strong" type="submit" wide>
-            Update Informations
+            Update Information
           </Button>
         </Form>
       </SidePanel>
