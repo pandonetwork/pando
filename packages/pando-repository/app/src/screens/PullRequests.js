@@ -80,7 +80,7 @@ const TableItem = styled.div`
   }
 `
 
-export default class Requests extends React.Component {
+export default class PullRequests extends React.Component {
   static defaultProps = {
     branches: [],
     PRs: [],
