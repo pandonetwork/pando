@@ -37,22 +37,7 @@ app.store(async (state, event) => {
     switch (event.event) {
       case 'UpdateRef':
         try {
-          let history = await fetchHistory(event.returnValues.hash, [])
-          history = uniqWith(history, (one, two) => {
-            return one.cid === two.cid
-          })
-          history = orderBy(
-            history,
-            [
-              commit => {
-                // https://github.com/git/git/blob/v2.3.0/Documentation/date-formats.txt
-                /* eslint-disable-next-line no-unused-vars */
-                const [timestamp, offset] = commit.author.date.split(' ')
-                return timestamp
-              },
-            ],
-            ['desc']
-          )
+          let history = await fetchOrderedHistory(event.returnValues.hash, [])
           state.branches[branchFromRef(event.returnValues.ref)] = history
         } catch (err) {
           console.error('Failed to load commit history due to:', err)
@@ -155,4 +140,26 @@ const fetchFilesFromTree = (hash, path) => {
       }
     })
   })
+}
+
+const fetchOrderedHistory = async (hash, formerHistory) => {
+  let history = await fetchHistory(hash, formerHistory)
+  history = uniqWith(history, (one, two) => {
+    return one.cid === two.cid
+  })
+
+  history = orderBy(
+    history,
+    [
+      commit => {
+        // https://github.com/git/git/blob/v2.3.0/Documentation/date-formats.txt
+        /* eslint-disable-next-line no-unused-vars */
+        const [timestamp, offset] = commit.author.date.split(' ')
+        return timestamp
+      },
+    ],
+    ['desc']
+  )
+
+  return history
 }
