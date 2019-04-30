@@ -138,7 +138,7 @@ export default class Commit {
     if (commit.tree.hasOwnProperty('/')) {
       const _cid = new CID(commit.tree['/'])
       let _parents : string[] = commit.parents ? 
-        commit.parents.map(parent => (new CID(Object.values(parent)[0]).toBaseEncodedString)) : [];
+        commit.parents.map(parent => (new CID(Object.values(parent)[0]).toBaseEncodedString)) : []
         this.cid = _cid
         this.sha = cidToSha(commit.tree['/']).toString('hex')
         this.author = commit.author
@@ -150,8 +150,16 @@ export default class Commit {
   }
 
   public async fetchModifiedTree(): Promise<void> {
-    const files = await fetchFilesFromTree(this.tree['/'])
-    this.tree = files
+    return new Promise(async (resolve, reject) => {
+      try {
+        const files = await fetchFilesFromTree(this.tree['/'])
+        this.tree = files
+        resolve()
+      } catch (err) {
+        reject(err)
+      }
+    })
+    
   }
 
   public async getOrderdHistory(): Promise<Commit[]> {
