@@ -108,6 +108,7 @@ const fetchCommit = async hash => {
           commit.cid = cid.toBaseEncodedString()
           commit.sha = cidToSha(hash).toString('hex')
           commit.files = await fetchFilesFromTree(commit.tree['/'])
+          console.log(commit)
           resolve(commit)
         }
       })

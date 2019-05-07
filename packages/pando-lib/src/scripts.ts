@@ -1,4 +1,4 @@
-import { IPLD } from 'ipld'
+import IPLD from 'ipld'
 import IPFS from 'ipfs-http-client'
 import IPLDGit from 'ipld-git'
 import CID from 'cids'
@@ -86,13 +86,14 @@ export const fetchHistory = async (hash:string, history: Commit[]): Promise<Comm
 export const fetchCommit = async (hash: string): Promise<Commit> => {
   return new Promise((resolve, reject) => {
     try {
-      const cid = new CID(hash)
+      const cid: string = new CID(hash)
       ipld.get(cid, async (err, result) => {
         if (err) {
           reject(err)
         } else {
           const IPLDCommit = result.value as ILinkedDataCommit
-          const commit = new Commit(IPLDCommit)
+          let commit = new Commit(IPLDCommit)
+          commit.cid = cid
           await commit.fetchModifiedTree()
           resolve(commit)
         }
@@ -156,7 +157,7 @@ export default class Commit {
         this.tree = files
         resolve()
       } catch (err) {
-        reject(err)
+        reject("Error")
       }
     })
     
