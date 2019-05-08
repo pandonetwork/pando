@@ -87,7 +87,7 @@ export const fetchCommit = async (hash: string): Promise<Commit> => {
   return new Promise((resolve, reject) => {
     try {
       const cid: string = new CID(hash)
-      ipld.get(cid, async (err, result) => {
+      ipld.get(async (err, result) => {
         if (err) {
           reject(err)
         } else {

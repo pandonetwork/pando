@@ -1,5 +1,10 @@
 import Commit, * as lib from './scripts'
+import IPLD from 'ipld'
+import IPFS from 'ipfs-http-client'
+import IPLDGit from 'ipld-git'
 import CID from 'cids'
+const ipfs = IPFS({ host: 'ipfs.infura.io', port: '5001', protocol: 'https' })
+const ipld = new IPLD({ blockService: ipfs.block, formats: [IPLDGit] })
 
 describe('pando library', () => {
     //const existingCommitHash
@@ -9,8 +14,25 @@ describe('pando library', () => {
 
     beforeEach( async () => {
         //fetch the commit by a known hash already uploaded
-        ipldCommit = await lib.fetchCommit('QmXoypizjW3WknFiJnKLwHCnL72vedxjQkDDP1mXWo6uc')
-        console.log(ipldCommit)
+        let commitPromise = new Promise((resolve, reject) => {
+          try {
+            const cid: string = new CID('zdpuAmoZixxJjvosviGeYcqduzDhSwGV2bL6ZTTXo1hbEJHfq')
+            ipld.get(cid, async (err, result) => {
+              if (err) {
+                reject(err)
+              } else {
+                const IPLDCommit = result.value as lib.ILinkedDataCommit
+                let commit = new Commit(IPLDCommit)
+                commit.cid = cid
+                await commit.fetchModifiedTree()
+                resolve(commit)
+              }
+            })
+          } catch (err) {
+            reject(err)
+          }
+        })
+        console.log(commitPromise)
     })
     test('generate Commit object with correct attributes', () => {
         const commit = new Commit(ipldCommit)
