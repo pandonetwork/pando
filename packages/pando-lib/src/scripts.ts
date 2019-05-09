@@ -1,7 +1,7 @@
-import IPLD from 'ipld'
-import IPFS from 'ipfs-http-client'
-import IPLDGit from 'ipld-git'
 import CID from 'cids'
+import IPFS from 'ipfs-http-client'
+import IPLD from 'ipld'
+import IPLDGit from 'ipld-git'
 import { cidToSha } from 'ipld-git/src/util/util.js'
 import orderBy from 'lodash.orderby'
 import uniqWith from 'lodash.uniqwith'
@@ -45,19 +45,18 @@ export const fetchFilesFromTree = (hash: string, path?: string) => {
       if (err) {
         reject(err)
       } else {
-        const tree = result.value
-        for (let entry in tree) {
-          const _path = path ? path + '/' + entry : entry
-          if (tree[entry].mode === '40000') {
-            const _files = await fetchFilesFromTree(tree[entry]['hash']['/'], _path)
-            files = { ...files, ..._files }
-          } else {
-            files[_path].lastEdit = {
-              date: tree[entry]['committer'].date,
-              message: tree[entry]['message']
+        let tree = result.value as ITree
+        for (const entry in tree) {
+          if (entry) {
+            const _path = path ? path + '/' + entry : entry
+            if (tree[entry]['mode'] === '40000') {
+              const _files = await fetchFilesFromTree(tree[entry]['hash']['/'], _path)
+              files = { ...files, ..._files }
+            } else {
+              files[_path] = {
+                mode: tree[entry]['mode'], 
+                blob: new CID(tree[entry]['hash']['/']).toBaseEncodedString()}
             }
-            files[_path].mode = tree[entry].mode
-            files[_path].blob = new CID(tree[entry]['hash']['/']).toBaseEncodedString()
           }
         }
         resolve(files as IModifiedTree)
@@ -66,13 +65,13 @@ export const fetchFilesFromTree = (hash: string, path?: string) => {
   })
 }
 
-export const fetchHistory = async (hash:string, history: Commit[]): Promise<Commit[]> => {
+export const fetchHistory = async (cid: CID, history: Commit[]): Promise<Commit[]> => {
   return new Promise(async (resolve, reject) => {
     try {
-      const commit = await fetchCommit(hash)
+      const commit = await fetchCommit(cid)
       history.push(commit)
 
-      for (let parent of commit.parents) {
+      for (const parent of commit.parents) {
         history = await fetchHistory(parent['/'], history)
       }
 
@@ -83,16 +82,15 @@ export const fetchHistory = async (hash:string, history: Commit[]): Promise<Comm
   })
 }
 
-export const fetchCommit = async (hash: string): Promise<Commit> => {
+export const fetchCommit = async (cid: CID): Promise<Commit> => {
   return new Promise((resolve, reject) => {
     try {
-      const cid: string = new CID(hash)
-      ipld.get(async (err, result) => {
+      ipld.get(cid, async (err, result) => {
         if (err) {
           reject(err)
         } else {
           const IPLDCommit = result.value as ILinkedDataCommit
-          let commit = new Commit(IPLDCommit)
+          const commit = new Commit(IPLDCommit)
           commit.cid = cid
           await commit.fetchModifiedTree()
           resolve(commit)
@@ -104,8 +102,8 @@ export const fetchCommit = async (hash: string): Promise<Commit> => {
   })
 }
 
-export const fetchOrderedHistory = async (hash: string, formerHistory: Commit[]) => {
-  let history = await fetchHistory(hash, formerHistory)
+export const fetchOrderedHistory = async (cid: CID, formerHistory: Commit[]) => {
+  let history = await fetchHistory(cid, formerHistory)
   history = uniqWith(history, (one, two) => {
     return one.cid === two.cid
   })
@@ -127,33 +125,42 @@ export const fetchOrderedHistory = async (hash: string, formerHistory: Commit[])
 }
 
 export default class Commit {
-  cid: string
-  sha: string
-  author: IAuthorOrCommitter
-  committer: IAuthorOrCommitter
-  message: string
-  parents: ILinkedDataCommit[]
-  tree: ITree | IModifiedTree | {}
+  public cid: string
+  public sha: string
+  public author: IAuthorOrCommitter
+  public committer: IAuthorOrCommitter
+  public message: string
+  public parents: ILinkedDataCommit[]
+  public tree: ITree | IModifiedTree | {}
 
   constructor(commit: ILinkedDataCommit) {
-    if (commit.tree.hasOwnProperty('/')) {
-      const _cid = new CID(commit.tree['/'])
-      let _parents : ILinkedDataCommit[] = commit.parents ? 
-        commit.parents.map(parent => (new CID(Object.values(parent)[0]).toBaseEncodedString)) : []
-        this.cid = _cid
-        this.sha = cidToSha(commit.tree['/']).toString('hex')
-        this.author = commit.author
-        this.committer = commit.committer
-        this.message = commit.message
-        this.tree = commit.tree
-        this.parents = _parents
+
+    if (commit) {
+      if (commit.tree.hasOwnProperty('/')) {
+        const _cid = new CID(commit.tree['/'])
+        const _parents : ILinkedDataCommit[] = commit.parents ? 
+          commit.parents.map(parent => (new CID(Object.values(parent)[0]).toBaseEncodedString())) : []
+          this.cid = _cid
+          this.sha = cidToSha(commit.tree['/']).toString('hex')
+          this.author = commit.author
+          this.committer = commit.committer
+          this.message = commit.message
+          this.tree = commit.tree
+          this.parents = _parents
+      }
     }
   }
 
   public async fetchModifiedTree(): Promise<void> {
     return new Promise(async (resolve, reject) => {
       try {
-        const files = await fetchFilesFromTree(this.tree['/'])
+        let files = await fetchFilesFromTree(this.tree['/'])
+        for (const path in files) {
+          files[path] = { 
+            lastEdit: { date: this.committer.date, message: this.message},
+            ...files[path]
+          }
+        }
         this.tree = files
         resolve()
       } catch (err) {
@@ -163,7 +170,7 @@ export default class Commit {
     
   }
 
-  public async getOrderdHistory(): Promise<Commit[]> {
+  public async getOrderedHistory(): Promise<Commit[]> {
     return new Promise(async (resolve, reject) => {
       try {
         const orderedHistory = await fetchOrderedHistory(this.cid, [])
@@ -175,6 +182,20 @@ export default class Commit {
   }
 }
 
-//export function convertCommitToIPLDCommit(commit: Commit): ILinkedDataCommit {}
-
-
+export function retrieveIPLDCommitObject(commit: Commit): Promise<ILinkedDataCommit>{
+  const commitCid = commit.cid
+  return new Promise((resolve, reject) => {
+    try {
+      ipld.get(commitCid, async (err, result) => {
+        if (err) {
+          reject(err)
+        } else {
+          const IPLDCommit = result.value as ILinkedDataCommit
+          resolve(IPLDCommit)
+        }
+      })
+    } catch (err) {
+      reject(err)
+    }
+  })
+}
