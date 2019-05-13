@@ -155,7 +155,7 @@ export default class Browser extends React.Component {
             />
           </div>
         </Header>
-        {file && <Display file={file} filename={filename} />}
+        {file && <Display file={file} filename={filename} codeView />}
         {!file && tree && <Tree tree={tree} parents={parents} forward={this.forward} backward={this.backward} display={this.display} />}
       </Wrapper>
     )

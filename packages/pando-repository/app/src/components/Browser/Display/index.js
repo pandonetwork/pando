@@ -38,6 +38,8 @@ import React from 'react'
 import ReactMarkdown from 'react-markdown/with-html'
 import styled from 'styled-components'
 import { prismMapping } from '../constants'
+import { Button } from '@aragon/ui'
+import { xss } from 'xss'
 
 const MarkdownWrapper = styled.div`
   padding: 2rem;
@@ -107,8 +109,28 @@ const MarkdownWrapper = styled.div`
 `
 
 export default class Display extends React.Component {
+  constructor(props) {
+    super(props)
+    this.state = {
+      editing: false,
+      value: ''
+    }
+
+    this.handleEditingView = this.handleEditingView.bind(this)
+  }
+
+  handleEditingView() {
+    this.setState({ editing: true  })
+  }
+
+  handleSubmit(e) {
+    let sanitizedHtml = xss(e.target.value)
+    this.setState({ value: sanitizedHtml })
+  }
+
   render() {
-    const { file, filename, removeBorder, plain } = this.props
+    const { file, filename, removeBorder, plain, codeView } = this.props
+    const { editing } = this.state
 
     const splittedFile = file.split('\u0000')
     let normalizedFile = file
@@ -121,17 +143,28 @@ export default class Display extends React.Component {
 
     return (
       <Wrapper removeBorder={removeBorder}>
-        {!plain && language === 'markdown' && (
+
+        {!plain && language === 'markdown' && !editing && (
           <MarkdownWrapper>
             <ReactMarkdown source={normalizedFile} escapeHtml={false} />
           </MarkdownWrapper>
         )}
-        {(plain || language !== 'markdown') && (
+        {(plain || language !== 'markdown') && !editing && (
           <pre
             dangerouslySetInnerHTML={{
               __html: Prism.highlight(normalizedFile, filename.split('.').length > 1 ? Prism.languages[language] : ''),
             }}
           />
+        )}
+        {codeView && !editing && (
+          <Button onClick={this.handleEditingView} mode="strong">Edit file</Button>
+        )}
+        {language === 'markdown' && editing && (
+          <MarkdownWrapper>
+            <div>markdown editor</div>
+            <Button mode="strong">Save (commit changes)</Button>
+            <Button mode="strong">Cancel</Button>
+          </MarkdownWrapper>
         )}
       </Wrapper>
     )
