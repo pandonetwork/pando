@@ -39,7 +39,8 @@ import ReactMarkdown from 'react-markdown/with-html'
 import styled from 'styled-components'
 import { prismMapping } from '../constants'
 import { Button } from '@aragon/ui'
-import { xss } from 'xss'
+import xss from 'xss'
+import EditPanel from '../EditPanel/'
 
 const MarkdownWrapper = styled.div`
   padding: 2rem;
@@ -113,24 +114,34 @@ export default class Display extends React.Component {
     super(props)
     this.state = {
       editing: false,
-      value: ''
+      source: '',
     }
 
-    this.handleEditingView = this.handleEditingView.bind(this)
+    this.handleEditingEnabled = this.handleEditingEnabled.bind(this)
+    this.handleEditingDisabled = this.handleEditingDisabled.bind(this)
+    this.handleSubmit = this.handleSubmit.bind(this)
   }
 
-  handleEditingView() {
-    this.setState({ editing: true  })
+  handleEditingEnabled() {
+    this.setState({ editing: true })
   }
 
-  handleSubmit(e) {
-    let sanitizedHtml = xss(e.target.value)
-    this.setState({ value: sanitizedHtml })
+  handleEditingDisabled() {
+    this.setState({ editing: false })
+  }
+
+  handleSubmit(value) {
+    if (value) {
+      let sanitizedHtml = xss(value)
+      this.setState({ source: sanitizedHtml })
+      // TODO: Here we will construct the ipld commit object
+    }
+    this.handleEditingDisabled()
   }
 
   render() {
     const { file, filename, removeBorder, plain, codeView } = this.props
-    const { editing } = this.state
+    const { editing, source } = this.state
 
     const splittedFile = file.split('\u0000')
     let normalizedFile = file
@@ -141,9 +152,15 @@ export default class Display extends React.Component {
 
     const language = prismMapping[filename.split('.').pop()]
 
+    normalizedFile = source === '' ? normalizedFile : source
+
     return (
       <Wrapper removeBorder={removeBorder}>
-
+        {codeView && !editing && (
+          <Button onClick={this.handleEditingEnabled} mode="strong" style={{ float: 'right', maxWidth: '8rem' }} wide>
+            Edit file
+          </Button>
+        )}
         {!plain && language === 'markdown' && !editing && (
           <MarkdownWrapper>
             <ReactMarkdown source={normalizedFile} escapeHtml={false} />
@@ -156,14 +173,9 @@ export default class Display extends React.Component {
             }}
           />
         )}
-        {codeView && !editing && (
-          <Button onClick={this.handleEditingView} mode="strong">Edit file</Button>
-        )}
         {language === 'markdown' && editing && (
           <MarkdownWrapper>
-            <div>markdown editor</div>
-            <Button mode="strong">Save (commit changes)</Button>
-            <Button mode="strong">Cancel</Button>
+            <EditPanel source={normalizedFile} handleSubmit={this.handleSubmit} mode={editing} />
           </MarkdownWrapper>
         )}
       </Wrapper>
