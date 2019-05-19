@@ -95,7 +95,7 @@ export default class Commit {
       try {
         let modifiedTree = {}
         let result = ipld.tree(this.tree, '', { recursive: true })
-        const path = await result.first() //?? split is undefined on all 
+        const path = await result.first() // What to do if we get an array of paths...
 
         result = ipld.resolve(this.tree, path)
         let paths = await result.all()
@@ -105,7 +105,7 @@ export default class Commit {
             modifiedTree[path] = file.value
           }
 
-          //TODO: When their is a remainder path loop through and add files   
+          //TODO: When there is a remainderPath, loop through, and add files, make fetchFiles function
         })
 
         this.tree = modifiedTree
