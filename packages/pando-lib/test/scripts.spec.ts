@@ -1,4 +1,4 @@
-import Commit from '../src/scripts'
+import { Commit, Tree, Branch, isEqualMultihash } from '../src/scripts'
 import IPLD from 'ipld'
 import IPFS from 'ipfs-http-client'
 import IPLDGit from 'ipld-git'
@@ -104,7 +104,7 @@ describe('pando library', () => {
         expect(node).to.deep.equal(commit2Node)
       })
     })
-    describe('# put() method', () => {
+    describe('# put() method - upload to ipfs', () => {
       it('serializes Commit class and uploads it to ipfs', async () => {
         const cid = await ipld.put(commitNode, multicodec.GIT_RAW)
         const node = await Commit.get(cid)
@@ -114,13 +114,76 @@ describe('pando library', () => {
         expect(newCid).to.deep.equal(cid)
       })
     })
-    describe('# extend() method', () => {
+    describe('# extend() method - get files from tree', () => {
       it('recurses through the tree and return paths with cids', async () => {
         const cid = await ipld.put(commitNode, multicodec.GIT_RAW)
         const node = await Commit.get(cid)
 
         await node.extend()
-        expect(node.tree).to.deep.equal(treeNode)
+        expect(node.tree).to.deep.equal({ // Test existing tree node with renamed field
+          'somefile': {
+            blob: blobCid,
+            mode: '100644'
+          }
+        })
+      })
+    })
+  })
+
+  describe('> Tree class', () => {
+    describe('# static get(cid) method - retrieves commit', () => {
+      it('retreives tree node with correct cid', async () => {
+        const cid = await ipld.put(treeNode, multicodec.GIT_RAW)
+        const node = await Tree.get(cid)
+
+        expect(node.entries.somefile).to.deep.equal(treeNode['somefile'])
+      })
+    })
+    describe('# put() method - upload to ipfs', () => {
+      it('serializes Tree class and uploads it to ipfs', async () => {
+        const cid = await ipld.put(treeNode, multicodec.GIT_RAW)
+        const node = await Tree.get(cid)
+
+        const newCid = await node.put()
+
+        expect(newCid).to.deep.equal(cid)
+      })
+    })
+  })
+  
+  describe('> Branch class', () => {
+    describe('# static get(cid) method - retrieves commit', () => {
+      it('retreives commit node with correct cid as the head', async () => {
+        const cid = await ipld.put(commit2Node, multicodec.GIT_RAW)
+        const node = await Branch.get(cid)
+
+        //Expand commit object
+        commit2Node['@cid'] = cid
+        commit2Node['@sha'] = cidToSha(cid).toString('hex')
+        expect(node.head).to.deep.equal(commit2Node)
+      })
+    })
+    describe('# Ordered history', () => {
+      it('returns an array of commits in historical order from the head', async () => {
+        const cid = await ipld.put(commit2Node, multicodec.GIT_RAW)
+        const node = await Branch.get(cid)
+
+        const headCid = node.head['@cid']
+        expect(headCid).to.deep.equal(cid)
+
+        const orderedHistory = await node.history
+        
+        // HEAD commit is correct
+        const lastestCommit = orderedHistory[0]
+        expect(isEqualMultihash(lastestCommit.parents[0], commitCid)).to.be.true
+
+        // Commits are in the right order
+        for (let i = 1; i < orderedHistory.length; i++) {
+          const current = new Date(orderedHistory[i].author.date)
+          const prev = new Date(orderedHistory[i-1].author.date)
+          const isOlder = current < prev
+          expect(isOlder).to.be.true
+        }
       })
     })
   })
