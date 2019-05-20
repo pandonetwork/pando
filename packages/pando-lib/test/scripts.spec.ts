@@ -23,15 +23,15 @@ describe('pando library', () => {
   let commitCid
   let commit2Cid
 
-  before( async () => {
+  before(async () => {
     blobNode = Buffer.from('626c6f62203800736f6d6564617461', 'hex') // blob 8\0somedata
     blobCid = await IPLDGit.util.cid(blobNode)
 
     treeNode = {
       somefile: {
         hash: blobCid,
-        mode: '100644'
-      }
+        mode: '100644',
+      },
     }
 
     const treeBlob = IPLDGit.util.serialize(treeNode)
@@ -44,14 +44,14 @@ describe('pando library', () => {
       author: {
         name: 'John Doe',
         email: 'johndoe@example.com',
-        date: '1497302532 +0200'
+        date: '2017-06-12T23:22:12+02:00',
       },
       committer: {
         name: 'John Doe',
         email: 'johndoe@example.com',
-        date: '1497302532 +0200'
+        date: '2017-06-12T23:22:12+02:00',
       },
-      message: 'Initial commit\n'
+      message: 'Initial commit\n',
     }
 
     const commitBlob = IPLDGit.util.serialize(commitNode)
@@ -60,22 +60,20 @@ describe('pando library', () => {
     commit2Node = {
       gitType: 'commit',
       tree: treeCid,
-      parents: [
-        commitCid
-      ],
+      parents: [commitCid],
       author: {
         name: 'John Doe',
         email: 'johndoe@example.com',
-        date: '1497302533 +0200'
+        date: '2017-06-12T23:22:12+02:00',
       },
       committer: {
         name: 'John Doe',
         email: 'johndoe@example.com',
-        date: '1497302533 +0200'
+        date: '2017-06-12T23:22:12+02:00',
       },
-      message: 'Change nothing\n'
+      message: 'Change nothing\n',
     }
-    
+
     const commit2Blob = IPLDGit.util.serialize(commit2Node)
     commit2Cid = await IPLDGit.util.cid(commit2Blob)
 
@@ -93,6 +91,7 @@ describe('pando library', () => {
         commitNode['@sha'] = cidToSha(cid).toString('hex')
 
         const node = await Commit.get(cid)
+
         expect(node).to.deep.equal(commitNode)
       })
       it('retreives commit node with parents', async () => {
