@@ -41,6 +41,7 @@ import { prismMapping } from '../constants'
 import { Button } from '@aragon/ui'
 import xss from 'xss'
 import EditPanel from '../EditPanel/'
+import EditorTabBar from '../EditPanelTabBar'
 
 const MarkdownWrapper = styled.div`
   padding: 2rem;
@@ -115,6 +116,7 @@ export default class Display extends React.Component {
     this.state = {
       editing: false,
       source: '',
+      screenIndex: 0
     }
 
     this.handleEditingEnabled = this.handleEditingEnabled.bind(this)
@@ -139,9 +141,23 @@ export default class Display extends React.Component {
     this.handleEditingDisabled()
   }
 
+  // Editing Event Handlers
+
+  handleSelectionBold(corpus) {
+  }
+
+  handleSelectionItalic(corpus) {
+  }
+
+  handleSelectionCode(corpus) {
+  }
+
+  handleSelectionLink(corpus) {
+  }
+
   render() {
     const { file, filename, removeBorder, plain, codeView } = this.props
-    const { editing, source } = this.state
+    const { editing, source, screenIndex } = this.state
 
     const splittedFile = file.split('\u0000')
     let normalizedFile = file
@@ -174,9 +190,16 @@ export default class Display extends React.Component {
           />
         )}
         {language === 'markdown' && editing && (
-          <MarkdownWrapper>
-            <EditPanel source={normalizedFile} handleSubmit={this.handleSubmit} mode={editing} />
-          </MarkdownWrapper>
+          <div>
+            <EditorTabBar
+              handleChange={handleChange}
+              screenIndex={screenIndex}
+              handleSelectionBold={this.handleSelectionBold}
+            />
+            <MarkdownWrapper>
+              <EditPanel source={normalizedFile} handleSubmit={this.handleSubmit} mode={editing} />
+            </MarkdownWrapper>
+          </div>
         )}
       </Wrapper>
     )
