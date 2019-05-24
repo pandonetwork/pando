@@ -43,8 +43,8 @@ import xss from 'xss'
 import EditPanel from '../EditPanel/'
 import EditorTabBar from '../EditPanelTabBar'
 
-const MarkdownWrapper = styled.div`
-  padding: 2rem;
+export const MarkdownWrapper = styled.div`
+  margin: 30px;
   h1 {
     font-size: 2em;
     font-weight: 600;
@@ -116,43 +116,91 @@ export default class Display extends React.Component {
     this.state = {
       editing: false,
       source: '',
-      screenIndex: 0
+      screenIndex: 0,
     }
 
     this.handleEditingEnabled = this.handleEditingEnabled.bind(this)
     this.handleEditingDisabled = this.handleEditingDisabled.bind(this)
     this.handleSubmit = this.handleSubmit.bind(this)
+    this.handleScreenChange = this.handleScreenChange.bind(this)
+    this.setCodeMirrorInstance = this.setCodeMirrorInstance.bind(this)
+    this.handleSelectionSize = this.handleSelectionSize.bind(this)
+    this.handleSelectionList = this.handleSelectionList.bind(this)
+    this.handleSelectionBold = this.handleSelectionBold.bind(this)
+    this.handleSelectionItalic = this.handleSelectionItalic.bind(this)
+    this.handleSelectionLink = this.handleSelectionLink.bind(this)
+    this.handleSelectionCode = this.handleSelectionCode.bind(this)
+    this.handleSelectionQuote = this.handleSelectionQuote.bind(this)
   }
 
   handleEditingEnabled() {
+    this.handleScreenChange(0)
     this.setState({ editing: true })
   }
 
-  handleEditingDisabled() {
-    this.setState({ editing: false })
+  handleScreenChange(_screenIndex) {
+    this.setState({ screenIndex: _screenIndex })
   }
 
-  handleSubmit(value) {
+  handleEditingDisabled() {
+    // Rerender the latest file on ipfs
+
+    const { file } = this.props
+    const splittedFile = file.split('\u0000')
+    let normalizedFile = file
+    if (splittedFile.length > 1) {
+      normalizedFile = file.split('\u0000')[1] // TODO: find a better way to get rid of "blob 2610\u0000"
+    }
+
+    this.setState({ editing: false, source: normalizedFile })
+  }
+
+  async handleSubmit(value, upload) {
     if (value) {
+      console.log(value)
       let sanitizedHtml = xss(value)
       this.setState({ source: sanitizedHtml })
-      // TODO: Here we will construct the ipld commit object
     }
-    this.handleEditingDisabled()
+
+    if (upload) {
+      // TODO: Here we will construct the ipld commit object
+      this.setState({ editing: false })
+    }
+
+    this.handleScreenChange(1)
   }
 
   // Editing Event Handlers
-
-  handleSelectionBold(corpus) {
+  setCodeMirrorInstance(instance) {
+    this.setState({ codeMirrorInstance: instance })
   }
 
-  handleSelectionItalic(corpus) {
+  handleSelectionSize() {
+    this.state.codeMirrorInstance.doc.replaceSelection('# ' + this.state.codeMirrorInstance.doc.getSelection())
   }
 
-  handleSelectionCode(corpus) {
+  handleSelectionList() {
+    this.state.codeMirrorInstance.doc.replaceSelection('* ' + this.state.codeMirrorInstance.doc.getSelection() + '\n')
   }
 
-  handleSelectionLink(corpus) {
+  handleSelectionBold() {
+    this.state.codeMirrorInstance.doc.replaceSelection('**' + this.state.codeMirrorInstance.doc.getSelection() + '**')
+  }
+
+  handleSelectionItalic() {
+    this.state.codeMirrorInstance.doc.replaceSelection('*' + this.state.codeMirrorInstance.doc.getSelection() + '*')
+  }
+
+  handleSelectionCode() {
+    this.state.codeMirrorInstance.doc.replaceSelection('```' + this.state.codeMirrorInstance.doc.getSelection() + '```')
+  }
+
+  handleSelectionLink() {
+    this.state.codeMirrorInstance.doc.replaceSelection('[' + this.state.codeMirrorInstance.doc.getSelection() + ']()')
+  }
+
+  handleSelectionQuote() {
+    this.state.codeMirrorInstance.doc.replaceSelection('> ' + this.state.codeMirrorInstance.doc.getSelection())
   }
 
   render() {
@@ -172,7 +220,7 @@ export default class Display extends React.Component {
 
     return (
       <Wrapper removeBorder={removeBorder}>
-        {codeView && !editing && (
+        {!codeView && !editing && (
           <Button onClick={this.handleEditingEnabled} mode="strong" style={{ float: 'right', maxWidth: '8rem' }} wide>
             Edit file
           </Button>
@@ -192,12 +240,24 @@ export default class Display extends React.Component {
         {language === 'markdown' && editing && (
           <div>
             <EditorTabBar
-              handleChange={handleChange}
+              handleScreenChange={this.handleScreenChange}
               screenIndex={screenIndex}
+              handleSelectionSize={this.handleSelectionSize}
+              handleSelectionUnorderedList={this.handleSelectionList}
               handleSelectionBold={this.handleSelectionBold}
+              handleSelectionItalic={this.handleSelectionItalic}
+              handleSelectionLink={this.handleSelectionLink}
+              handleSelectionCode={this.handleSelectionCode}
+              handleSelectionQuote={this.handleSelectionQuote}
             />
             <MarkdownWrapper>
-              <EditPanel source={normalizedFile} handleSubmit={this.handleSubmit} mode={editing} />
+              <EditPanel
+                source={normalizedFile}
+                handleSubmit={this.handleSubmit}
+                setCodeMirrorInstance={this.setCodeMirrorInstance}
+                screenIndex={screenIndex}
+                handleStopEditing={this.handleEditingDisabled}
+              />
             </MarkdownWrapper>
           </div>
         )}

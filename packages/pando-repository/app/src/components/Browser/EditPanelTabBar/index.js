@@ -1,27 +1,19 @@
 import React from 'react'
 import styled from 'styled-components'
-import Octicon, {
-  Bold,
-  Italic,
-  TextSize,
-  Quote,
-  Code,
-  Link,
-  ListUnordered,
-} from '@githubprimer/octicons-react'
+import Octicon, { Bold, Italic, TextSize, Quote, Code, Link, ListUnordered } from '@githubprimer/octicons-react'
 
 import { Button, TabBar } from '@aragon/ui'
 
-const EditorTabBar = ({ 
-    screenIndex, 
-    handleChange, 
-    handleSelectionBold,
-    handleSelectionSize,
-    handleSelectionItalic,
-    handleSelectionQuote,
-    handleSelectionLink,
-    handleSelectionUnorderedList,
-    handleSelectionCode
+const EditorTabBar = ({
+  screenIndex,
+  handleScreenChange,
+  handleSelectionBold,
+  handleSelectionSize,
+  handleSelectionItalic,
+  handleSelectionQuote,
+  handleSelectionLink,
+  handleSelectionUnorderedList,
+  handleSelectionCode,
 }) => (
   <TabBarWrapper>
     <div
@@ -29,16 +21,10 @@ const EditorTabBar = ({
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'space-between',
-        paddingRight: '20px',
       }}
     >
-      <TabBar
-        items={['Write', 'Preview']}
-        selected={screenIndex}
-        onChange={handleChange}
-      />
-
-      {screenIndex===0&&
+      <TabBar items={['Write', 'Preview']} selected={screenIndex} onChange={handleScreenChange} />
+      {screenIndex === 0 && (
         <EditToolBar>
           <EditToolBarButton onClick={handleSelectionSize} compact>
             <Octicon icon={TextSize} />
@@ -64,17 +50,17 @@ const EditorTabBar = ({
           </EditToolBarButton>
           <EditToolBarSeparator />
         </EditToolBar>
-      }
+      )}
     </div>
   </TabBarWrapper>
 )
 
 const TabBarWrapper = styled.div`
-  margin: 0 -30px 30px;
+  margin: 10px 15px 0 30px;
 `
 
 const EditToolBar = styled.div`
-  margin-top: -4px;
+  margin-top: 0px;
 `
 
 const EditToolBarButton = styled(Button)`
