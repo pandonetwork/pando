@@ -51,6 +51,7 @@ describe('pando library', () => {
         email: 'johndoe@example.com',
         date: '2017-06-12T23:22:12+02:00',
       },
+      encoding: 'ISO-8859-1',
       message: 'Initial commit\n',
     }
 
@@ -71,6 +72,7 @@ describe('pando library', () => {
         email: 'johndoe@example.com',
         date: '2017-06-12T23:22:12+02:00',
       },
+      encoding: 'ISO-8859-1',
       message: 'Change nothing\n',
     }
 
@@ -109,9 +111,9 @@ describe('pando library', () => {
         const cid = await ipld.put(commitNode, multicodec.GIT_RAW)
         const node = await Commit.get(cid)
 
-        const newCid = await node.put()
+        const newCidString = await node.put()
 
-        expect(newCid).to.deep.equal(cid)
+        expect(newCidString).to.deep.equal(cid.toBaseEncodedString())
       })
     })
     describe('# extend() method - get files from tree', () => {
@@ -144,9 +146,9 @@ describe('pando library', () => {
         const cid = await ipld.put(treeNode, multicodec.GIT_RAW)
         const node = await Tree.get(cid)
 
-        const newCid = await node.put()
+        const newCidString = await node.put()
 
-        expect(newCid).to.deep.equal(cid)
+        expect(newCidString).to.deep.equal(cid.toBaseEncodedString())
       })
     })
   })

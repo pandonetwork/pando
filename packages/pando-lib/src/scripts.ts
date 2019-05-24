@@ -10,6 +10,8 @@ import multicodec from 'multicodec'
 const ipfs = IPFS({ host: 'ipfs.infura.io', port: '5001', protocol: 'https' })
 const ipld = new IPLD({ blockService: ipfs.block, formats: [IPLDGit] })
 
+export const SERIALIZED_MULTIHASH_ERROR: Error = new Error('Serialized object does not share the CID provided prior to upload to IPFS')
+
 export const isEqualMultihash = (x: CID, y: CID): boolean => {
   return (x.toBaseEncodedString() === y.toBaseEncodedString()) && (x.version === y.version)
 }
@@ -53,8 +55,8 @@ export const fetchOrderedHistory = async (cid: CID, formerHistory: Commit[]) => 
   return history
 }
 
-async function fetchFilesFromTree(path: string, cid: CID, treeObj: any): Promise<IModifiedTree> {
-  return new Promise<IModifiedTree>( async (resolve, reject) => {
+async function fetchFilesFromTree(path: string, cid: CID, treeObj: any): Promise<IExtendedTree> {
+  return new Promise<IExtendedTree>( async (resolve, reject) => {
     try {
       const modifiedTree = treeObj ? treeObj : {}
       let result = ipld.tree(cid, path, { recursive: true })
@@ -85,18 +87,20 @@ export interface IAuthorOrCommitter {
   date: string
 }
 
-export interface ITree { [path: string]: string }
-
-export interface ILinkedDataCommit {
+export interface IIPLDCommit {
   author: IAuthorOrCommitter
   committer: IAuthorOrCommitter
   message: string
   parents: CID[] | []
-  tree: CID | IModifiedTree
+  tree: CID | IExtendedTree
   gitType: string
+  encoding: string
+  object?: CID
+  tag?: string
+  type?: string
 }
 
-export interface IModifiedTree {
+export interface IExtendedTree {
   [path: string]: { 
     mode: string | number
     blob:  CID
@@ -105,94 +109,104 @@ export interface IModifiedTree {
 
 export class Commit {
   public static async get(cid: CID): Promise<Commit> {
-    return new Promise<Commit>(async (resolve, reject) => {
-      try {
-        let commit = await ipld.get(cid)
-        commit = new Commit(commit)
-        commit['@cid'] = cid
-        commit['@sha'] = cidToSha(cid).toString('hex')
-        resolve(commit)
-      } catch (err) {
-        reject(err)
-      }
-    })
+    try {
+      let commit = await ipld.get(cid)
+      commit = new Commit(commit)
+      commit['@cid'] = cid
+      commit['@sha'] = cidToSha(cid).toString('hex')
+      return commit
+    } catch (err) {
+      throw(err)
+    }
   }
 
   public author: IAuthorOrCommitter
   public committer: IAuthorOrCommitter
   public message: string
-  public parents: CID[] | []
-  public tree: CID | IModifiedTree
+  public parents: CID[]
+  public tree: CID | IExtendedTree
   public gitType: string
+  public encoding: string
+  public object: CID
+  public tag: string
+  public type: string
 
-  constructor(commit: ILinkedDataCommit) {
+  constructor(commit: IIPLDCommit) {
     this.author = commit.author
     this.committer = commit.committer
     this.message = commit.message
     this.tree = commit.tree
     this.gitType = commit.gitType
     this.parents = commit.parents
+    this.encoding = commit.encoding
+
+    if (commit.gitType === 'tag') {
+      this.object = commit.object
+      this.tag = commit.tag
+      this.type = commit.type
+    }
   }
 
   public async put(): Promise<CID> {
-    return new Promise<CID>(async (resolve, reject) => {
-      try {
-        const commitNode = {
-          author: this.author,
-          committer: this.committer,
-          gitType: this.gitType,
-          message: this.message,
-          parents: this.parents,
-          tree: this.tree
-        }
-        const commitBlob = IPLDGit.util.serialize(commitNode)
-        const commitCid  = await IPLDGit.util.cid(commitBlob)
-      
-        const cid = await ipld.put(commitNode, multicodec.GIT_RAW)
-        if (isEqualMultihash(cid, commitCid)) {
-          resolve(cid)
-        }
-        else {
-          throw(Error('CIDs are not the same...'))
-        }
-      } catch (err) {
-        reject(err)
+    try {
+      const commitNode: IIPLDCommit = {
+        author: this.author,
+        committer: this.committer,
+        encoding: this.encoding,
+        gitType: this.gitType,
+        message: this.message,
+        parents: this.parents,
+        tree: this.tree,
       }
-    })
+
+      if (this.gitType === 'tag') {
+        commitNode.object = this.object
+        commitNode.tag = this.tag
+        commitNode.type = this.type
+      }
+
+      const commitBlob = IPLDGit.util.serialize(commitNode)
+      const commitCid  = await IPLDGit.util.cid(commitBlob)
+      
+      const cid = await ipld.put(commitNode, multicodec.GIT_RAW)
+      if (isEqualMultihash(cid, commitCid)) {
+        return cid.toBaseEncodedString()
+      }
+      else {
+        throw(SERIALIZED_MULTIHASH_ERROR)
+      }
+    } catch (err) {
+      throw(err)
+    }
   }
 
   public async extend(): Promise<void> {
-    return new Promise<void>(async (resolve, reject) => {
-      try {
-        let modifiedTree = {}
-        modifiedTree = await fetchFilesFromTree('', this.tree, modifiedTree)
-        this.tree = modifiedTree
-        resolve()
-      }
-      catch(err) {
-        reject(err)
-      }
-    })
+    try {
+      let modifiedTree = {}
+      modifiedTree = await fetchFilesFromTree('', this.tree, modifiedTree)
+      this.tree = modifiedTree
+    }
+    catch(err) {
+      throw(err)
+    }
   }
 }
 
 export class Tree {
   public static async get(cid: CID): Promise<Tree> {
-    return new Promise<Tree>(async (resolve, reject) => {
-      try {
-        let tree = await ipld.get(cid)
-        tree = new Tree(tree)
-        tree['@cid'] = cid
-        tree['@sha'] = cidToSha(cid).toString('hex')
-        resolve(tree)
-      } catch (err) {
-        reject(err)
-      }
-    })
+    try {
+      let tree = await ipld.get(cid)
+      tree = new Tree(tree)
+      tree['@cid'] = cid
+      tree['@sha'] = cidToSha(cid).toString('hex')
+      return tree
+    } catch (err) {
+      throw(err)
+    }
   }
 
-  public entries: IModifiedTree
-  constructor( tree: IModifiedTree ) {
+  public entries: IExtendedTree
+  constructor( tree: IExtendedTree ) {
     this.entries = {}
     for (const file in tree) {
       if (tree.hasOwnProperty(file)) {
@@ -202,40 +216,35 @@ export class Tree {
   }
 
   public async put(): Promise<CID> {
-    return new Promise<CID>(async (resolve, reject) => {
-      try {
-        const treeBlob = IPLDGit.util.serialize(this.entries)
-        const treeCid  = await IPLDGit.util.cid(treeBlob)
+    try {
+      const treeBlob = IPLDGit.util.serialize(this.entries)
+      const treeCid  = await IPLDGit.util.cid(treeBlob)
       
-        const cid = await ipld.put(this.entries, multicodec.GIT_RAW)
+      const cid = await ipld.put(this.entries, multicodec.GIT_RAW)
 
-        if (isEqualMultihash(cid, treeCid)) {
-          resolve(cid)
-        }
-        else {
-          throw(Error('CIDs are not the same...'))
-        }
-      } catch (err) {
-        reject(err)
+      if (isEqualMultihash(cid, treeCid)) {
+        return cid.toBaseEncodedString()
       }
-    })
+      else {
+        throw(SERIALIZED_MULTIHASH_ERROR)
+      }
+    } catch (err) {
+      throw(err)
+    }
   }
-
-  // What does extend do differently than commit's extend ?
 }
 
 export class Branch {
   public static async get(cid: CID): Promise<Branch> {
-    return new Promise<Branch>(async (resolve, reject) => {
-      try {
-        const headCommit = await Commit.get(cid)
-        const branch = new Branch(headCommit)
+    try {
+      const headCommit = await Commit.get(cid)
+      const branch = new Branch(headCommit)
 
-        resolve(branch)
-      } catch (err) {
-        reject(err)
-      }
-    })
+      return branch
+    }
+    catch (err) {
+      throw(err)
+    }
   }
 
   public head: Commit
