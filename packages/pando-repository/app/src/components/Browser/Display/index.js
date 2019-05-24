@@ -180,7 +180,7 @@ export default class Display extends React.Component {
   }
 
   handleSelectionList() {
-    this.state.codeMirrorInstance.doc.replaceSelection('* ' + this.state.codeMirrorInstance.doc.getSelection() + '\n')
+    this.state.codeMirrorInstance.doc.replaceSelection('\n* ' + this.state.codeMirrorInstance.doc.getSelection() + '\n')
   }
 
   handleSelectionBold() {
@@ -192,7 +192,7 @@ export default class Display extends React.Component {
   }
 
   handleSelectionCode() {
-    this.state.codeMirrorInstance.doc.replaceSelection('```' + this.state.codeMirrorInstance.doc.getSelection() + '```')
+    this.state.codeMirrorInstance.doc.replaceSelection('`' + this.state.codeMirrorInstance.doc.getSelection() + '`')
   }
 
   handleSelectionLink() {
@@ -200,7 +200,7 @@ export default class Display extends React.Component {
   }
 
   handleSelectionQuote() {
-    this.state.codeMirrorInstance.doc.replaceSelection('> ' + this.state.codeMirrorInstance.doc.getSelection())
+    this.state.codeMirrorInstance.doc.replaceSelection('\n> > ' + this.state.codeMirrorInstance.doc.getSelection())
   }
 
   render() {
@@ -220,7 +220,7 @@ export default class Display extends React.Component {
 
     return (
       <Wrapper removeBorder={removeBorder}>
-        {codeView && !editing && (
+        {!codeView && !editing && (
           <Button onClick={this.handleEditingEnabled} mode="strong" style={{ float: 'right', maxWidth: '8rem' }} wide>
             Edit file
           </Button>
