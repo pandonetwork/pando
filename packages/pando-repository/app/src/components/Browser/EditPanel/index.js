@@ -6,6 +6,8 @@ import { Controlled as CodeMirror } from 'react-codemirror2'
 import 'codemirror/lib/codemirror.css'
 import 'codemirror/mode/gfm/gfm'
 import 'codemirror/mode/javascript/javascript'
+import 'codemirror/addon/selection/mark-selection'
+import 'codemirror/addon/display/autorefresh'
 
 const Buttons = styled.div`
   margin-top: 8px;
@@ -41,7 +43,10 @@ export default class EditPanel extends React.Component {
               theme: 'default',
               autofocus: true,
               lineWrapping: true,
+              styleSelectedText: true,
+              autoRefresh: true
             }}
+            selection={{ focus: true }}
             editorDidMount={editor => {
               setCodeMirrorInstance(editor)
             }}
@@ -50,6 +55,7 @@ export default class EditPanel extends React.Component {
             }}
             onChange={(editor, data, value) => {
               this.setState({ source: value })
+              editor.focus()
             }}
           />
           <Buttons>

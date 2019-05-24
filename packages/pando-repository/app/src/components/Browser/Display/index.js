@@ -176,7 +176,7 @@ export default class Display extends React.Component {
   }
 
   handleSelectionSize() {
-    this.state.codeMirrorInstance.doc.replaceSelection('# ' + this.state.codeMirrorInstance.doc.getSelection())
+    this.state.codeMirrorInstance.doc.replaceSelection('#' + this.state.codeMirrorInstance.doc.getSelection())
   }
 
   handleSelectionList() {
@@ -220,7 +220,7 @@ export default class Display extends React.Component {
 
     return (
       <Wrapper removeBorder={removeBorder}>
-        {!codeView && !editing && (
+        {codeView && !editing && (
           <Button onClick={this.handleEditingEnabled} mode="strong" style={{ float: 'right', maxWidth: '8rem' }} wide>
             Edit file
           </Button>
