@@ -41,7 +41,7 @@ import { prismMapping } from '../constants'
 import { Button } from '@aragon/ui'
 import xss from 'xss'
 import EditPanel from '../EditPanel/'
-import EditorTabBar from '../EditPanelTabBar'
+import EditorTabBar from '../EditorTabBar'
 
 export const MarkdownWrapper = styled.div`
   margin: 30px;
@@ -117,6 +117,7 @@ export default class Display extends React.Component {
       editing: false,
       source: '',
       screenIndex: 0,
+      codeMirrorInstance: null,
     }
 
     this.handleEditingEnabled = this.handleEditingEnabled.bind(this)
@@ -124,13 +125,6 @@ export default class Display extends React.Component {
     this.handleSubmit = this.handleSubmit.bind(this)
     this.handleScreenChange = this.handleScreenChange.bind(this)
     this.setCodeMirrorInstance = this.setCodeMirrorInstance.bind(this)
-    this.handleSelectionSize = this.handleSelectionSize.bind(this)
-    this.handleSelectionList = this.handleSelectionList.bind(this)
-    this.handleSelectionBold = this.handleSelectionBold.bind(this)
-    this.handleSelectionItalic = this.handleSelectionItalic.bind(this)
-    this.handleSelectionLink = this.handleSelectionLink.bind(this)
-    this.handleSelectionCode = this.handleSelectionCode.bind(this)
-    this.handleSelectionQuote = this.handleSelectionQuote.bind(this)
   }
 
   handleEditingEnabled() {
@@ -175,37 +169,9 @@ export default class Display extends React.Component {
     this.setState({ codeMirrorInstance: instance })
   }
 
-  handleSelectionSize() {
-    this.state.codeMirrorInstance.doc.replaceSelection('#' + this.state.codeMirrorInstance.doc.getSelection())
-  }
-
-  handleSelectionList() {
-    this.state.codeMirrorInstance.doc.replaceSelection('\n* ' + this.state.codeMirrorInstance.doc.getSelection() + '\n')
-  }
-
-  handleSelectionBold() {
-    this.state.codeMirrorInstance.doc.replaceSelection('**' + this.state.codeMirrorInstance.doc.getSelection() + '**')
-  }
-
-  handleSelectionItalic() {
-    this.state.codeMirrorInstance.doc.replaceSelection('*' + this.state.codeMirrorInstance.doc.getSelection() + '*')
-  }
-
-  handleSelectionCode() {
-    this.state.codeMirrorInstance.doc.replaceSelection('`' + this.state.codeMirrorInstance.doc.getSelection() + '`')
-  }
-
-  handleSelectionLink() {
-    this.state.codeMirrorInstance.doc.replaceSelection('[' + this.state.codeMirrorInstance.doc.getSelection() + ']()')
-  }
-
-  handleSelectionQuote() {
-    this.state.codeMirrorInstance.doc.replaceSelection('\n> > ' + this.state.codeMirrorInstance.doc.getSelection())
-  }
-
   render() {
     const { file, filename, removeBorder, plain, codeView } = this.props
-    const { editing, source, screenIndex } = this.state
+    const { editing, source, screenIndex, codeMirrorInstance } = this.state
 
     const splittedFile = file.split('\u0000')
     let normalizedFile = file
@@ -242,13 +208,27 @@ export default class Display extends React.Component {
             <EditorTabBar
               handleScreenChange={this.handleScreenChange}
               screenIndex={screenIndex}
-              handleSelectionSize={this.handleSelectionSize}
-              handleSelectionUnorderedList={this.handleSelectionList}
-              handleSelectionBold={this.handleSelectionBold}
-              handleSelectionItalic={this.handleSelectionItalic}
-              handleSelectionLink={this.handleSelectionLink}
-              handleSelectionCode={this.handleSelectionCode}
-              handleSelectionQuote={this.handleSelectionQuote}
+              handleSelectionSize={() => {
+                codeMirrorInstance.doc.replaceSelection('#' + codeMirrorInstance.doc.getSelection())
+              }}
+              handleSelectionUnorderedList={() => {
+                codeMirrorInstance.doc.replaceSelection('\n* ' + codeMirrorInstance.doc.getSelection() + '\n')
+              }}
+              handleSelectionBold={() => {
+                codeMirrorInstance.doc.replaceSelection('**' + codeMirrorInstance.doc.getSelection() + '**')
+              }}
+              handleSelectionItalic={() => {
+                codeMirrorInstance.doc.replaceSelection('*' + codeMirrorInstance.doc.getSelection() + '*')
+              }}
+              handleSelectionLink={() => {
+                codeMirrorInstance.doc.replaceSelection('[' + codeMirrorInstance.doc.getSelection() + ']()')
+              }}
+              handleSelectionCode={() => {
+                codeMirrorInstance.doc.replaceSelection('`' + codeMirrorInstance.doc.getSelection() + '`')
+              }}
+              handleSelectionQuote={() => {
+                codeMirrorInstance.doc.replaceSelection('\n> > ' + codeMirrorInstance.doc.getSelection())
+              }}
             />
             <MarkdownWrapper>
               <EditPanel

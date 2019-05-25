@@ -44,7 +44,7 @@ export default class EditPanel extends React.Component {
               autofocus: true,
               lineWrapping: true,
               styleSelectedText: true,
-              autoRefresh: true
+              autoRefresh: true,
             }}
             selection={{ focus: true }}
             editorDidMount={editor => {
