@@ -16,16 +16,18 @@ const Buttons = styled.div`
     margin-left: 5px;
   }
 `
-
+ç
 export default class EditPanel extends React.Component {
   constructor(props) {
     super(props)
-    this.state = { ...props }
+    this.state = {
+      source: '',
+    }
     this.renderFormPreview = this.renderFormPreview.bind(this)
   }
 
   componentWillReceiveProps(newProps) {
-    const state = { ...newProps }
+    const state = { source: newProps.source }
     this.setState(state)
   }
 

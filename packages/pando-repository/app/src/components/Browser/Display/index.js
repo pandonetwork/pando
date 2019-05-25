@@ -109,6 +109,15 @@ export const MarkdownWrapper = styled.div`
     padding: 16px;
   }
 `
+const normalizeFile = (file) => {
+  const splittedFile = file.split('\u0000')
+  let normalizedFile = file
+  if (splittedFile.length > 1) {
+    normalizedFile = file.split('\u0000')[1] // TODO: find a better way to get rid of "blob 2610\u0000"
+  }
+
+  return normalizedFile
+}
 
 export default class Display extends React.Component {
   constructor(props) {
@@ -140,12 +149,7 @@ export default class Display extends React.Component {
     // Rerender the latest file on ipfs
 
     const { file } = this.props
-    const splittedFile = file.split('\u0000')
-    let normalizedFile = file
-    if (splittedFile.length > 1) {
-      normalizedFile = file.split('\u0000')[1] // TODO: find a better way to get rid of "blob 2610\u0000"
-    }
-
+    const normalizedFile = normalizeFile(file)
     this.setState({ editing: false, source: normalizedFile })
   }
 
@@ -161,10 +165,11 @@ export default class Display extends React.Component {
       this.setState({ editing: false })
     }
 
-    this.handleScreenChange(1)
+    else {
+      this.handleScreenChange(1)
+    }
   }
 
-  // Editing Event Handlers
   setCodeMirrorInstance(instance) {
     this.setState({ codeMirrorInstance: instance })
   }
@@ -173,20 +178,14 @@ export default class Display extends React.Component {
     const { file, filename, removeBorder, plain, codeView } = this.props
     const { editing, source, screenIndex, codeMirrorInstance } = this.state
 
-    const splittedFile = file.split('\u0000')
-    let normalizedFile = file
-
-    if (splittedFile.length > 1) {
-      normalizedFile = file.split('\u0000')[1] // TODO: find a better way to get rid of "blob 2610\u0000"
-    }
-
+    let normalizedFile = normalizeFile(file)
     const language = prismMapping[filename.split('.').pop()]
 
     normalizedFile = source === '' ? normalizedFile : source
 
     return (
       <Wrapper removeBorder={removeBorder}>
-        {!codeView && !editing && (
+        {codeView && !editing && (
           <Button onClick={this.handleEditingEnabled} mode="strong" style={{ float: 'right', maxWidth: '8rem' }} wide>
             Edit file
           </Button>
