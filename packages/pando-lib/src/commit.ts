@@ -7,8 +7,34 @@ import orderBy from 'lodash.orderby'
 import uniqWith from 'lodash.uniqwith'
 import multicodec from 'multicodec'
 
-const ipfs = IPFS({ host: 'ipfs.infura.io', port: '5001', protocol: 'https' })
-const ipld = new IPLD({ blockService: ipfs.block, formats: [IPLDGit] })
+export const ipfs = IPFS({ host: 'ipfs.infura.io', port: '5001', protocol: 'https' })
+export const ipld = new IPLD({ blockService: ipfs.block, formats: [IPLDGit] })
+
+export interface IAuthorOrCommitter {
+  name: string
+  email: string
+  date: string
+}
+
+export interface IIPLDCommit {
+  author: IAuthorOrCommitter
+  committer: IAuthorOrCommitter
+  message: string
+  parents: CID[] | []
+  tree: CID | IExtendedTree
+  gitType: string
+  encoding: string
+  object?: CID
+  tag?: string
+  type?: string
+}
+
+export interface IExtendedTree {
+  [path: string]: {
+    mode: string | number
+    blob:  CID
+  }
+}
 
 export const SERIALIZED_MULTIHASH_ERROR: Error = new Error('Serialized object does not share the CID provided prior to upload to IPFS')
 
@@ -61,10 +87,10 @@ async function fetchFilesFromTree(path: string, cid: CID, treeObj: any): Promise
       const modifiedTree = treeObj ? treeObj : {}
       let result = ipld.tree(cid, path, { recursive: true })
       path = await result.first() // What to do if we get an array of paths...
-    
+
       result = ipld.resolve(cid, path)
       const paths = await result.all()
-    
+
       paths.map(file => {
         if (file.remainderPath === '') {
           modifiedTree[path] = { mode: file.value.mode, blob: file.value.hash }
@@ -79,32 +105,6 @@ async function fetchFilesFromTree(path: string, cid: CID, treeObj: any): Promise
       reject(err)
     }
   })
-}
-
-export interface IAuthorOrCommitter {
-  name: string
-  email: string
-  date: string
-}
-
-export interface IIPLDCommit {
-  author: IAuthorOrCommitter
-  committer: IAuthorOrCommitter
-  message: string
-  parents: CID[] | []
-  tree: CID | IExtendedTree
-  gitType: string
-  encoding: string
-  object?: CID
-  tag?: string
-  type?: string
-}
-
-export interface IExtendedTree {
-  [path: string]: { 
-    mode: string | number
-    blob:  CID
-  }
 }
 
 export class Commit {
@@ -167,7 +167,7 @@ export class Commit {
 
       const commitBlob = IPLDGit.util.serialize(commitNode)
       const commitCid  = await IPLDGit.util.cid(commitBlob)
-      
+
       const cid = await ipld.put(commitNode, multicodec.GIT_RAW)
       if (isEqualMultihash(cid, commitCid)) {
         return cid.toBaseEncodedString()
@@ -189,69 +189,5 @@ export class Commit {
     catch(err) {
       throw(err)
     }
-  }
-}
-
-export class Tree {
-  public static async get(cid: CID): Promise<Tree> {
-    try {
-      let tree = await ipld.get(cid)
-      tree = new Tree(tree)
-      tree['@cid'] = cid
-      tree['@sha'] = cidToSha(cid).toString('hex')
-      return tree
-    } catch (err) {
-      throw(err)
-    }
-  }
-
-  public entries: IExtendedTree
-  constructor( tree: IExtendedTree ) {
-    this.entries = {}
-    for (const file in tree) {
-      if (tree.hasOwnProperty(file)) {
-        this.entries[file] = tree[file]
-      }
-    }
-  }
-
-  public async put(): Promise<CID> {
-    try {
-      const treeBlob = IPLDGit.util.serialize(this.entries)
-      const treeCid  = await IPLDGit.util.cid(treeBlob)
-      
-      const cid = await ipld.put(this.entries, multicodec.GIT_RAW)
-
-      if (isEqualMultihash(cid, treeCid)) {
-        return cid.toBaseEncodedString()
-      }
-      else {
-        throw(SERIALIZED_MULTIHASH_ERROR)
-      }
-    } catch (err) {
-      throw(err)
-    }
-  }
-}
-
-export class Branch {
-  public static async get(cid: CID): Promise<Branch> {
-    try {
-      const headCommit = await Commit.get(cid)
-      const branch = new Branch(headCommit)
-
-      return branch
-    }
-    catch (err) {
-      throw(err)
-    }
-  }
-
-  public head: Commit
-  public history: Promise<Commit[]>
-  constructor( _head: Commit ) {
-    const orderedHistory = fetchOrderedHistory(_head['@cid'], [])
-    this.head = _head
-    this.history = orderedHistory
   }
 }
