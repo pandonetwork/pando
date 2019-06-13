@@ -1,4 +1,4 @@
-import { Table, TableRow, TableCell, Text, theme } from '@aragon/ui'
+import { Table, TableCell, TableRow, Text, theme } from '@aragon/ui'
 import CID from 'cids'
 import IPFS from 'ipfs-http-client'
 import IPLD from 'ipld'

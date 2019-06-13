@@ -1,3 +1,4 @@
+import { Button } from '@aragon/ui'
 import Prism from 'prismjs'
 import 'prismjs/components/prism-actionscript'
 import 'prismjs/components/prism-bash'
@@ -37,14 +38,14 @@ import 'prismjs/components/prism-yaml'
 import React from 'react'
 import ReactMarkdown from 'react-markdown/with-html'
 import styled from 'styled-components'
-import { prismMapping } from '../constants'
-import { Button } from '@aragon/ui'
 import xss from 'xss'
-import EditPanel from '../EditPanel/'
+import { prismMapping } from '../constants'
 import EditorTabBar from '../EditorTabBar'
+import EditPanel from '../EditPanel/'
 
 export const MarkdownWrapper = styled.div`
-  margin: 30px;
+  margin-top: 2rem;
+
   h1 {
     font-size: 2em;
     font-weight: 600;
@@ -109,7 +110,7 @@ export const MarkdownWrapper = styled.div`
     padding: 16px;
   }
 `
-const normalizeFile = (file) => {
+const normalizeFile = file => {
   const splittedFile = file.split('\u0000')
   let normalizedFile = file
   if (splittedFile.length > 1) {
@@ -155,7 +156,6 @@ export default class Display extends React.Component {
 
   async handleSubmit(value, upload) {
     if (value) {
-      console.log(value)
       let sanitizedHtml = xss(value)
       this.setState({ source: sanitizedHtml })
     }
@@ -163,10 +163,6 @@ export default class Display extends React.Component {
     if (upload) {
       // TODO: Here we will construct the ipld commit object
       this.setState({ editing: false })
-    }
-
-    else {
-      this.handleScreenChange(1)
     }
   }
 
@@ -249,7 +245,7 @@ const Wrapper = styled.div`
   @import url('https://fonts.googleapis.com/css?family=Overpass+Mono:300');
 
   margin-top: 0.5rem;
-  padding: 10px;
+  padding: 2rem;
   border: ${({ removeBorder }) => (removeBorder ? '' : '1px solid #e6e6e6')};
   border-radius: 3px;
   background-color: white;

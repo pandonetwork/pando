@@ -1,22 +1,28 @@
-import React from 'react'
 import { Button } from '@aragon/ui'
-import styled from 'styled-components'
-import ReactMarkdown from 'react-markdown/with-html'
-import { Controlled as CodeMirror } from 'react-codemirror2'
+import 'codemirror/addon/display/autorefresh'
+import 'codemirror/addon/selection/mark-selection'
 import 'codemirror/lib/codemirror.css'
 import 'codemirror/mode/gfm/gfm'
 import 'codemirror/mode/javascript/javascript'
-import 'codemirror/addon/selection/mark-selection'
-import 'codemirror/addon/display/autorefresh'
+import React from 'react'
+import { Controlled as CodeMirror } from 'react-codemirror2'
+import ReactMarkdown from 'react-markdown/with-html'
+import styled from 'styled-components'
 
 const Buttons = styled.div`
-  margin-top: 8px;
+  margin-top: 2rem;
   button {
     float: right;
-    margin-left: 5px;
+    margin-left: 1rem;
   }
 `
-ç
+
+const StyledForm = styled.form`
+  .CodeMirror-cursor {
+    margin-top: 11px;
+  }
+`
+
 export default class EditPanel extends React.Component {
   constructor(props) {
     super(props)
@@ -37,7 +43,7 @@ export default class EditPanel extends React.Component {
 
     if (screenIndex === 0) {
       return (
-        <form onSubmit={e => e.preventDefault}>
+        <StyledForm onSubmit={e => e.preventDefault}>
           <CodeMirror
             value={source}
             options={{
@@ -47,6 +53,7 @@ export default class EditPanel extends React.Component {
               lineWrapping: true,
               styleSelectedText: true,
               autoRefresh: true,
+              cursorHeight: 0.5,
             }}
             selection={{ focus: true }}
             editorDidMount={editor => {
@@ -57,18 +64,19 @@ export default class EditPanel extends React.Component {
             }}
             onChange={(editor, data, value) => {
               this.setState({ source: value })
+              handleSubmit(value, false)
               editor.focus()
             }}
           />
           <Buttons>
-            <Button mode="strong" onClick={e => handleSubmit(source, false)}>
-              Update preview
+            <Button mode="strong" emphasis="positive" onClick={e => handleSubmit(source, true)}>
+              Save (commit changes)
             </Button>
             <Button mode="strong" emphasis="negative" onClick={e => handleStopEditing()}>
               Cancel
             </Button>
           </Buttons>
-        </form>
+        </StyledForm>
       )
     } else if (screenIndex === 1) {
       return (

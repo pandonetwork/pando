@@ -1,8 +1,7 @@
+import { Button, TabBar } from '@aragon/ui'
+import Octicon, { Bold, Code, Italic, Link, ListUnordered, Quote, TextSize } from '@githubprimer/octicons-react'
 import React from 'react'
 import styled from 'styled-components'
-import Octicon, { Bold, Italic, TextSize, Quote, Code, Link, ListUnordered } from '@githubprimer/octicons-react'
-
-import { Button, TabBar } from '@aragon/ui'
 
 const EditorTabBar = ({
   screenIndex,
@@ -15,49 +14,42 @@ const EditorTabBar = ({
   handleSelectionUnorderedList,
   handleSelectionCode,
 }) => (
-  <TabBarWrapper>
-    <div
-      style={{
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'space-between',
-      }}
-    >
-      <TabBar items={['Write', 'Preview']} selected={screenIndex} onChange={handleScreenChange} />
-      {screenIndex === 0 && (
-        <EditToolBar>
-          <EditToolBarButton onClick={handleSelectionSize} compact>
-            <Octicon icon={TextSize} />
-          </EditToolBarButton>
-          <EditToolBarButton onClick={handleSelectionBold} compact>
-            <Octicon icon={Bold} />
-          </EditToolBarButton>
-          <EditToolBarButton onClick={handleSelectionItalic} compact>
-            <Octicon icon={Italic} />
-          </EditToolBarButton>
-          <EditToolBarSeparator />
-          <EditToolBarButton onClick={handleSelectionQuote} compact>
-            <Octicon icon={Quote} />
-          </EditToolBarButton>
-          <EditToolBarButton onClick={handleSelectionCode} compact>
-            <Octicon icon={Code} />
-          </EditToolBarButton>
-          <EditToolBarButton onClick={handleSelectionLink} compact>
-            <Octicon icon={Link} />
-          </EditToolBarButton>
-          <EditToolBarButton onClick={handleSelectionUnorderedList} compact>
-            <Octicon icon={ListUnordered} />
-          </EditToolBarButton>
-          <EditToolBarSeparator />
-        </EditToolBar>
-      )}
-    </div>
-  </TabBarWrapper>
+  <div
+    style={{
+      display: 'flex',
+      alignItems: 'center',
+      justifyContent: 'space-between',
+    }}
+  >
+    <TabBar items={['Write', 'Preview']} selected={screenIndex} onChange={handleScreenChange} />
+    {screenIndex === 0 && (
+      <EditToolBar>
+        <EditToolBarButton onClick={handleSelectionSize} compact>
+          <Octicon icon={TextSize} />
+        </EditToolBarButton>
+        <EditToolBarButton onClick={handleSelectionBold} compact>
+          <Octicon icon={Bold} />
+        </EditToolBarButton>
+        <EditToolBarButton onClick={handleSelectionItalic} compact>
+          <Octicon icon={Italic} />
+        </EditToolBarButton>
+        <EditToolBarSeparator />
+        <EditToolBarButton onClick={handleSelectionQuote} compact>
+          <Octicon icon={Quote} />
+        </EditToolBarButton>
+        <EditToolBarButton onClick={handleSelectionCode} compact>
+          <Octicon icon={Code} />
+        </EditToolBarButton>
+        <EditToolBarButton onClick={handleSelectionLink} compact>
+          <Octicon icon={Link} />
+        </EditToolBarButton>
+        <EditToolBarButton onClick={handleSelectionUnorderedList} compact>
+          <Octicon icon={ListUnordered} />
+        </EditToolBarButton>
+      </EditToolBar>
+    )}
+  </div>
 )
-
-const TabBarWrapper = styled.div`
-  margin: 10px 15px 0 30px;
-`
 
 const EditToolBar = styled.div`
   margin-top: 0px;
