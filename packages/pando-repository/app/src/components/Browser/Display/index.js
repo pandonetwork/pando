@@ -42,6 +42,7 @@ import xss from 'xss'
 import { prismMapping } from '../constants'
 import EditorTabBar from '../EditorTabBar'
 import EditPanel from '../EditPanel/'
+import { ipfs } from '@pando/lib'
 
 export const MarkdownWrapper = styled.div`
   margin-top: 2rem;
@@ -126,6 +127,7 @@ export default class Display extends React.Component {
     this.state = {
       editing: false,
       source: '',
+      newSourceFileHash: null,
       screenIndex: 0,
       codeMirrorInstance: null,
     }
@@ -161,7 +163,20 @@ export default class Display extends React.Component {
     }
 
     if (upload) {
-      // TODO: Here we will construct the ipld commit object
+      let ipfsId
+      let newFile = new File([value], this.props.filename)
+      ipfs
+        .add([newFile])
+        .then(response => {
+          console.log(response)
+          ipfsId = response[0].hash
+          console.log(ipfsId)
+          this.setState({ newSourceFileHash: ipfsId })
+        })
+        .catch(err => {
+          console.error(err)
+        })
+
       this.setState({ editing: false })
     }
   }
